@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GEO PINAS</title>
+    <meta
+      name="description"
+      content="Interactive Philippine Province Map — Geo Pinas"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header id="header">
+        <div class="header-left">
+          <span class="logo">Geo Pinas</span>
+          <span class="tagline">Philippine Province Map</span>
+        </div>
+        <div class="header-right">
+          <span id="status" class="status status--loading">Loading…</span>
+        </div>
+      </header>
+
+      <main id="main">
+        <div id="map-wrap">
+          <svg
+            id="map"
+            role="img"
+            aria-label="Interactive map of Philippine provinces"
+          ></svg>
+          <div id="tooltip" class="tooltip" aria-live="polite"></div>
+          <div id="zoom-controls" aria-label="Map zoom controls">
+            <button id="zoom-in" title="Zoom in" aria-label="Zoom in">+</button>
+            <button id="zoom-reset" title="Reset view" aria-label="Reset view">
+              ⊙
+            </button>
+            <button id="zoom-out" title="Zoom out" aria-label="Zoom out">
+              −
+            </button>
+          </div>
+        </div>
+
+        <aside id="sidebar" aria-label="Province information">
+          <div class="sidebar-header">
+            <div class="sidebar-title">Province Info</div>
+            <button
+              id="sidebar-toggle"
+              aria-label="Collapse sidebar"
+              title="Collapse"
+            >
+              ‹
+            </button>
+          </div>
+          <div id="info-panel">
+            <p class="info-idle">Click a province to see details</p>
+          </div>
+        </aside>
+      </main>
+
+      <footer id="footer">
+        <span>Data: PSGC 2023 · PSA Philippines</span>
+        <span
+          >Geo Pinas ·
+          <a
+            href="https://github.com/OSSPhilippines/philippines-travel-level-map"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Map shapes</a
+          ></span
+        >
+      </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

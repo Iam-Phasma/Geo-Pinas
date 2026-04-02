@@ -1,0 +1,421 @@
+/* ============================================================
+   GEO PINAS — Flat / Cartoon Map
+   Clean, minimal, no texture, no retro effects
+   ============================================================ */
+
+:root {
+  --bg: #f0f4f8;
+  --bg-header: #ffffff;
+  --bg-sidebar: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --accent: #3b82f6;
+  --accent-light: #dbeafe;
+  --accent-dark: #1d4ed8;
+
+  --ocean: #1b3a6b;
+  --province-fill: #166e3e;
+  --province-hover: #0d4d20;
+  --province-selected: #c9b230;
+  --province-border: #95ffc1;
+
+  --font: "DM Sans", system-ui, sans-serif;
+  --sidebar-w: 280px;
+  --radius: 10px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+/* ── App shell ─────────────────────────────────────────── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+}
+
+/* ── Header ────────────────────────────────────────────── */
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-header);
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+.header-right {
+  flex-shrink: 0;
+}
+
+.status {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.status--loading {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status--ready {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status--error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ── Main layout ───────────────────────────────────────── */
+#main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Map area ──────────────────────────────────────────── */
+#map-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  background: var(--ocean);
+  cursor: grab;
+}
+
+#map-wrap.is-dragging {
+  cursor: grabbing;
+}
+
+#map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Province groups — cursor + accessibility */
+.province-group {
+  cursor: pointer;
+  outline: none;
+}
+
+/* Province fills */
+.province {
+  fill: var(--province-fill);
+  stroke: var(--province-border);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transition: fill 0.12s ease;
+  outline: none;
+}
+
+.province-group:hover .province,
+.province-group:focus-visible .province {
+  fill: var(--province-hover);
+}
+
+.province-group.is-selected .province {
+  fill: var(--province-selected);
+}
+
+/* ── Zoom controls ─────────────────────────────────────── */
+#zoom-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+}
+
+#zoom-controls button {
+  width: 34px;
+  height: 34px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-family: var(--font);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition:
+    background 0.1s,
+    color 0.1s,
+    border-color 0.1s;
+  line-height: 1;
+}
+
+#zoom-controls button:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+#zoom-controls button:active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
+/* ── Tooltip ───────────────────────────────────────────── */
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--text);
+  color: #ffffff;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -140%);
+  transition: opacity 0.1s;
+  z-index: 10;
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--text);
+}
+
+.tooltip.is-visible {
+  opacity: 1;
+}
+
+/* ── Sidebar ───────────────────────────────────────────── */
+#sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  background: var(--bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 18px;
+  overflow-y: auto;
+  gap: 0;
+  transition:
+    width 0.25s ease,
+    padding 0.25s ease;
+}
+
+#sidebar.is-collapsed {
+  width: 36px;
+  padding: 12px 0;
+  overflow: hidden;
+}
+
+#sidebar.is-collapsed #info-panel,
+#sidebar.is-collapsed .sidebar-title {
+  display: none;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+#sidebar.is-collapsed .sidebar-header {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  justify-content: center;
+}
+
+#sidebar-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    transform 0.25s ease;
+}
+
+#sidebar-toggle:hover {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+}
+
+#sidebar.is-collapsed #sidebar-toggle {
+  transform: rotate(180deg);
+}
+
+.sidebar-title {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+
+.info-idle {
+  color: var(--text-faint);
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+/* Info record fields */
+.info-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 16px;
+  word-break: break-word;
+}
+
+.info-row {
+  margin-top: 12px;
+}
+
+.info-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+
+.info-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+.info-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+/* ── Footer ────────────────────────────────────────────── */
+#footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  height: 38px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-header);
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+#footer a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+#footer a:hover {
+  color: var(--accent);
+}
+
+/* ── Scrollbar (WebKit) ────────────────────────────────── */
+#sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+#sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+#sidebar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 640px) {
+  :root {
+    --sidebar-w: 220px;
+  }
+  .tagline {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  #main {
+    flex-direction: column;
+  }
+  #sidebar {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    max-height: 200px;
+  }
+}
