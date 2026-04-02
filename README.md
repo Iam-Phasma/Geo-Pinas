@@ -9,7 +9,13 @@ Host the folder on any static server (e.g. GitHub Pages) — no build step requi
 ## Features
 
 - All 83 Philippine provinces (including Metro Manila as NCR)
-- Click a province to see its name and region in the sidebar
+- Click a province to see its name, region, and flag in the sidebar
+- Province flag image (with region flag fallback) shown inline in the info card
+- Back button returns to the region browser from a province card
+- Clicking the ocean/sea deselects the active province
+- Sidebar idle panel with search bar (autocomplete) and region dropdown filter
+- Clickable region browser — select a province directly from the list
+- Sticky search and filter controls while scrolling the province list
 - Zoom and pan with mouse/touch or the +/⊙/− buttons
 - Collapsible sidebar
 - Navy blue chevron-wave ocean background
@@ -25,6 +31,15 @@ Host the folder on any static server (e.g. GitHub Pages) — no build step requi
 Province map shapes are adapted from  
 **[OSSPhilippines / philippines-travel-level-map](https://github.com/OSSPhilippines/philippines-travel-level-map)**  
 licensed under the [GNU General Public License v3.0 (GPL-3.0)](https://www.gnu.org/licenses/gpl-3.0.html).
+
+Province flag images are sourced from  
+**[Flags of the World (crwflags.com)](https://www.crwflags.com/fotw/flags/ph.html)** — used for reference/educational purposes.
+
+Additional flag images (Zamboanga Sibugay, Davao de Oro, Davao Occidental, Sarangani, Dinagat Islands, Apayao) are sourced from  
+**[Wikimedia Commons](https://commons.wikimedia.org/)** — used under their respective free licenses.
+
+Southern Leyte flag image sourced from the  
+**[official Southern Leyte provincial government website](https://southernleyte.gov.ph/)**.
 
 In compliance with GPL-3.0:
 
