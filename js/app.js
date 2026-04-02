@@ -529,6 +529,136 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
+// ── Flag URL helpers ──────────────────────────────────────
+// ── Flag URL helpers ──────────────────────────────────────────
+const _CRW = "https://www.crwflags.com/fotw/images/p/";
+
+// Province → crwflags GIF filename (null = no crwflags image, fall through to Wikipedia/region)
+const _PROV_FLAG = {
+  "Ilocos Norte": "ph-iln.gif",
+  "Ilocos Sur": "ph-ils.gif",
+  "La Union": "ph-lun.gif",
+  Pangasinan: "ph-pan.gif",
+  Batanes: "ph-btn.gif",
+  Cagayan: "ph-cag.gif",
+  Isabela: "ph-isa.gif",
+  "Nueva Vizcaya": "ph-nuv.gif",
+  Quirino: "ph-qui.gif",
+  Aurora: "ph-aur.gif",
+  Bataan: "ph-ban.gif",
+  Bulacan: "ph-bul.gif",
+  "Nueva Ecija": "ph-nue.gif",
+  Pampanga: "ph-pamp2.gif",
+  Tarlac: "ph-tar.gif",
+  Zambales: "ph-zmb.gif",
+  Batangas: "ph-btg.gif",
+  Cavite: "ph-cav.gif",
+  Laguna: "ph-lag.gif",
+  Quezon: "ph-que.gif",
+  Rizal: "ph-riz.gif",
+  Marinduque: "ph-mad.gif",
+  "Occidental Mindoro": "ph-mdc.gif",
+  "Oriental Mindoro": "ph-mdr.gif",
+  Palawan: "ph-plw.gif",
+  Romblon: "ph-pp.gif",
+  Albay: "ph-alb.gif",
+  "Camarines Norte": "ph-can.gif",
+  "Camarines Sur": "ph-cas.gif",
+  Catanduanes: "ph-catan.gif",
+  Masbate: "ph-mas.gif",
+  Sorsogon: "ph-sor.gif",
+  Abra: "ph-abr.gif",
+  Kalinga: "ph-kal.gif",
+  Benguet: "ph-ben.gif",
+  Ifugao: "ph-ifu.gif",
+  "Mountain Province": "ph-mou.gif",
+  Aklan: "ph-akl.gif",
+  Antique: "ph-ant.gif",
+  Capiz: "ph-cap.gif",
+  Guimaras: "ph-guima.gif",
+  Iloilo: "ph-ili.gif",
+  "Negros Occidental": "ph-nec.gif",
+  Bohol: "ph-boh.gif",
+  Cebu: "ph-ceb.gif",
+  "Negros Oriental": "ph-ner.gif",
+  Siquijor: "ph-sig.gif",
+  Biliran: "ph-bil.gif",
+  Leyte: "ph-ley.gif",
+  "Southern Leyte":
+    "https://southernleyte.gov.ph/wp-content/uploads/2023/04/flag-500x288.png",
+  Samar: "ph-wsa.gif",
+  "Northern Samar": "ph-nsa.gif",
+  "Eastern Samar": "ph-eas.gif",
+  "Zamboanga del Norte": "ph-zan.gif",
+  "Zamboanga del Sur": "ph-zas.gif",
+  "Zamboanga Sibugay":
+    "https://upload.wikimedia.org/wikipedia/commons/3/3c/Zamboanga_Sibugay_Flag.png",
+  Basilan: "ph-bas.gif",
+  Bukidnon: "ph-buk2.gif",
+  Camiguin: "ph-cam.gif",
+  "Lanao del Norte": "ph-lan.gif",
+  "Misamis Occidental": "ph-msc.gif",
+  "Misamis Oriental": "ph-msr.gif",
+  "Davao del Norte": "ph-dav.gif",
+  "Davao del Sur": "ph-das.gif",
+  "Davao Oriental": "ph-dao.gif",
+  "Davao de Oro":
+    "https://upload.wikimedia.org/wikipedia/commons/9/94/Davao_De_Oro_Flag.jpg",
+  "Davao Occidental":
+    "https://upload.wikimedia.org/wikipedia/commons/0/0e/PH-DVO_Flag.png",
+  Cotabato: "ph-nco.gif",
+  "South Cotabato": "ph-sco.gif",
+  "Sultan Kudarat": "ph-suk.gif",
+  Sarangani:
+    "https://upload.wikimedia.org/wikipedia/commons/7/76/Flag_of_Sarangani.png",
+  "Metro Manila": "ph-mw.gif",
+  "Agusan del Norte": "ph-agn.gif",
+  "Agusan del Sur": "ph-ags.gif",
+  "Dinagat Islands":
+    "https://upload.wikimedia.org/wikipedia/commons/5/51/PH-DIN_Flag.png",
+  "Surigao del Norte": "ph-sun.gif",
+  "Surigao del Sur": "ph-sur.gif",
+  "Lanao del Sur": "ph-las.gif",
+  "Maguindanao del Norte": "ph-mag.gif",
+  "Maguindanao del Sur": "ph-mag.gif",
+  Sulu: "ph-slu.gif",
+  "Tawi-Tawi": "ph-taw.gif",
+  Apayao: "https://upload.wikimedia.org/wikipedia/commons/3/31/PH-APA_Flag.png",
+};
+
+const _REGION_FLAG_FILE = {
+  "Region I — Ilocos": "Ilocos_Region",
+  "Region II — Cagayan Valley": "Cagayan_Valley",
+  "Region III — Central Luzon": "Central_Luzon",
+  "Region IVA — Calabarzon": "CALABARZON",
+  MIMAROPA: "MIMAROPA_Region",
+  "Region V — Bicol": "Bicol_Region",
+  "Region VI — Western Visayas": "Western_Visayas",
+  "Region VII — Central Visayas": "Central_Visayas",
+  "Region VIII — Eastern Visayas": "Eastern_Visayas",
+  "Region IX — Zamboanga Peninsula": "Zamboanga_Peninsula",
+  "Region X — Northern Mindanao": "Northern_Mindanao",
+  "Region XI — Davao Region": "Davao_Region",
+  "Region XII — SOCCSKSARGEN": "SOCCSKSARGEN",
+  "NCR — National Capital Region": "Metro_Manila",
+  CAR: "Cordillera_Administrative_Region",
+  "Region XIII — Caraga": "Caraga",
+  BARMM: "Bangsamoro",
+};
+
+function _provFlagUrl(id) {
+  const file = _PROV_FLAG[id];
+  if (!file) return null;
+  return file.startsWith("http") ? file : _CRW + file;
+}
+
+function _regionFlagUrl(region) {
+  const file = _REGION_FLAG_FILE[region];
+  return file
+    ? `https://en.wikipedia.org/wiki/Special:FilePath/Flag_of_${file}.svg`
+    : null;
+}
+
 // ── Map init ───────────────────────────────────────────────────
 function initMap() {
   const container = document.getElementById("map-wrap");
@@ -554,14 +684,14 @@ function initMap() {
     .append("rect")
     .attr("width", 16)
     .attr("height", 8)
-    .attr("fill", "#195ecc");
+    .attr("fill", "#5087df");
 
   // Chevron path: /\/\ drawn as a stroke
   pat
     .append("path")
     .attr("d", "M0 6 L4 2 L8 6 L12 2 L16 6")
     .attr("fill", "none")
-    .attr("stroke", "#0b3d92")
+    .attr("stroke", "#3171e0")
     .attr("stroke-width", 1.3)
     .attr("stroke-linecap", "round")
     .attr("stroke-linejoin", "round");
@@ -647,6 +777,16 @@ function initMap() {
   _svg.call(_zoom.transform, initT);
   _svg.on("dblclick", resetZoom);
 
+  // Clicking the ocean (not a province) deselects any selected province
+  _svg.on("click.deselect", () => {
+    if (_wasDragging) return;
+    if (_selectedGroup) {
+      d3.select(_selectedGroup).classed("is-selected", false);
+      _selectedGroup = null;
+      showIdlePanel();
+    }
+  });
+
   function zoomBy(factor) {
     _svg.transition().duration(280).call(_zoom.scaleBy, factor);
   }
@@ -728,14 +868,177 @@ function onProvinceClick(event, d) {
 
 // ── Sidebar ────────────────────────────────────────────────────
 function showIdlePanel() {
-  document.getElementById("info-panel").innerHTML =
-    '<p class="info-idle">Click a province to see details</p>';
+  // Build region → sorted provinces map
+  const regionMap = {};
+  Object.entries(PROVINCE_REGION).forEach(([prov, region]) => {
+    if (!regionMap[region]) regionMap[region] = [];
+    regionMap[region].push(prov);
+  });
+  const sortedRegions = Object.keys(regionMap).sort();
+  const allProvs = Object.keys(PROVINCE_REGION).sort();
+
+  document.getElementById("info-panel").innerHTML = `
+    <div class="idle-sticky">
+      <div class="idle-search-wrap">
+        <input id="idle-search" class="idle-search" type="text"
+          placeholder="Search province…" autocomplete="off" spellcheck="false" />
+        <ul id="idle-suggestions" class="idle-suggestions" role="listbox" hidden></ul>
+      </div>
+      <div class="idle-filter-wrap">
+        <div class="idle-filter-label">Region</div>
+        <button class="idle-dropdown-btn" id="idle-dropdown-btn" aria-haspopup="listbox" aria-expanded="false">
+          <span id="idle-dropdown-label">All Regions</span>
+          <span class="idle-dropdown-chevron">›</span>
+        </button>
+        <ul class="idle-dropdown-list" id="idle-dropdown-list" role="listbox" hidden>
+          <li><button class="idle-dropdown-option is-active" data-region="">All Regions</button></li>
+          ${sortedRegions.map((r) => `<li><button class="idle-dropdown-option" data-region="${escapeHtml(r)}">${escapeHtml(r)}</button></li>`).join("")}
+        </ul>
+      </div>
+    </div>
+    <ul class="idle-prov-list" id="idle-prov-list"></ul>
+  `;
+
+  let activeRegion = "";
+
+  function renderProvList(filter = "") {
+    const list = document.getElementById("idle-prov-list");
+    const provs = filter ? (regionMap[filter] || []).slice().sort() : allProvs;
+    list.innerHTML = provs
+      .map(
+        (p) =>
+          `<li><button class="idle-prov-btn" data-province="${escapeHtml(p)}">${escapeHtml(p)}</button></li>`,
+      )
+      .join("");
+    list.querySelectorAll(".idle-prov-btn").forEach((btn) => {
+      btn.addEventListener("click", () =>
+        selectProvinceById(btn.dataset.province),
+      );
+    });
+  }
+
+  renderProvList();
+
+  // ── Region dropdown ──────────────────────────────────────
+  const dropBtn = document.getElementById("idle-dropdown-btn");
+  const dropList = document.getElementById("idle-dropdown-list");
+  const dropLabel = document.getElementById("idle-dropdown-label");
+
+  function closeDropdown() {
+    dropList.hidden = true;
+    dropBtn.setAttribute("aria-expanded", "false");
+    dropBtn.classList.remove("is-open");
+  }
+
+  dropBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = !dropList.hidden;
+    if (open) {
+      closeDropdown();
+    } else {
+      dropList.hidden = false;
+      dropBtn.setAttribute("aria-expanded", "true");
+      dropBtn.classList.add("is-open");
+    }
+  });
+
+  dropList.querySelectorAll(".idle-dropdown-option").forEach((opt) => {
+    opt.addEventListener("click", () => {
+      activeRegion = opt.dataset.region;
+      dropLabel.textContent = activeRegion || "All Regions";
+      dropList
+        .querySelectorAll(".idle-dropdown-option")
+        .forEach((o) =>
+          o.classList.toggle("is-active", o.dataset.region === activeRegion),
+        );
+      closeDropdown();
+      renderProvList(activeRegion);
+      // clear search
+      document.getElementById("idle-search").value = "";
+      document.getElementById("idle-suggestions").hidden = true;
+    });
+  });
+
+  document.addEventListener("click", closeDropdown, { once: false });
+  // prevent the listener stacking — use a named teardown on panel replacement
+  // (re-running showIdlePanel replaces innerHTML, so old listeners die with the nodes)
+
+  // ── Search / autocomplete ────────────────────────────────
+  const searchInput = document.getElementById("idle-search");
+  const suggBox = document.getElementById("idle-suggestions");
+
+  searchInput.addEventListener("input", () => {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q) {
+      suggBox.hidden = true;
+      return;
+    }
+    const matches = allProvs
+      .filter((p) => p.toLowerCase().includes(q))
+      .slice(0, 8);
+    if (!matches.length) {
+      suggBox.hidden = true;
+      return;
+    }
+    suggBox.innerHTML = matches
+      .map(
+        (p) =>
+          `<li role="option"><button class="idle-sugg-btn" data-province="${escapeHtml(p)}">${escapeHtml(p)}</button></li>`,
+      )
+      .join("");
+    suggBox.hidden = false;
+    suggBox.querySelectorAll(".idle-sugg-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        searchInput.value = "";
+        suggBox.hidden = true;
+        selectProvinceById(btn.dataset.province);
+      });
+    });
+  });
+
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      searchInput.value = "";
+      suggBox.hidden = true;
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".idle-search-wrap")) suggBox.hidden = true;
+  });
+}
+
+function selectProvinceById(id) {
+  const grp = _g
+    .selectAll(".province-group")
+    .filter((d) => d.id === id)
+    .node();
+  if (!grp) return;
+  if (_selectedGroup) {
+    d3.select(_selectedGroup).classed("is-selected", false);
+  }
+  _selectedGroup = grp;
+  d3.select(grp).classed("is-selected", true).raise();
+  showProvinceInfo(d3.select(grp).datum());
 }
 
 function showProvinceInfo(prov) {
   const region = PROVINCE_REGION[prov.id] || "";
+  const provFlagSrc = _provFlagUrl(prov.id);
+  const regFlagSrc = region ? _regionFlagUrl(region) : null;
+  // Use province flag first; if null skip straight to region fallback
+  const initialSrc = provFlagSrc ?? regFlagSrc;
+
   document.getElementById("info-panel").innerHTML = `
-    <div class="info-name">${escapeHtml(prov.id)}</div>
+    <button class="info-back" aria-label="Back to region list">‹ Back</button>
+    <div class="info-header">
+      <div class="info-flag-card" id="info-flag-card"${!initialSrc ? ' style="display:none"' : ""}>
+        <img class="info-flag-img" id="info-flag-img"
+          src="${escapeHtml(initialSrc ?? "")}"
+          alt="Flag of ${escapeHtml(prov.id)}" />
+      </div>
+      <div class="info-name">${escapeHtml(prov.id)}</div>
+    </div>
     <hr class="info-divider" />
     ${
       region
@@ -746,11 +1049,37 @@ function showProvinceInfo(prov) {
         : ""
     }
   `;
+
+  document.querySelector(".info-back").addEventListener("click", () => {
+    if (_selectedGroup) {
+      d3.select(_selectedGroup).classed("is-selected", false);
+      _selectedGroup = null;
+    }
+    showIdlePanel();
+  });
+
+  if (!initialSrc) return;
+
+  // Flag fallback: if province flag loaded (provFlagSrc was used), on error try region flag; else hide
+  const flagImg = document.getElementById("info-flag-img");
+  const flagCard = document.getElementById("info-flag-card");
+  flagImg.addEventListener("error", () => {
+    if (provFlagSrc && regFlagSrc) {
+      flagImg.removeEventListener("error", arguments.callee);
+      flagImg.onerror = () => {
+        flagCard.style.display = "none";
+      };
+      flagImg.src = regFlagSrc;
+    } else {
+      flagCard.style.display = "none";
+    }
+  });
 }
 
 // ── Boot ───────────────────────────────────────────────────────
 (function boot() {
   initMap();
+  showIdlePanel();
 
   // Sidebar collapse toggle
   const sidebar = document.getElementById("sidebar");

@@ -248,18 +248,37 @@ body {
   background: var(--bg-sidebar);
   display: flex;
   flex-direction: column;
-  padding: 20px 18px;
-  overflow-y: auto;
+  padding: 0;
+  overflow: hidden;
   gap: 0;
   transition:
     width 0.25s ease,
     padding 0.25s ease;
 }
 
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 20px 0 0;
+}
+
+#info-panel {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 0 18px 20px;
+  scrollbar-gutter: stable;
+}
+
 #sidebar.is-collapsed {
   width: 36px;
-  padding: 12px 0;
   overflow: hidden;
+}
+
+#sidebar.is-collapsed .sidebar-inner {
+  padding: 12px 0;
 }
 
 #sidebar.is-collapsed #info-panel,
@@ -273,6 +292,8 @@ body {
   justify-content: space-between;
   margin-bottom: 16px;
   padding-bottom: 12px;
+  padding-left: 18px;
+  padding-right: 18px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -326,13 +347,247 @@ body {
   line-height: 1.7;
 }
 
+/* ── Idle panel: search + dropdown + list ──────────────── */
+
+/* Sticky controls container */
+.idle-sticky {
+  position: sticky;
+  top: 0;
+  background: var(--bg-sidebar);
+  z-index: 20;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+/* Search */
+.idle-search-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.idle-search {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 0.88rem;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.idle-search:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.idle-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  z-index: 40;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.idle-sugg-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 7px 14px;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+
+.idle-sugg-btn:hover {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+}
+
+/* Region dropdown */
+.idle-filter-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.idle-filter-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  margin-bottom: 5px;
+}
+
+.idle-dropdown-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    color 0.15s;
+  text-align: left;
+}
+
+.idle-dropdown-btn:hover,
+.idle-dropdown-btn.is-open {
+  border-color: var(--accent);
+  color: var(--text);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.idle-dropdown-chevron {
+  color: var(--text-faint);
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform 0.18s ease;
+  transform: rotate(0deg);
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
+.idle-dropdown-btn.is-open .idle-dropdown-chevron {
+  transform: rotate(90deg);
+}
+
+.idle-dropdown-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  z-index: 30;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.idle-dropdown-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 7px 14px;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+
+.idle-dropdown-option:hover {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+}
+
+.idle-dropdown-option.is-active {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+
+/* Province flat list */
+.idle-prov-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.idle-prov-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 7px 10px;
+  font-family: var(--font);
+  font-size: 0.88rem;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 6px;
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+
+.idle-prov-btn:hover {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+}
+
+/* ── Province flag card ────────────────────────────────── */
+.info-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.info-flag-card {
+  flex-shrink: 0;
+  width: 52px;
+  height: 34px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-flag-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 /* Info record fields */
 .info-name {
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--text);
   line-height: 1.2;
-  margin-bottom: 16px;
   word-break: break-word;
 }
 
@@ -354,6 +609,25 @@ body {
   color: var(--text-muted);
   margin-top: 3px;
   line-height: 1.4;
+}
+
+.info-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0 0 12px 0;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.12s;
+}
+
+.info-back:hover {
+  color: var(--accent);
 }
 
 .info-divider {
@@ -386,14 +660,14 @@ body {
   color: var(--accent);
 }
 
-/* ── Scrollbar (WebKit) ────────────────────────────────── */
-#sidebar::-webkit-scrollbar {
+/* ── Scrollbar (WebKit) ───────────────────────────── */
+#info-panel::-webkit-scrollbar {
   width: 4px;
 }
-#sidebar::-webkit-scrollbar-track {
+#info-panel::-webkit-scrollbar-track {
   background: transparent;
 }
-#sidebar::-webkit-scrollbar-thumb {
+#info-panel::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 4px;
 }
