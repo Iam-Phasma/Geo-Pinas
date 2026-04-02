@@ -573,6 +573,18 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition:
+    width 0.35s ease,
+    height 0.35s ease,
+    opacity 0.35s ease;
+}
+
+.info-flag-card.flag-loading {
+  width: 0;
+  height: 0;
+  opacity: 0;
+  border-width: 0;
+  visibility: hidden;
 }
 
 .info-flag-img {

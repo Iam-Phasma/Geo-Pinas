@@ -1032,7 +1032,7 @@ function showProvinceInfo(prov) {
   document.getElementById("info-panel").innerHTML = `
     <button class="info-back" aria-label="Back to region list">‹ Back</button>
     <div class="info-header">
-      <div class="info-flag-card" id="info-flag-card"${!initialSrc ? ' style="display:none"' : ""}>
+      <div class="info-flag-card${initialSrc ? " flag-loading" : ""}" id="info-flag-card"${!initialSrc ? ' style="display:none"' : ""}>
         <img class="info-flag-img" id="info-flag-img"
           src="${escapeHtml(initialSrc ?? "")}"
           alt="Flag of ${escapeHtml(prov.id)}" />
@@ -1063,6 +1063,15 @@ function showProvinceInfo(prov) {
   // Flag fallback: if province flag loaded (provFlagSrc was used), on error try region flag; else hide
   const flagImg = document.getElementById("info-flag-img");
   const flagCard = document.getElementById("info-flag-card");
+
+  // Reveal flag card (triggering slide animation) once image loads
+  const revealFlag = () => flagCard.classList.remove("flag-loading");
+  if (flagImg.complete && flagImg.naturalWidth > 0) {
+    revealFlag();
+  } else {
+    flagImg.addEventListener("load", revealFlag, { once: true });
+  }
+
   flagImg.addEventListener("error", () => {
     if (provFlagSrc && regFlagSrc) {
       flagImg.removeEventListener("error", arguments.callee);
