@@ -10,16 +10,7 @@ Host the folder on any static server (e.g. GitHub Pages) — no build step requi
 
 - All 83 Philippine provinces (including Metro Manila as NCR)
 - Click a province to see its name, region, and flag in the sidebar
-- Province flag image (with region flag fallback) shown inline in the info card
-- Back button returns to the region browser from a province card
-- Clicking the ocean/sea deselects the active province
-- Sidebar idle panel with search bar (autocomplete) and region dropdown filter
-- Clickable region browser — select a province directly from the list
-- Sticky search and filter controls while scrolling the province list
 - Zoom and pan with mouse/touch or the +/⊙/− buttons
-- Collapsible sidebar
-- Navy blue chevron-wave ocean background
-- Flat/minimal design · No server required
 
 ## Tech Stack
 
