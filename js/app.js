@@ -379,6 +379,7 @@ function initMap() {
           event.sourceEvent.type === "touchmove")
       ) {
         _wasDragging = true;
+        tooltip.classList.remove("is-visible");
       }
       _g.attr("transform", event.transform);
       updateWeatherEmojiPosition();
