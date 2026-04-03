@@ -7,503 +7,6 @@
 
 "use strict";
 
-/*
-  {
-    id: "Aurora",
-    transform: "translate(427.5,375)",
-    d: "M-37.5 45l60-60 15-30h-30v15l-45 45z",
-  },
-  {
-    id: "Bataan",
-    transform: "translate(330,465)",
-    d: "M-15-15L0 0v15h15v-30z",
-  },
-  {
-    id: "Pampanga",
-    transform: "translate(352.5,435)",
-    d: "M-7.5 15l30-30h-45v30z",
-  },
-  {
-    id: "Bulacan",
-    transform: "translate(367.5,435)",
-    d: "M-22.5 15h45v-30h-15z",
-  },
-  { id: "Rizal", transform: "translate(390,465)", d: "M-15 15h30V0L0-15h-15z" },
-  {
-    id: "Laguna",
-    transform: "translate(390,495)",
-    d: "M-15 0H0v-15h15V0L0 15h-15z",
-  },
-  {
-    id: "Camarines Norte",
-    transform: "translate(487.5,495)",
-    d: "M-22.5 15V0l15-15h15l15 15v15h-15z",
-  },
-  {
-    id: "Camarines Sur",
-    transform: "translate(532.5,532.5)",
-    d: "M-22.5-22.5v15l30-2.262V-22.5l45 15-30 15-15 15h-15l-45-30 15-15z",
-  },
-  {
-    id: "Catanduanes",
-    transform: "translate(600,525)",
-    d: "M0-15l-15 30h30v-30z",
-  },
-  {
-    id: "Albay",
-    transform: "translate(555,562.5)",
-    d: "M-30-7.5l15 30h45v-30l-30-15-15 15z",
-  },
-  {
-    id: "Sorsogon",
-    transform: "translate(570,600)",
-    d: "M15-15h15v30H15V0h-30l-15-15z",
-  },
-  {
-    id: "Occidental Mindoro",
-    transform: "translate(345,600)",
-    d: "M-30-45h45l15 30v60L0 15v-30z",
-  },
-  {
-    id: "Oriental Mindoro",
-    transform: "translate(382.5,600)",
-    d: "M-22.5-45h30l15 30v30l-15 30h-15v-60z",
-  },
-  {
-    id: "Iloilo",
-    transform: "translate(480,741.63)",
-    d: "M-45 38.371l30-45v-15h45L45-38.37 30-6.63l-30 30z",
-  },
-  {
-    id: "Capiz",
-    transform: "translate(487.5,712.5)",
-    d: "M-22.5 7.5h-15l30-15h45l-15 15z",
-  },
-  {
-    id: "Aklan",
-    transform: "translate(457.5,697.5)",
-    d: "M22.5 7.5l-45-30 15 45z",
-  },
-  {
-    id: "Antique",
-    transform: "translate(450,727.5)",
-    d: "M-15-52.5v105l30-45v-15H0z",
-  },
-  {
-    id: "Northern Samar",
-    transform: "translate(652.5,630)",
-    d: "M-37.5 15h60l15-15-15-15h-60z",
-  },
-  {
-    id: "Eastern Samar",
-    transform: "translate(697.5,682.5)",
-    d: "M-22.5-37.5v15l15 15v60h30l-15-15v-45l-15-45z",
-  },
-  {
-    id: "Samar",
-    transform: "translate(652.5,690)",
-    d: "M-37.5-45l45 45-15 15 45 30v-60l-15-15v-15z",
-  },
-  {
-    id: "Negros Occidental",
-    transform: "translate(510,795)",
-    d: "M30 0l15-30v-15L30-60 0-45v30l-15 30-15 15h-15v15l15 15z",
-  },
-  {
-    id: "Negros Oriental",
-    transform: "translate(510,840)",
-    d: "M-30 15l15 15L1.947 45H15l15-15-15-15 15-60z",
-  },
-  {
-    id: "Cebu",
-    transform: "translate(570,795)",
-    d: "M-30 30v45l15-45L15 0l15-75z",
-  },
-  {
-    id: "Bohol",
-    transform: "translate(600,832.5)",
-    d: "M-30-5.413V7.5l15 15h30l15-15v-30H0z",
-  },
-  {
-    id: "Misamis Occidental",
-    transform: "translate(570,937.5)",
-    d: "M-15-22.5v45H0l15-15v-15l-15-15z",
-  },
-  {
-    id: "Zamboanga del Norte",
-    transform: "translate(495,967.5)",
-    d: "M60-52.5H30v30l-60 15-15 30-15 30 45-45h30l30-15v-15h15z",
-  },
-  {
-    id: "Lanao del Norte",
-    transform: "translate(600,967.5)",
-    d: "M-30-7.5H0v-15h30v15l-45 30-15-15z",
-  },
-  {
-    id: "Lanao del Sur",
-    transform: "translate(615,982.5)",
-    d: "M-30 7.5l15 15 30-15h15v-15l-15-15z",
-  },
-  {
-    id: "Bukidnon",
-    transform: "translate(660,967.5)",
-    d: "M-30-22.5l30-15h30v60l-15 15H0l-15-15v-15l-15-15z",
-  },
-  {
-    id: "Misamis Oriental",
-    transform: "translate(645,922.5)",
-    d: "M-30 22.5v-15h15l15-15v-15h30v30H15l-30 15z",
-  },
-  {
-    id: "Agusan del Norte",
-    transform: "translate(697.5,885)",
-    d: "M-22.5 15l30-15v-30h15v60h-45z",
-  },
-  {
-    id: "Agusan del Sur",
-    transform: "translate(720,915)",
-    d: "M0-45l30 75h15v15h-75V15h-15V0H0z",
-  },
-  {
-    id: "Surigao del Sur",
-    transform: "translate(750,907.5)",
-    d: "M-15-52.5l-15 15 30 75h15v15h15v-15l-15-15-15-15 15-15z",
-  },
-  {
-    id: "Davao Oriental",
-    transform: "translate(757.5,1020)",
-    d: "M-7.5-60l15 60-30 15 15 45 30-45v-45l-15-30z",
-  },
-  {
-    id: "Davao de Oro",
-    transform: "translate(742.5,997.5)",
-    d: "M-22.5-37.5v30h15v45l30-15-15-60z",
-  },
-  {
-    id: "Davao del Sur",
-    transform: "translate(690,1035)",
-    d: "M15-15L0 45h-15V15L0 0v-45h15z",
-  },
-  {
-    id: "Maguindanao del Norte",
-    transform: "translate(607.5,1020)",
-    d: "M-7.5-15l15 15-30 30 45-15v-45z",
-  },
-  {
-    id: "Maguindanao del Sur",
-    transform: "translate(622.5,1050)",
-    d: "M7.5-15h30v30h-15l-60-15z",
-  },
-  {
-    id: "Davao Occidental",
-    transform: "translate(705,1102.5)",
-    d: "M-10.239-37.5L15-7.5v15l-30 30 15-30-15-30z",
-  },
-  {
-    id: "Cotabato",
-    transform: "translate(660,1027.5)",
-    d: "M30 7.5v-45l-15 15H0l-15-15h-15v45H0v30l15-15z",
-  },
-  {
-    id: "Sarangani",
-    transform: "translate(660,1110)",
-    d: "M30-30L45 0 30 30 15 15l15-30-15-15zM-15 0h30v15L-45 0v-15h15z",
-  },
-  {
-    id: "Sulu",
-    transform: "translate(382.5,1125)",
-    d: "M-22.5-15V0l30 15 15-15-15-15z",
-  },
-  {
-    id: "Tawi-Tawi",
-    transform: "translate(292.5,1170)",
-    d: "M22.5-15l-45 30h45z",
-  },
-  {
-    id: "Basilan",
-    transform: "translate(442.5,1080)",
-    d: "M-7.5-15h30v30h-30l-15-30z",
-  },
-  {
-    id: "Southern Leyte",
-    transform: "translate(660,787.5)",
-    d: "M-15 22.5l15-30 15-15v45L0 7.5v15z",
-  },
-  {
-    id: "Leyte",
-    transform: "translate(645,757.5)",
-    d: "M0 52.5l15-30 15-15-15-15v-30h-30l-15-15v45h15l15 15z",
-  },
-  {
-    id: "Batanes",
-    transform: "translate(435,37.5)",
-    d: "M0 7.5h15l-15 15zm-15-15l15-15v15z",
-  },
-  {
-    id: "Palawan",
-    transform: "translate(195,795)",
-    d: "M-120 150l15-30L30-15l15-75 30 75L0 30v15l-75 75zM75-150h15l30 15-30 30z",
-  },
-  {
-    id: "Dinagat Islands",
-    transform: "translate(712.5,802.5)",
-    d: "M7.5-22.5l-15 15v15l15 15z",
-  },
-  {
-    id: "Metro Manila",
-    transform: "translate(367.5,465)",
-    d: "M-7.5-15h15v30z",
-  },
-  {
-    id: "Batangas",
-    transform: "translate(375,517.5)",
-    d: "M30 7.5v15H0l-15-30-15 15v-30l30 15h15v15z",
-  },
-  { id: "Cavite", transform: "translate(360,495)", d: "M-15 0l30-15v30z" },
-  {
-    id: "Marinduque",
-    transform: "translate(435,555)",
-    d: "M0-15L15 0 0 15-15 0z",
-  },
-  {
-    id: "Zambales",
-    transform: "translate(315,412.5)",
-    d: "M-15-37.5v30l15 45h15v-30L0-7.5v-30z",
-  },
-  {
-    id: "Tarlac",
-    transform: "translate(337.5,397.5)",
-    d: "M-22.5-7.5v15l15 15h30v-15l-15-30z",
-  },
-  {
-    id: "Pangasinan",
-    transform: "translate(322.5,368.62)",
-    d: "M22.5 6.378h15v-30h-30v15h-15l-15-27.756-15 12.756 15 60v-30h15v15z",
-  },
-  {
-    id: "Nueva Ecija",
-    transform: "translate(367.5,390)",
-    d: "M-7.5-30h30v60h-30V15l-15-30h15z",
-  },
-  {
-    id: "Quezon",
-    transform: "translate(442.5,487.5)",
-    d: "M-37.5-82.5l15 45 2.232 45 42.768 30v-15h30l-15 15 15 45h-15l-15-30-45-30v15h-30v-15l15-15v-30l-15-15v-30zm30 60v-30l45 30-30-15z",
-  },
-  {
-    id: "Ilocos Norte",
-    transform: "translate(352.5,210)",
-    d: "M-22.5 15l15-45h30v45l-30 15z",
-  },
-  {
-    id: "Apayao",
-    transform: "translate(390,217.5)",
-    d: "M-15-37.5l30 30v30l-30 15z",
-  },
-  {
-    id: "Kalinga",
-    transform: "translate(390,262.5)",
-    d: "M-15-7.5l30-15 15 15v15l-30 15h-30z",
-  },
-  {
-    id: "Cagayan",
-    transform: "translate(420,187.5)",
-    d: "M0-67.5v15h-15v-15zm30 30l-15 15v-15zm-75 30h15l45 30 15-15v-15l15 15v15l-15 15v30H0l-15-15v-30z",
-  },
-  {
-    id: "Isabela",
-    transform: "translate(442.73,292.49)",
-    d: "M-22.75-37.49l30.006.035 15.513 15.46 15 15L22.277 37.49l-44.921-.053L-37.77 22.62l14.975-30.067z",
-  },
-  {
-    id: "Mountain Province",
-    transform: "translate(390,292.5)",
-    d: "M-30-7.5v30l15-15 45-15v-15L0-7.5z",
-  },
-  {
-    id: "Ifugao",
-    transform: "translate(390,307.5)",
-    d: "M-30 7.5v15l30-15h15l15-30-45 15z",
-  },
-  {
-    id: "Benguet",
-    transform: "translate(345,322.5)",
-    d: "M0 22.5l-15-15v-15l15-15h15v45z",
-  },
-  {
-    id: "La Union",
-    transform: "translate(330,322.5)",
-    d: "M0 22.5l-15-15v-30l15 15v15l15 15z",
-  },
-  {
-    id: "Biliran",
-    transform: "translate(622.5,697.5)",
-    d: "M7.5 7.5v-15h-15z",
-  },
-  {
-    id: "Camiguin",
-    transform: "translate(652.5,877.5)",
-    d: "M-7.5-7.5v15h15z",
-  },
-  {
-    id: "Davao del Norte",
-    transform: "translate(712.5,997.5)",
-    d: "M7.5-7.5h15v15l-30 15v-30h-15v-30h30zm-15 45l15-15v15z",
-  },
-  {
-    id: "Guimaras",
-    transform: "translate(487.5,772.5)",
-    d: "M-7.5 7.5l15-15v15z",
-  },
-  {
-    id: "Ilocos Sur",
-    transform: "translate(337.5,270)",
-    d: "M7.5-30l-15-15-15 30v45l15 15 15-15h15V15l-30-15z",
-  },
-  {
-    id: "Abra",
-    transform: "translate(352.5,255)",
-    d: "M-7.5-15l-15 30 30 15 15-30v-30z",
-  },
-  {
-    id: "Masbate",
-    transform: "translate(555,630)",
-    d: "M-15 0l30-15 30 60v15L0 15l-30 30zm-30-45v-15l30 30z",
-  },
-  {
-    id: "Nueva Vizcaya",
-    transform: "translate(382.5,352.5)",
-    d: "M22.5-37.5l-15 15v15l15 30-15 15v-30h-30v-30l30-15z",
-  },
-  {
-    id: "Quirino",
-    transform: "translate(412.5,345)",
-    d: "M-7.5-30l-15 15V0l15 30 30-30v-15h-15z",
-  },
-  {
-    id: "Romblon",
-    transform: "translate(465,637.5)",
-    d: "M-15 22.5l-15-15v-15l15-15zm45-30v15H15L0-7.5z",
-  },
-  {
-    id: "Siquijor",
-    transform: "translate(562.5,877.5)",
-    d: "M-7.5 7.5l15-15v15z",
-  },
-  {
-    id: "South Cotabato",
-    transform: "translate(660,1102.5)",
-    d: "M-30-22.5h45l15 15-15 30v-15h-30l-15-15z",
-  },
-  {
-    id: "Sultan Kudarat",
-    transform: "translate(630,1080)",
-    d: "M-45-30l30 60V15H0V0h45v-30L30-15H15z",
-  },
-  {
-    id: "Surigao del Norte",
-    transform: "translate(716.25,840.25)",
-    d: "M-26.25 14.75v-15h30l15 15-15 15v-15zm37.5-29.5l15-15v30z",
-  },
-  {
-    id: "Zamboanga Sibugay",
-    transform: "translate(495,997.5)",
-    d: "M15 22.5v-30H0l-15 15-15-15 15-15h45v15z",
-  },
-  {
-    id: "Zamboanga del Sur",
-    transform: "translate(502.5,990)",
-    d: "M37.5-30v-15h15v15h15v15h-15v45l-30-30v-15h-15zm-60 45l-30 30-15-15 30-30z",
-  },
-];
-
-// Province → Region lookup
-const PROVINCE_REGION = {
-  "Ilocos Norte": "Region I — Ilocos",
-  "Ilocos Sur": "Region I — Ilocos",
-  "La Union": "Region I — Ilocos",
-  Pangasinan: "Region I — Ilocos",
-  Cagayan: "Region II — Cagayan Valley",
-  Isabela: "Region II — Cagayan Valley",
-  "Nueva Vizcaya": "Region II — Cagayan Valley",
-  Quirino: "Region II — Cagayan Valley",
-  Batanes: "Region II — Cagayan Valley",
-  Aurora: "Region III — Central Luzon",
-  Bataan: "Region III — Central Luzon",
-  Bulacan: "Region III — Central Luzon",
-  "Nueva Ecija": "Region III — Central Luzon",
-  Pampanga: "Region III — Central Luzon",
-  Tarlac: "Region III — Central Luzon",
-  Zambales: "Region III — Central Luzon",
-  Batangas: "Region IVA — Calabarzon",
-  Cavite: "Region IVA — Calabarzon",
-  Laguna: "Region IVA — Calabarzon",
-  Quezon: "Region IVA — Calabarzon",
-  Rizal: "Region IVA — Calabarzon",
-  Marinduque: "MIMAROPA",
-  "Occidental Mindoro": "MIMAROPA",
-  "Oriental Mindoro": "MIMAROPA",
-  Palawan: "MIMAROPA",
-  Romblon: "MIMAROPA",
-  Albay: "Region V — Bicol",
-  "Camarines Norte": "Region V — Bicol",
-  "Camarines Sur": "Region V — Bicol",
-  Catanduanes: "Region V — Bicol",
-  Masbate: "Region V — Bicol",
-  Sorsogon: "Region V — Bicol",
-  Aklan: "Region VI — Western Visayas",
-  Antique: "Region VI — Western Visayas",
-  Capiz: "Region VI — Western Visayas",
-  Guimaras: "Region VI — Western Visayas",
-  Iloilo: "Region VI — Western Visayas",
-  "Negros Occidental": "Region VI — Western Visayas",
-  Bohol: "Region VII — Central Visayas",
-  Cebu: "Region VII — Central Visayas",
-  "Negros Oriental": "Region VII — Central Visayas",
-  Siquijor: "Region VII — Central Visayas",
-  Biliran: "Region VIII — Eastern Visayas",
-  "Eastern Samar": "Region VIII — Eastern Visayas",
-  Leyte: "Region VIII — Eastern Visayas",
-  "Northern Samar": "Region VIII — Eastern Visayas",
-  Samar: "Region VIII — Eastern Visayas",
-  "Southern Leyte": "Region VIII — Eastern Visayas",
-  "Zamboanga del Norte": "Region IX — Zamboanga Peninsula",
-  "Zamboanga del Sur": "Region IX — Zamboanga Peninsula",
-  "Zamboanga Sibugay": "Region IX — Zamboanga Peninsula",
-  Basilan: "Region IX — Zamboanga Peninsula",
-  "Agusan del Norte": "Region X — Northern Mindanao",
-  Bukidnon: "Region X — Northern Mindanao",
-  Camiguin: "Region X — Northern Mindanao",
-  "Lanao del Norte": "Region X — Northern Mindanao",
-  "Misamis Occidental": "Region X — Northern Mindanao",
-  "Misamis Oriental": "Region X — Northern Mindanao",
-  "Davao de Oro": "Region XI — Davao Region",
-  "Davao del Norte": "Region XI — Davao Region",
-  "Davao del Sur": "Region XI — Davao Region",
-  "Davao Occidental": "Region XI — Davao Region",
-  "Davao Oriental": "Region XI — Davao Region",
-  Cotabato: "Region XII — SOCCSKSARGEN",
-  Sarangani: "Region XII — SOCCSKSARGEN",
-  "South Cotabato": "Region XII — SOCCSKSARGEN",
-  "Sultan Kudarat": "Region XII — SOCCSKSARGEN",
-  "Metro Manila": "NCR — National Capital Region",
-  Abra: "CAR",
-  Apayao: "CAR",
-  Benguet: "CAR",
-  Ifugao: "CAR",
-  Kalinga: "CAR",
-  "Mountain Province": "CAR",
-  "Agusan del Sur": "Region XIII — Caraga",
-  "Dinagat Islands": "Region XIII — Caraga",
-  "Surigao del Norte": "Region XIII — Caraga",
-  "Surigao del Sur": "Region XIII — Caraga",
-  "Lanao del Sur": "BARMM",
-  "Maguindanao del Norte": "BARMM",
-  "Maguindanao del Sur": "BARMM",
-  Sulu: "BARMM",
-  "Tawi-Tawi": "BARMM",
-};
-*/
 
 // ── State ──────────────────────────────────────────────────────
 let _selectedGroup = null;
@@ -511,6 +14,152 @@ let _wasDragging = false;
 let _zoom = null;
 let _svg = null;
 let _g = null;
+let _currentWeatherProv = null;
+let _activeToolId = null;
+let _lastWeatherInfo = null;
+let _weatherEmojiEnabled = true;
+let _travelMap = {};
+
+// ── Weather helpers ────────────────────────────────────────────
+const WMO_EMOJI = {
+  0: "☀️",
+  1: "🌤️", 2: "⛅", 3: "🌥️",
+  45: "🌫️", 48: "🌫️",
+  51: "🌦️", 53: "🌦️", 55: "🌦️",
+  56: "🌨️", 57: "🌨️",
+  61: "🌧️", 63: "🌧️", 65: "🌧️",
+  66: "🌨️", 67: "🌨️",
+  71: "🌨️", 73: "🌨️", 75: "🌨️",
+  77: "🌨️",
+  80: "🌦️", 81: "🌦️", 82: "⛈️",
+  85: "🌨️", 86: "🌨️",
+  95: "⛈️", 96: "⛈️", 99: "⛈️",
+};
+
+const WMO_DESC = {
+  0: "Clear sky",
+  1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+  45: "Foggy", 48: "Icy fog",
+  51: "Light drizzle", 53: "Moderate drizzle", 55: "Dense drizzle",
+  56: "Freezing drizzle", 57: "Heavy freezing drizzle",
+  61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain",
+  66: "Freezing rain", 67: "Heavy freezing rain",
+  71: "Slight snow", 73: "Moderate snow", 75: "Heavy snow",
+  77: "Snow grains",
+  80: "Slight showers", 81: "Moderate showers", 82: "Violent showers",
+  85: "Slight snow showers", 86: "Heavy snow showers",
+  95: "Thunderstorm", 96: "Thunderstorm w/ hail", 99: "Severe thunderstorm",
+};
+
+// Convert SVG data-space coordinates to approximate lat/lng
+// Calibrated from: Metro Manila (367.5,465)→14.6°N 121°E,
+//   Batanes (435,37.5)→20.5°N 121.9°E, Tawi-Tawi (292.5,1170)→5.1°N 119.7°E
+function _svgToLatLng(svgX, svgY) {
+  const lat = 20.5 - (svgY - 37.5) * 0.01358;
+  const lon = 118.7 + (svgX - 195) * 0.01350;
+  return { lat, lon };
+}
+
+function _parseTranslate(transform) {
+  const m = transform.match(/translate\(\s*([^,]+),\s*([^)]+)\)/);
+  if (!m) return null;
+  return { x: parseFloat(m[1]), y: parseFloat(m[2]) };
+}
+
+function _getProvScreenPos(prov) {
+  const pt = _parseTranslate(prov.transform);
+  if (!pt || !_svg) return null;
+  const t = d3.zoomTransform(_svg.node());
+  const [px, py] = t.apply([pt.x, pt.y]);
+  return { x: px, y: py };
+}
+
+function _positionWeatherOverlay(prov) {
+  const overlay = document.getElementById("weather-overlay");
+  const pos = _getProvScreenPos(prov);
+  if (!pos || !overlay) return;
+  // Offset upward so emoji floats above the land
+  overlay.style.left = pos.x + "px";
+  overlay.style.top = (pos.y - 28) + "px";
+}
+
+function updateWeatherEmojiPosition() {
+  if (!_currentWeatherProv || _activeToolId !== "weather" || !_weatherEmojiEnabled) return;
+  const overlay = document.getElementById("weather-overlay");
+  if (overlay && overlay.classList.contains("is-visible")) {
+    _positionWeatherOverlay(_currentWeatherProv);
+  }
+}
+
+function _setTwemoji(overlay, emoji) {
+  overlay.innerHTML = emoji;
+  if (typeof twemoji !== "undefined") {
+    twemoji.parse(overlay, { folder: "svg", ext: ".svg" });
+  }
+}
+
+async function fetchAndShowWeather(prov) {
+  const pt = _parseTranslate(prov.transform);
+  if (!pt) return;
+  const { lat, lon } = _svgToLatLng(pt.x, pt.y);
+  _currentWeatherProv = prov;
+
+  const overlay = document.getElementById("weather-overlay");
+  if (!overlay) return;
+  if (_weatherEmojiEnabled) {
+    _setTwemoji(overlay, "⏳");
+    _positionWeatherOverlay(prov);
+    overlay.classList.add("is-visible");
+  }
+
+  if (_activeToolId === "weather") {
+    const hint = document.getElementById("weather-tool-hint");
+    if (hint) hint.textContent = `Loading weather for ${prov.id}…`;
+  }
+
+  try {
+    const url =
+      `https://api.open-meteo.com/v1/forecast` +
+      `?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}` +
+      `&current=weather_code,temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m&forecast_days=1`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("weather fetch failed");
+    const data = await res.json();
+    const cur = data.current ?? {};
+    const code = cur.weather_code ?? 0;
+    const emoji = WMO_EMOJI[code] ?? "🌡️";
+    _setTwemoji(overlay, emoji);
+    if (_weatherEmojiEnabled) _positionWeatherOverlay(prov);
+
+    _lastWeatherInfo = {
+      prov: prov.id,
+      region: PROVINCE_REGION[prov.id] ?? "",
+      emoji,
+      temp: cur.temperature_2m != null ? Math.round(cur.temperature_2m) : "—",
+      feelsLike: cur.apparent_temperature != null ? Math.round(cur.apparent_temperature) : "—",
+      humidity: cur.relative_humidity_2m != null ? cur.relative_humidity_2m : "—",
+      wind: cur.wind_speed_10m != null ? Math.round(cur.wind_speed_10m) : "—",
+      condition: WMO_DESC[code] ?? "Unknown",
+    };
+
+    if (_activeToolId === "weather") {
+      _renderWeatherTool();
+    }
+  } catch {
+    _setTwemoji(overlay, "🌡️");
+    if (_activeToolId === "weather") {
+      const hint = document.getElementById("weather-tool-hint");
+      if (hint) hint.textContent = "Could not load weather data.";
+    }
+  }
+}
+
+function clearWeatherEmoji() {
+  _currentWeatherProv = null;
+  _lastWeatherInfo = null;
+  const overlay = document.getElementById("weather-overlay");
+  if (overlay) overlay.classList.remove("is-visible");
+}
 
 // ── Helpers ────────────────────────────────────────────────────
 function fitTransform(w, h) {
@@ -659,6 +308,602 @@ function _regionFlagUrl(region) {
     : null;
 }
 
+// ── Sidebar title helper ───────────────────────────────────────
+function setSidebarTitle(text) {
+  const el = document.getElementById("sidebar-title");
+  if (el) el.textContent = text;
+}
+
+// ── Tools home ─────────────────────────────────────────────────
+const TOOLS = [
+  {
+    id: "explore",
+    icon: "🗺️",
+    color: "#dbeafe",
+    title: "Explore",
+    desc: "Search and browse all 81 provinces by region.",
+  },
+  {
+    id: "weather",
+    icon: "🌤️",
+    color: "#e0f2fe",
+    title: "Weather",
+    desc: "Show live weather on selected provinces.",
+  },
+  {
+    id: "quiz",
+    icon: "🧠",
+    color: "#ede9fe",
+    title: "Province Quiz",
+    desc: "Test how well you know Philippine geography.",
+  },
+  {
+    id: "facts",
+    icon: "✨",
+    color: "#fef3c7",
+    title: "Fun Facts",
+    desc: "Discover trivias about the Philippines.",
+  },
+  {
+    id: "travel",
+    icon: "✈️",
+    color: "#f0fdf4",
+    title: "Travel Level",
+    desc: "Track how well you've explored.",
+  },
+];
+
+function showToolsHome() {
+  _activeToolId = null;
+  clearWeatherEmoji();
+  _clearQuizHighlight();
+  _clearTravelColors();
+  setSidebarTitle("Tools");
+  document.getElementById("info-panel").innerHTML = `
+    <div class="tools-list">
+      ${TOOLS.map((t) => `
+        <button class="tool-card" data-tool="${t.id}">
+          <span class="tool-icon" style="background:${t.color}">
+            <span class="tool-emoji">${t.icon}</span>
+          </span>
+          <span class="tool-body">
+            <span class="tool-title">${t.title}</span>
+            <span class="tool-desc">${t.desc}</span>
+          </span>
+          <span class="tool-chevron">›</span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+  document.querySelectorAll(".tool-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      if (card.dataset.tool === "explore") showIdlePanel();
+      else if (card.dataset.tool === "weather") showWeatherTool();
+      else if (card.dataset.tool === "quiz") showQuizTool();
+      else if (card.dataset.tool === "facts") showFactsTool();
+      else if (card.dataset.tool === "travel") showTravelTool();
+    });
+  });
+}
+
+// ── Weather tool ───────────────────────────────────────────────
+function showWeatherTool() {
+  _activeToolId = "weather";
+  _lastWeatherInfo = null;
+  setSidebarTitle("Weather");
+  _clearQuizHighlight();
+  _renderWeatherTool();
+  // If a province is already selected, fetch its weather right away
+  if (_selectedGroup) {
+    fetchAndShowWeather(d3.select(_selectedGroup).datum());
+  }
+}
+
+function _renderWeatherTool() {
+  const hintText = "Select a province to see its weather.";
+  const emojiChecked = _weatherEmojiEnabled ? "true" : "false";
+
+  const provCard = _lastWeatherInfo ? `
+    <div class="weather-prov-card">
+      <div class="weather-prov-header">
+        <span class="weather-prov-name">${escapeHtml(_lastWeatherInfo.prov)}</span>
+        <span class="weather-prov-region">${escapeHtml(_lastWeatherInfo.region)}</span>
+      </div>
+      <div class="weather-prov-main">
+        <span class="weather-prov-emoji-wrap" id="weather-prov-emoji-el">${_lastWeatherInfo.emoji}</span>
+        <div class="weather-prov-temp-block">
+          <span class="weather-prov-temp">${_lastWeatherInfo.temp}°C</span>
+          <span class="weather-prov-cond">${escapeHtml(_lastWeatherInfo.condition)}</span>
+        </div>
+      </div>
+      <div class="weather-prov-grid">
+        <div class="weather-prov-stat">
+          <span class="weather-prov-stat-label">Feels like</span>
+          <span class="weather-prov-stat-val">${_lastWeatherInfo.feelsLike}°C</span>
+        </div>
+        <div class="weather-prov-stat">
+          <span class="weather-prov-stat-label">Humidity</span>
+          <span class="weather-prov-stat-val">${_lastWeatherInfo.humidity}%</span>
+        </div>
+        <div class="weather-prov-stat">
+          <span class="weather-prov-stat-label">Wind</span>
+          <span class="weather-prov-stat-val">${_lastWeatherInfo.wind} km/h</span>
+        </div>
+      </div>
+    </div>
+  ` : "";
+
+  document.getElementById("info-panel").innerHTML = `
+    <button class="tool-back-btn" id="weather-back">‹ Back</button>
+    <div class="weather-tool-body">
+      <div class="weather-tool-icon">🌤️</div>
+      <div class="weather-tool-row">
+        <span class="weather-tool-label">Show emoji on map</span>
+        <button class="sp-toggle" id="weather-emoji-toggle" role="switch"
+          aria-checked="${emojiChecked}" title="Toggle map emoji">
+          <span class="sp-toggle-track"><span class="sp-toggle-thumb"></span></span>
+        </button>
+      </div>
+      <p class="weather-tool-hint" id="weather-tool-hint">${hintText}</p>
+      ${provCard}
+    </div>
+  `;
+
+  if (_lastWeatherInfo) {
+    const emojiEl = document.getElementById("weather-prov-emoji-el");
+    if (emojiEl && typeof twemoji !== "undefined") {
+      twemoji.parse(emojiEl, { folder: "svg", ext: ".svg" });
+    }
+  }
+
+  document.getElementById("weather-back").addEventListener("click", () => {
+    _activeToolId = null;
+    _lastWeatherInfo = null;
+    showToolsHome();
+  });
+
+  document.getElementById("weather-emoji-toggle").addEventListener("click", function () {
+    _weatherEmojiEnabled = !_weatherEmojiEnabled;
+    this.setAttribute("aria-checked", String(_weatherEmojiEnabled));
+    if (_weatherEmojiEnabled && _lastWeatherInfo && _currentWeatherProv) {
+      const overlay = document.getElementById("weather-overlay");
+      if (overlay) overlay.classList.add("is-visible");
+      _positionWeatherOverlay(_currentWeatherProv);
+    } else {
+      const overlay = document.getElementById("weather-overlay");
+      if (overlay) overlay.classList.remove("is-visible");
+    }
+  });
+}
+
+// ── Province Quiz ──────────────────────────────────────────────
+let _quizScore = { correct: 0, total: 0 };
+let _quizHighlight = null;
+
+function _clearQuizHighlight() {
+  if (_quizHighlight) {
+    d3.select(_quizHighlight).classed("is-quiz", false);
+    _quizHighlight = null;
+  }
+}
+
+function showQuizTool() {
+  _quizScore = { correct: 0, total: 0 };
+  _renderQuizQuestion();
+}
+
+function _renderQuizQuestion() {
+  setSidebarTitle("Province Quiz");
+  const allProvinces = Object.keys(PROVINCE_REGION);
+  const prov = allProvinces[Math.floor(Math.random() * allProvinces.length)];
+  const correctRegion = PROVINCE_REGION[prov];
+  const allRegions = [...new Set(Object.values(PROVINCE_REGION))];
+  const wrongs = allRegions
+    .filter((r) => r !== correctRegion)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3);
+  const choices = [...wrongs, correctRegion].sort(() => Math.random() - 0.5);
+
+  // Highlight province on map
+  _clearQuizHighlight();
+  const grp = _g.selectAll(".province-group").filter((d) => d.id === prov).node();
+  if (grp) {
+    d3.select(grp).classed("is-quiz", true).raise();
+    _quizHighlight = grp;
+  }
+
+  document.getElementById("info-panel").innerHTML = `
+    <button class="tool-back-btn" id="quiz-back">‹ Back</button>
+    <div class="quiz-score-bar">
+      <span class="quiz-score-label">Score</span>
+      <span class="quiz-score-val">${_quizScore.correct} / ${_quizScore.total}</span>
+    </div>
+    <div class="quiz-question">
+      <div class="quiz-q-sub">Which region is</div>
+      <div class="quiz-q-prov">${escapeHtml(prov)}</div>
+      <div class="quiz-q-sub">located in?</div>
+    </div>
+    <div class="quiz-choices">
+      ${choices.map((c) => `
+        <button class="quiz-choice" data-correct="${c === correctRegion}">
+          ${escapeHtml(c)}
+        </button>
+      `).join("")}
+    </div>
+  `;
+
+  document.getElementById("quiz-back").addEventListener("click", () => {
+    _clearQuizHighlight();
+    showToolsHome();
+  });
+
+  document.querySelectorAll(".quiz-choice").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const correct = btn.dataset.correct === "true";
+      _quizScore.total++;
+      if (correct) _quizScore.correct++;
+      document.querySelectorAll(".quiz-choice").forEach((b) => {
+        b.disabled = true;
+        if (b.dataset.correct === "true") b.classList.add("is-correct");
+        else if (b === btn) b.classList.add("is-wrong");
+      });
+      setTimeout(() => {
+        _clearQuizHighlight();
+        _renderQuizQuestion();
+      }, 1300);
+    });
+  });
+}
+
+// ── Fun Facts ──────────────────────────────────────────────────
+const FUN_FACTS = [
+  { prov: "Batanes", fact: "Batanes is the northernmost province of the Philippines. Its iconic stone houses were built to withstand fierce typhoons that tear through the island chain." },
+  { prov: "Palawan", fact: "Puerto Princesa Subterranean River in Palawan is one of the New Seven Wonders of Nature — a navigable underground river flowing 8.2 km through a cave to the sea." },
+  { prov: "Cebu", fact: "Cebu hosted the first Spanish settlement in the Philippines in 1565, making it the oldest established city in the country." },
+  { prov: "Ilocos Norte", fact: "The Bangui Windmills in Ilocos Norte stretch along 1.8 km of coastline and supply a significant portion of the province's electricity needs." },
+  { prov: "Ifugao", fact: "The Banaue Rice Terraces in Ifugao are over 2,000 years old, carved into the Cordillera mountains by the Ifugao people — often called the 8th Wonder of the World." },
+  { prov: "Camarines Sur", fact: "CamSur Watersports Complex in Camarines Sur is one of the largest cable wakeboarding parks in Asia, drawing athletes from around the world." },
+  { prov: "Tawi-Tawi", fact: "Tawi-Tawi is the southernmost province of the Philippines — geographically closer to Malaysia's Sabah state than to Manila." },
+  { prov: "Laguna", fact: "The Laguna Copperplate Inscription, found in 1989, is the oldest known written document discovered in the Philippines, dated to 900 CE." },
+  { prov: "Pampanga", fact: "Pampanga is the 'Culinary Capital of the Philippines', the origin of beloved dishes like sisig, tocino, and morcon." },
+  { prov: "Benguet", fact: "Benguet supplies most of the country's cut flowers and ornamental plants, earning it the nickname 'Salad Bowl of the Philippines'." },
+  { prov: "Leyte", fact: "The Battle of Leyte Gulf in October 1944 was the largest naval battle in history by number of ships engaged — a turning point in WWII's Pacific Theater." },
+  { prov: "Masbate", fact: "Masbate is known as the 'Rodeo Capital of the Philippines' and holds an annual festival where cowboys compete in cattle-wrangling events." },
+  { prov: "Surigao del Norte", fact: "Sohoton Cove in Surigao del Norte is home to millions of stingless jellyfish. At night, the lagoon glows with natural bioluminescence." },
+  { prov: "Quezon", fact: "Quezon province is home to the Quezon National Park, a refuge for Philippine wildlife including the endangered Philippine eagle." },
+  { prov: "Mountain Province", fact: "Sagada in Mountain Province is famous for its Hanging Coffins — ancient burial practice where coffins are literally suspended on cliff faces." },
+];
+
+let _factIndex = 0;
+
+function showFactsTool() {
+  _factIndex = Math.floor(Math.random() * FUN_FACTS.length);
+  _renderFact();
+}
+
+function _renderFact() {
+  setSidebarTitle("Fun Facts");
+  const f = FUN_FACTS[_factIndex];
+
+  // Highlight the province on the map
+  _clearQuizHighlight();
+  const grp = _g.selectAll(".province-group").filter((d) => d.id === f.prov).node();
+  if (grp) {
+    d3.select(grp).classed("is-quiz", true).raise();
+    _quizHighlight = grp;
+  }
+
+  document.getElementById("info-panel").innerHTML = `
+    <button class="tool-back-btn" id="facts-back">‹ Back</button>
+    <div class="fact-card">
+      <div class="fact-prov">${escapeHtml(f.prov)}</div>
+      <div class="fact-text">${escapeHtml(f.fact)}</div>
+    </div>
+    <div class="fact-nav">
+      <span class="fact-counter">${_factIndex + 1} / ${FUN_FACTS.length}</span>
+      <button class="fact-next-btn" id="fact-next">Next Fact →</button>
+    </div>
+  `;
+
+  document.getElementById("facts-back").addEventListener("click", () => {
+    _clearQuizHighlight();
+    showToolsHome();
+  });
+
+  document.getElementById("fact-next").addEventListener("click", () => {
+    _factIndex = (_factIndex + 1) % FUN_FACTS.length;
+    _renderFact();
+  });
+}
+
+// ── Travel Level tool ──────────────────────────────────────────
+const TRAVEL_LEVELS = [
+  { id: "lived",    label: "Lived",    color: "#7c3aed", weight: 5, desc: "Spent a significant part of life here" },
+  { id: "stayed",   label: "Stayed",   color: "#2563eb", weight: 4, desc: "Slept at least one night" },
+  { id: "visited",  label: "Visited",  color: "#0891b2", weight: 3, desc: "Spent hours exploring" },
+  { id: "alighted", label: "Alighted", color: "#16a34a", weight: 2, desc: "Short stopover or transfer" },
+  { id: "passed",   label: "Passed",   color: "#d97706", weight: 1, desc: "Passed through, never set foot" },
+];
+
+const _LUZON_REGIONS    = ["Region I — Ilocos","Region II — Cagayan Valley","Region III — Central Luzon","Region IVA — Calabarzon","MIMAROPA","Region V — Bicol","NCR — National Capital Region","CAR"];
+const _VISAYAS_REGIONS  = ["Region VI — Western Visayas","Region VII — Central Visayas","Region VIII — Eastern Visayas"];
+const _MINDANAO_REGIONS = ["Region IX — Zamboanga Peninsula","Region X — Northern Mindanao","Region XI — Davao Region","Region XII — SOCCSKSARGEN","Region XIII — Caraga","BARMM"];
+
+function _travelProvsByRegions(regions) {
+  return Object.entries(PROVINCE_REGION).filter(([, r]) => regions.includes(r)).map(([p]) => p);
+}
+
+const TRAVEL_ACHIEVEMENTS = [
+  { id: "first",   icon: "👣", title: "First Steps",        desc: "Log your first province",
+    progress: m => ({ n: Math.min(Object.keys(m).length, 1), total: 1 }) },
+  { id: "ten",     icon: "🗺️", title: "Wanderer",           desc: "Log 10 provinces",
+    progress: m => ({ n: Math.min(Object.keys(m).length, 10), total: 10 }) },
+  { id: "twenty5", icon: "🌟", title: "Trailblazer",        desc: "Log 25 provinces",
+    progress: m => ({ n: Math.min(Object.keys(m).length, 25), total: 25 }) },
+  { id: "fifty",   icon: "🏅", title: "Half the Map",       desc: "Log 50 provinces",
+    progress: m => ({ n: Math.min(Object.keys(m).length, 50), total: 50 }) },
+  { id: "home",    icon: "🏠", title: "Called It Home",     desc: "Mark at least one province as Lived",
+    progress: m => ({ n: Object.values(m).some(v => v === "lived") ? 1 : 0, total: 1 }) },
+  { id: "luzon",   icon: "🏆", title: "Luzon Explorer",     desc: "Log all Luzon provinces",
+    progress: m => { const p = _travelProvsByRegions(_LUZON_REGIONS);    return { n: p.filter(x => m[x]).length, total: p.length }; } },
+  { id: "visayas", icon: "🏆", title: "Visayas Voyager",    desc: "Log all Visayas provinces",
+    progress: m => { const p = _travelProvsByRegions(_VISAYAS_REGIONS);  return { n: p.filter(x => m[x]).length, total: p.length }; } },
+  { id: "mndnao",  icon: "🦅", title: "Mindanao Eagle",     desc: "Log all Mindanao provinces",
+    progress: m => { const p = _travelProvsByRegions(_MINDANAO_REGIONS); return { n: p.filter(x => m[x]).length, total: p.length }; } },
+  { id: "car",     icon: "⛰️", title: "Highland Bound",     desc: "Log all Cordillera provinces",
+    progress: m => { const p = _travelProvsByRegions(["CAR"]);   return { n: p.filter(x => m[x]).length, total: p.length }; } },
+  { id: "barmm",   icon: "🕌", title: "BARMM Brave",        desc: "Log all BARMM provinces",
+    progress: m => { const p = _travelProvsByRegions(["BARMM"]); return { n: p.filter(x => m[x]).length, total: p.length }; } },
+  { id: "legend",  icon: "🇵🇭", title: "Philippine Legend", desc: "Log all 83 provinces",
+    progress: m => { const t = Object.keys(PROVINCE_REGION).length; return { n: Math.min(Object.keys(m).length, t), total: t }; } },
+];
+
+function _travelLoad() {
+  try {
+    const raw = localStorage.getItem("geopinas-travel");
+    if (raw) _travelMap = JSON.parse(raw);
+  } catch { /* ignore */ }
+}
+
+function _travelSave() {
+  try { localStorage.setItem("geopinas-travel", JSON.stringify(_travelMap)); } catch { /* ignore */ }
+}
+
+function _travelSetLevel(provId, levelId) {
+  if (levelId) _travelMap[provId] = levelId;
+  else delete _travelMap[provId];
+  _travelSave();
+  _applyTravelColors();
+}
+
+function _applyTravelColors() {
+  if (!_g) return;
+  _g.selectAll(".province-group").each(function(d) {
+    const lvl = _travelMap[d.id];
+    TRAVEL_LEVELS.forEach(l => d3.select(this).classed(`is-tl-${l.id}`, lvl === l.id));
+  });
+}
+
+function _clearTravelColors() {
+  if (!_g) return;
+  _g.selectAll(".province-group").each(function() {
+    TRAVEL_LEVELS.forEach(l => d3.select(this).classed(`is-tl-${l.id}`, false));
+  });
+  _closeTravelPicker();
+}
+
+function _travelScore() {
+  const all = Object.keys(PROVINCE_REGION);
+  let sum = 0, logged = 0;
+  for (const p of all) {
+    const lvl = _travelMap[p];
+    if (lvl) { logged++; sum += TRAVEL_LEVELS.find(l => l.id === lvl)?.weight ?? 0; }
+  }
+  return { score: Math.round(sum / (all.length * 5) * 1000) / 10, logged, total: all.length };
+}
+
+function showTravelTool() {
+  _activeToolId = "travel";
+  _clearQuizHighlight();
+  clearWeatherEmoji();
+  _applyTravelColors();
+  setSidebarTitle("Travel Level");
+  _renderTravelOverview();
+}
+
+function _renderTravelOverview() {
+  if (_selectedGroup) {
+    d3.select(_selectedGroup).classed("is-selected", false);
+    _selectedGroup = null;
+  }
+
+  const { score, logged, total } = _travelScore();
+
+  const legendHtml = TRAVEL_LEVELS.map(l => `
+    <span class="tl-legend-item">
+      <span class="tl-legend-dot" style="background:${l.color}"></span>
+      <span class="tl-legend-label">${l.label}</span>
+    </span>
+  `).join("");
+
+  const achieveHtml = TRAVEL_ACHIEVEMENTS.map(a => {
+    const { n, total: t } = a.progress(_travelMap);
+    const unlocked = n >= t;
+    return `
+      <div class="tl-achieve${unlocked ? " is-unlocked" : ""}">
+        <span class="tl-achieve-icon">${a.icon}</span>
+        <div class="tl-achieve-body">
+          <span class="tl-achieve-title">${escapeHtml(a.title)}</span>
+          <span class="tl-achieve-desc">${escapeHtml(a.desc)}</span>
+        </div>
+        <span class="tl-achieve-progress">${n}/${t}</span>
+      </div>
+    `;
+  }).join("");
+
+  document.getElementById("info-panel").innerHTML = `
+    <button class="tool-back-btn" id="tl-back">‹ Back</button>
+    <div class="tl-body">
+      <div class="tl-score-wrap">
+        <span class="tl-score-num">${score}<span class="tl-score-pct">%</span></span>
+        <span class="tl-score-label">${logged} of ${total} provinces logged</span>
+      </div>
+      <div class="tl-progress-bar-wrap">
+        <div class="tl-progress-bar">
+          <div class="tl-progress-fill" style="width:${score}%"></div>
+        </div>
+      </div>
+      <div class="tl-legend">${legendHtml}</div>
+      <p class="tl-hint">Tap a province on the map to set your travel level.</p>
+      <div class="tl-achieve-header">Achievements</div>
+      <div class="tl-achieve-list">${achieveHtml}</div>
+      <div class="tl-reset-wrap">
+        <button class="tl-reset-btn" id="tl-reset-btn" title="Hold to reset all travel data">
+          <span class="tl-reset-label">Hold to Reset</span>
+          <span class="tl-reset-bar"><span class="tl-reset-fill" id="tl-reset-fill"></span></span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("tl-back").addEventListener("click", () => {
+    _activeToolId = null;
+    _clearTravelColors();
+    showToolsHome();
+  });
+
+  // Hold-to-reset: 3 seconds
+  const resetBtn = document.getElementById("tl-reset-btn");
+  const resetFill = document.getElementById("tl-reset-fill");
+  const HOLD_MS = 3000;
+  let _holdStart = null;
+  let _holdRaf = null;
+
+  function _holdTick() {
+    const elapsed = Date.now() - _holdStart;
+    const pct = Math.min(elapsed / HOLD_MS * 100, 100);
+    resetFill.style.width = pct + "%";
+    if (pct < 100) {
+      _holdRaf = requestAnimationFrame(_holdTick);
+    } else {
+      _travelMap = {};
+      _travelSave();
+      _applyTravelColors();
+      _renderTravelOverview();
+    }
+  }
+
+  function _startHold() {
+    _holdStart = Date.now();
+    resetBtn.classList.add("is-holding");
+    _holdRaf = requestAnimationFrame(_holdTick);
+  }
+
+  function _cancelHold() {
+    if (_holdRaf) cancelAnimationFrame(_holdRaf);
+    _holdRaf = null;
+    _holdStart = null;
+    resetFill.style.width = "0%";
+    resetBtn.classList.remove("is-holding");
+  }
+
+  resetBtn.addEventListener("mousedown", _startHold);
+  resetBtn.addEventListener("touchstart", (e) => { e.preventDefault(); _startHold(); }, { passive: false });
+  resetBtn.addEventListener("mouseup", _cancelHold);
+  resetBtn.addEventListener("mouseleave", _cancelHold);
+  resetBtn.addEventListener("touchend", _cancelHold);
+  resetBtn.addEventListener("touchcancel", _cancelHold);
+}
+
+function _closeTravelPicker() {
+  const popup = document.getElementById("tl-picker-popup");
+  if (popup) {
+    popup.classList.remove("is-visible");
+    popup.innerHTML = "";
+  }
+}
+
+function _renderTravelPicker(d, event) {
+  const provId = d.id;
+  const current = _travelMap[provId];
+  const region = PROVINCE_REGION[provId] ?? "";
+
+  const levelsHtml = TRAVEL_LEVELS.map(l => `
+    <button class="tl-level-btn${current === l.id ? " is-active" : ""}" data-level="${l.id}"
+      style="--tl-color:${l.color}">
+      <span class="tl-level-dot"></span>
+      <span class="tl-level-body">
+        <span class="tl-level-label">${l.label}</span>
+        <span class="tl-level-desc">${l.desc}</span>
+      </span>
+      ${current === l.id ? `<span class="tl-level-check">✓</span>` : ""}
+    </button>
+  `).join("");
+
+  const popup = document.getElementById("tl-picker-popup");
+  popup.innerHTML = `
+    <div class="tl-popup-header">
+      <div class="tl-popup-prov">
+        <span class="tl-picker-name">${escapeHtml(provId)}</span>
+        <span class="tl-picker-region">${escapeHtml(region)}</span>
+      </div>
+      <button class="tl-popup-close" id="tl-popup-close" aria-label="Close">✕</button>
+    </div>
+    <div class="tl-levels-list">${levelsHtml}</div>
+    ${current ? `<button class="tl-clear-btn" id="tl-clear">Remove level</button>` : ""}
+  `;
+
+  // Position near clicked province, keeping popup inside map bounds
+  const wrap = document.getElementById("map-wrap");
+  const wrapRect = wrap.getBoundingClientRect();
+  const popupW = 240;
+  const popupH = 320;
+  let x, y;
+
+  if (event) {
+    x = event.clientX - wrapRect.left + 12;
+    y = event.clientY - wrapRect.top - 20;
+  } else {
+    const pos = _getProvScreenPos(d);
+    x = pos ? pos.x + 12 : wrapRect.width / 2;
+    y = pos ? pos.y - 20 : wrapRect.height / 2;
+  }
+
+  // Clamp inside map
+  x = Math.min(Math.max(x, 8), wrapRect.width - popupW - 8);
+  y = Math.min(Math.max(y, 8), wrapRect.height - popupH - 8);
+
+  popup.style.left = x + "px";
+  popup.style.top = y + "px";
+  popup.classList.add("is-visible");
+  popup.removeAttribute("aria-hidden");
+
+  document.getElementById("tl-popup-close").addEventListener("click", (e) => {
+    e.stopPropagation();
+    _closeTravelPicker();
+    if (_selectedGroup) {
+      d3.select(_selectedGroup).classed("is-selected", false);
+      _selectedGroup = null;
+    }
+  });
+
+  popup.querySelectorAll(".tl-level-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      _travelSetLevel(provId, btn.dataset.level);
+      _renderTravelOverview();
+      _renderTravelPicker(d, null);
+    });
+  });
+
+  popup.querySelector("#tl-clear")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    _travelSetLevel(provId, null);
+    _renderTravelOverview();
+    _renderTravelPicker(d, null);
+  });
+}
+
 // ── Map init ───────────────────────────────────────────────────
 function initMap() {
   const container = document.getElementById("map-wrap");
@@ -669,30 +914,31 @@ function initMap() {
   // ── Ocean background: solid base + chevron wave pattern ──────
   const defs = _svg.append("defs");
 
-  // Chevron wave tile: 16×8px, two-tone subtle ripple
+  // Chevron wave tile: 32×16px, sparse subtle ripple
   const pat = defs
     .append("pattern")
     .attr("id", "ocean-wave")
     .attr("x", 0)
     .attr("y", 0)
-    .attr("width", 16)
-    .attr("height", 8)
+    .attr("width", 32)
+    .attr("height", 16)
     .attr("patternUnits", "userSpaceOnUse");
 
-  // Base fill for the tile (slightly lighter stripe)
+  // Base fill for the tile (transparent — lets ocean-bg show through)
   pat
     .append("rect")
-    .attr("width", 16)
-    .attr("height", 8)
-    .attr("fill", "#5087df");
+    .attr("width", 32)
+    .attr("height", 16)
+    .attr("fill", "none");
 
   // Chevron path: /\/\ drawn as a stroke
   pat
     .append("path")
-    .attr("d", "M0 6 L4 2 L8 6 L12 2 L16 6")
+    .attr("d", "M0 12 L8 4 L16 12 L24 4 L32 12")
     .attr("fill", "none")
-    .attr("stroke", "#3171e0")
-    .attr("stroke-width", 1.3)
+    .attr("stroke", "#5087df")
+    .attr("stroke-opacity", "0.35")
+    .attr("stroke-width", 1)
     .attr("stroke-linecap", "round")
     .attr("stroke-linejoin", "round");
 
@@ -743,17 +989,25 @@ function initMap() {
   // ── D3 Zoom & Pan ─────────────────────────────────────────
   const initT = fitTransform(width, height);
 
-  // Allow panning up to 40% of the map dimensions off-screen in any direction
-  const panPadX = MAP_W * 0.4;
-  const panPadY = MAP_H * 0.4;
+  // Pad in data-space so at the fit zoom the map can slide ~85% of
+  // a viewport dimension off-screen in any direction before clamping.
+  function calcPad(w, h, k) {
+    return { x: (w * 0.85) / k, y: (h * 0.85) / k };
+  }
+  let pad = calcPad(width, height, initT.k);
+
+  function applyTranslateExtent(w, h, k) {
+    const p = calcPad(w, h, k);
+    pad = p;
+    _zoom.translateExtent([
+      [-p.x, -p.y],
+      [MAP_W + p.x, MAP_H + p.y],
+    ]);
+  }
 
   _zoom = d3
     .zoom()
     .scaleExtent([initT.k * 0.75, initT.k * 15])
-    .translateExtent([
-      [-panPadX, -panPadY],
-      [MAP_W + panPadX, MAP_H + panPadY],
-    ])
     .on("start", () => {
       _wasDragging = false;
       container.classList.add("is-dragging");
@@ -768,22 +1022,37 @@ function initMap() {
         _wasDragging = true;
       }
       _g.attr("transform", event.transform);
+      updateWeatherEmojiPosition();
     })
     .on("end", () => {
       container.classList.remove("is-dragging");
     });
 
   _svg.call(_zoom).on("dblclick.zoom", null);
+  applyTranslateExtent(width, height, initT.k);
   _svg.call(_zoom.transform, initT);
   _svg.on("dblclick", resetZoom);
 
   // Clicking the ocean (not a province) deselects any selected province
   _svg.on("click.deselect", () => {
     if (_wasDragging) return;
+    // Always close the travel picker on any ocean click
+    if (_activeToolId === "travel") {
+      _closeTravelPicker();
+    }
     if (_selectedGroup) {
       d3.select(_selectedGroup).classed("is-selected", false);
       _selectedGroup = null;
-      showIdlePanel();
+      if (_activeToolId === "weather") {
+        clearWeatherEmoji();
+        _renderWeatherTool();
+      } else if (_activeToolId === "explore") {
+        // stay on explore panel, nothing to update
+      } else if (_activeToolId === "travel") {
+        // already handled above
+      } else {
+        showToolsHome();
+      }
     }
   });
 
@@ -795,10 +1064,7 @@ function initMap() {
     const { width: w, height: h } = container.getBoundingClientRect();
     const t = fitTransform(w, h);
     _zoom.scaleExtent([t.k * 0.75, t.k * 15]);
-    _zoom.translateExtent([
-      [-panPadX, -panPadY],
-      [MAP_W + panPadX, MAP_H + panPadY],
-    ]);
+    applyTranslateExtent(w, h, t.k);
     _svg.transition().duration(380).call(_zoom.transform, t);
   }
 
@@ -820,10 +1086,7 @@ function initMap() {
     _svg.select("#ocean-pattern").attr("width", w).attr("height", h);
     const t = fitTransform(w, h);
     _zoom.scaleExtent([t.k * 0.75, t.k * 15]);
-    _zoom.translateExtent([
-      [-panPadX, -panPadY],
-      [MAP_W + panPadX, MAP_H + panPadY],
-    ]);
+    applyTranslateExtent(w, h, t.k);
     _svg.call(_zoom.transform, t);
   });
 }
@@ -857,17 +1120,37 @@ function onProvinceClick(event, d) {
     _selectedGroup = null;
   }
   if (isSame) {
-    showIdlePanel();
+    if (_activeToolId === "weather") {
+      // Stay on weather tool, just clear the province card
+      clearWeatherEmoji();
+      _renderWeatherTool();
+    } else if (_activeToolId === "explore") {
+      showIdlePanel();
+    } else if (_activeToolId === "travel") {
+      _closeTravelPicker();
+    } else {
+      showToolsHome();
+    }
     return;
   }
 
   _selectedGroup = this;
   d3.select(this).classed("is-selected", true).raise();
-  showProvinceInfo(d);
+
+  if (_activeToolId === "weather") {
+    fetchAndShowWeather(d);
+  } else if (_activeToolId === "travel") {
+    _renderTravelPicker(d, event);
+  } else {
+    showProvinceInfo(d);
+  }
 }
 
 // ── Sidebar ────────────────────────────────────────────────────
 function showIdlePanel() {
+  _activeToolId = "explore";
+  clearWeatherEmoji();
+  setSidebarTitle("Explore");
   // Build region → sorted provinces map
   const regionMap = {};
   Object.entries(PROVINCE_REGION).forEach(([prov, region]) => {
@@ -878,6 +1161,7 @@ function showIdlePanel() {
   const allProvs = Object.keys(PROVINCE_REGION).sort();
 
   document.getElementById("info-panel").innerHTML = `
+    <button class="tool-back-btn" id="explore-back">‹ Back</button>
     <div class="idle-sticky">
       <div class="idle-search-wrap">
         <input id="idle-search" class="idle-search" type="text"
@@ -918,6 +1202,8 @@ function showIdlePanel() {
   }
 
   renderProvList();
+
+  document.getElementById("explore-back").addEventListener("click", showToolsHome);
 
   // ── Region dropdown ──────────────────────────────────────
   const dropBtn = document.getElementById("idle-dropdown-btn");
@@ -1023,6 +1309,11 @@ function selectProvinceById(id) {
 }
 
 function showProvinceInfo(prov) {
+  _activeToolId = null;
+  setSidebarTitle(prov.id);
+  _clearQuizHighlight();
+  clearWeatherEmoji();
+
   const region = PROVINCE_REGION[prov.id] || "";
   const provFlagSrc = _provFlagUrl(prov.id);
   const regFlagSrc = region ? _regionFlagUrl(region) : null;
@@ -1030,7 +1321,7 @@ function showProvinceInfo(prov) {
   const initialSrc = provFlagSrc ?? regFlagSrc;
 
   document.getElementById("info-panel").innerHTML = `
-    <button class="info-back" aria-label="Back to region list">‹ Back</button>
+    <button class="info-back" aria-label="Back to tools">‹ Back</button>
     <div class="info-header">
       <div class="info-flag-card${initialSrc ? " flag-loading" : ""}" id="info-flag-card"${!initialSrc ? ' style="display:none"' : ""}>
         <img class="info-flag-img" id="info-flag-img"
@@ -1055,7 +1346,7 @@ function showProvinceInfo(prov) {
       d3.select(_selectedGroup).classed("is-selected", false);
       _selectedGroup = null;
     }
-    showIdlePanel();
+    showToolsHome();
   });
 
   if (!initialSrc) return;
@@ -1087,8 +1378,109 @@ function showProvinceInfo(prov) {
 
 // ── Boot ───────────────────────────────────────────────────────
 (function boot() {
+  _travelLoad();
   initMap();
-  showIdlePanel();
+  showToolsHome();
+
+  // ── Settings panel: proximity reveal + toggle open/close ─────
+  const settingsTrigger = document.getElementById("settings-trigger");
+  const settingsBtn = document.getElementById("settings-btn");
+  const mapWrap = document.getElementById("map-wrap");
+
+  // Show gear button when cursor is within ~90px of top-right corner
+  mapWrap.addEventListener("mousemove", (e) => {
+    const rect = mapWrap.getBoundingClientRect();
+    const dx = rect.right - e.clientX;
+    const dy = e.clientY - rect.top;
+    const near = Math.sqrt(dx * dx + dy * dy) < 90;
+    settingsTrigger.classList.toggle("is-near", near);
+  });
+
+  mapWrap.addEventListener("mouseleave", () => {
+    settingsTrigger.classList.remove("is-near");
+  });
+
+  // Toggle panel open/closed on gear button click
+  settingsBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const open = settingsTrigger.classList.toggle("panel-open");
+    settingsBtn.classList.toggle("is-active", open);
+  });
+
+  // Close panel when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!settingsTrigger.contains(e.target)) {
+      settingsTrigger.classList.remove("panel-open");
+      settingsBtn.classList.remove("is-active");
+    }
+  });
+
+  // ── Dark mode toggle ──────────────────────────────────────────
+  const darkToggle = document.getElementById("darkmode-toggle");
+  // Respect device preference on load
+  if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    document.documentElement.setAttribute("data-theme", "dark");
+    darkToggle.setAttribute("aria-checked", "true");
+  }
+  darkToggle.addEventListener("click", () => {
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    document.documentElement.setAttribute("data-theme", isDark ? "light" : "dark");
+    darkToggle.setAttribute("aria-checked", String(!isDark));
+  });
+
+  // ── Sea texture toggle ────────────────────────────────────────
+  const seaToggle = document.getElementById("sea-texture-toggle");
+  seaToggle.addEventListener("click", () => {
+    const on = seaToggle.getAttribute("aria-checked") === "true";
+    seaToggle.setAttribute("aria-checked", String(!on));
+    const pattern = document.getElementById("ocean-pattern");
+    if (pattern) pattern.style.opacity = on ? "0" : "1";
+  });
+
+  // ── Borders toggle ────────────────────────────────────────────
+  const bordersToggle = document.getElementById("borders-toggle");
+  bordersToggle.addEventListener("click", () => {
+    const on = bordersToggle.getAttribute("aria-checked") === "true";
+    bordersToggle.setAttribute("aria-checked", String(!on));
+    document.documentElement.classList.toggle("no-borders", on);
+  });
+
+  // ── Sea color slider ──────────────────────────────────────────
+  const SEA_COLOR_STOPS = [
+    { v: 0,   r: 255, g: 255, b: 255 },
+    { v: 50,  r: 27,  g: 58,  b: 107 },
+    { v: 100, r: 2,   g: 8,   b: 18  },
+  ];
+  const SEA_COLOR_DEFAULT = 50;
+
+  function _seaColor(val) {
+    let lo = SEA_COLOR_STOPS[0], hi = SEA_COLOR_STOPS[SEA_COLOR_STOPS.length - 1];
+    for (let i = 0; i < SEA_COLOR_STOPS.length - 1; i++) {
+      if (val >= SEA_COLOR_STOPS[i].v && val <= SEA_COLOR_STOPS[i + 1].v) {
+        lo = SEA_COLOR_STOPS[i]; hi = SEA_COLOR_STOPS[i + 1]; break;
+      }
+    }
+    const t = hi.v === lo.v ? 0 : (val - lo.v) / (hi.v - lo.v);
+    const r = Math.round(lo.r + (hi.r - lo.r) * t);
+    const g = Math.round(lo.g + (hi.g - lo.g) * t);
+    const b = Math.round(lo.b + (hi.b - lo.b) * t);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function _applySeaColor(val) {
+    const color = _seaColor(val);
+    document.documentElement.style.setProperty("--ocean", color);
+    const bg = document.getElementById("ocean-bg");
+    if (bg) bg.setAttribute("fill", color);
+  }
+
+  const seaColorSlider = document.getElementById("sea-color-slider");
+  const seaColorReset = document.getElementById("sea-color-reset");
+  seaColorSlider.addEventListener("input", () => _applySeaColor(Number(seaColorSlider.value)));
+  seaColorReset.addEventListener("click", () => {
+    seaColorSlider.value = SEA_COLOR_DEFAULT;
+    _applySeaColor(SEA_COLOR_DEFAULT);
+  });
 
   // Sidebar collapse toggle
   const sidebar = document.getElementById("sidebar");
