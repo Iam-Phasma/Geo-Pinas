@@ -2796,6 +2796,79 @@ html:not([data-theme="dark"]) .sp-toggle-track {
 }
 .gg-play-again-btn:hover { opacity: 0.88; }
 
+/* ── Intro screen ── */
+.gg-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 12px 4px 4px;
+  gap: 10px;
+}
+.gg-intro-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+.gg-intro-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+}
+.gg-intro-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+.gg-intro-rules {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  background: var(--accent-light);
+  border-radius: 10px;
+  padding: 10px 14px;
+  text-align: left;
+}
+.gg-intro-rules li {
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.gg-intro-note {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  line-height: 1.45;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+[data-theme="dark"] .gg-intro-note {
+  color: #94a3b8;
+  border-color: #334155;
+  background: #1e293b;
+}
+.gg-start-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: opacity 0.15s;
+  margin-top: 4px;
+}
+.gg-start-btn:hover { opacity: 0.88; }
+
 [data-theme="dark"] .gg-summary-row.is-correct { background: #14532d; color: #bbf7d0; }
 [data-theme="dark"] .gg-summary-row.is-wrong   { background: #7f1d1d; color: #fecaca; }
 

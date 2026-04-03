@@ -297,7 +297,25 @@ function showGeoGuesserTool() {
   _rouletteClearHighlight();
   setSidebarTitle("Local Guesser");
   _ggReset();
-  _ggNewRound();
+  _ggShowIntro();
+}
+
+function _ggShowIntro() {
+  document.getElementById("info-panel").innerHTML = `
+    <div class="gg-intro">
+      <div class="gg-intro-icon">📍</div>
+      <h2 class="gg-intro-title">Local Guesser</h2>
+      <p class="gg-intro-desc">A map view will appear — click the province on the Philippine map that you think it belongs to.</p>
+      <ul class="gg-intro-rules">
+        <li>🕐 <strong>${_GG_TIMER_SECS}s</strong> per round</li>
+        <li>🏁 <strong>${_GG_MAX_ROUNDS} rounds</strong> per game</li>
+        <li>🔍 You can zoom in and slightly out for clues</li>
+      </ul>
+      <p class="gg-intro-note">⚠️ The pin location is approximate — it's generated from a simplified SVG map, so it may not land exactly at the center of the province.</p>
+      <button class="gg-start-btn" id="gg-start-btn">Start Game</button>
+    </div>
+  `;
+  document.getElementById("gg-start-btn").addEventListener("click", _ggNewRound);
 }
 
 function _ggNewRound() {
@@ -453,7 +471,7 @@ function _ggShowSummary() {
   });
   document.getElementById("gg-play-again").addEventListener("click", () => {
     _ggReset();
-    _ggNewRound();
+    _ggShowIntro();
   });
 }
 
