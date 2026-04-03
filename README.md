@@ -1,20 +1,23 @@
 # Geo Pinas
 
-An interactive Philippine province map with explore, weather, travel tracking, quiz, and fun facts tools. Built for fun, free and open source.
+An interactive Philippine province map built for fun, free and open source.
 
 Open: https://iam-phasma.github.io/Geo-Pinas/
 
 ## Features
 
 - All 83 Philippine provinces (including Metro Manila as NCR)
-- **Explore** — browse and search provinces by region
-- **Weather** — live weather conditions per province via Open-Meteo
-- **Travel Level** — track how well you've visited each province, with a score, progress bar, and achievements
+- **Explore** — browse and search provinces by region, with Wikipedia summaries and flags
+- **Weather** — live weather conditions per province via Open-Meteo with emoji overlays
+- **Travel Level** — track how well you've visited each province, with score, progress bar, achievements, and a downloadable travel postcard snapshot
+- **Travel Postcard Snap** — generates a stamp-style postcard image with your map, score, legend, compass overlay, and date — downloadable as PNG
 - **Province Quiz** — test your knowledge of Philippine provinces
-- **Fun Facts** — random facts about selected provinces
-- Map customization: sea color, land color, border color, sea texture, province borders toggle
+- **Geo Guesser** — guess the province from the map shape
+- **Roulette** — spin to pick a random province
+- Map customization: sea color, land color, border color, sea texture toggle, province borders toggle
 - Dark / light mode (respects device preference, persists across sessions)
 - Zoom and pan with mouse / touch or the +/⊙/− buttons
+- Visitor counter powered by Convex
 
 ## Tech Stack
 
@@ -22,7 +25,13 @@ Open: https://iam-phasma.github.io/Geo-Pinas/
 - [Twemoji](https://github.com/twitter/twemoji) — emoji weather icons
 - [Open-Meteo API](https://open-meteo.com/) — free weather data (no API key required)
 - [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/) — province summaries
+- [Convex](https://convex.dev) — serverless backend for visitor tracking
+- Canvas API — travel postcard snapshot rendering with 2× supersampling
 - Vanilla JS + SVG — no framework, no build step
+
+## AI-Assisted Development
+
+This project was built in close collaboration with **GitHub Copilot** (powered by Claude Sonnet). AI was used heavily throughout.
 
 ## Inspiration & Credits
 

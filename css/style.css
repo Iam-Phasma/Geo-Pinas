@@ -82,13 +82,15 @@
   color: var(--accent-dark);
 }
 
-[data-theme="dark"] #zoom-controls button {
+[data-theme="dark"] #zoom-controls button,
+[data-theme="dark"] #settings-btn {
   background: #1e293b;
   border-color: #334155;
   color: var(--text-muted);
 }
 
-[data-theme="dark"] #zoom-controls button:hover {
+[data-theme="dark"] #zoom-controls button:hover,
+[data-theme="dark"] #settings-btn:hover {
   background: var(--accent-light);
   color: var(--accent);
   border-color: var(--accent);
@@ -935,7 +937,153 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   color: var(--accent);
 }
 
-/* ── Province Quiz ─────────────────────────────────────── */
+.tl-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.tl-top-row .tool-back-btn {
+  margin-bottom: 0;
+}
+
+.tl-snap-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card, var(--bg-sidebar));
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.tl-snap-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tl-snap-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Snap postcard preview modal ─────────────────────────── */
+#snap-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.74);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.snap-preview-modal {
+  background: var(--bg-sidebar, #181c24);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+}
+
+.snap-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.snap-preview-title {
+  font-family: var(--font);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.snap-preview-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px 7px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.snap-preview-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.snap-preview-img-wrap {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1e293b;
+  padding: 20px;
+}
+
+.snap-preview-img {
+  display: block;
+  max-width: min(820px, 80vw);
+  height: auto;
+  border-radius: 8px;
+}
+
+.snap-preview-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.snap-preview-cancel {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.snap-preview-cancel:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.snap-preview-download {
+  background: var(--accent, #3b82f6);
+  border: none;
+  border-radius: 8px;
+  padding: 7px 18px;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.snap-preview-download:hover {
+  opacity: 0.88;
+}
+
+
 .quiz-score-bar {
   display: flex;
   align-items: center;
@@ -2151,42 +2299,35 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
 }
 
 #settings-btn {
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.05rem;
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  opacity: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  opacity: 1;
   transition:
-    opacity 0.22s ease,
-    background 0.15s,
-    transform 0.15s;
+    background 0.1s,
+    color 0.1s,
+    border-color 0.1s;
 }
 
 #settings-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
-  transform: scale(1.06);
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 #settings-btn.is-active {
-  background: rgba(59, 130, 246, 0.55);
-  color: #fff;
-  border-color: rgba(59, 130, 246, 0.6);
-}
-
-#settings-trigger.is-near #settings-btn,
-#settings-trigger.panel-open #settings-btn {
-  opacity: 1;
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
 }
 
 #settings-panel {
