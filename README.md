@@ -2,6 +2,8 @@
 
 An interactive Philippine province map with explore, weather, travel tracking, quiz, and fun facts tools. Built for fun, free and open source.
 
+Open: https://iam-phasma.github.io/Geo-Pinas/
+
 ## Features
 
 - All 83 Philippine provinces (including Metro Manila as NCR)
