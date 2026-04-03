@@ -1,8 +1,8 @@
 /* ============================================================
    GEO PINAS — app.js
-   Map rendering, interaction, and UI logic.
-   Static data (MAP_W, MAP_H, PROVINCES, PROVINCE_REGION) is
-   loaded from data.js, which must be included first.
+   Core: map rendering, interaction, navigation, and helpers.
+   Tool logic lives in js/tools/. Boot logic in js/boot.js.
+   Load order: data.js → app.js → tools/*.js → boot.js
    ============================================================ */
 
 "use strict";
@@ -26,152 +26,7 @@ let _wasDragging = false;
 let _zoom = null;
 let _svg = null;
 let _g = null;
-let _currentWeatherProv = null;
 let _activeToolId = null;
-let _lastWeatherInfo = null;
-let _weatherEmojiEnabled = true;
-let _travelMap = {};
-
-// ── Weather helpers ────────────────────────────────────────────
-const WMO_EMOJI = {
-  0: "☀️",
-  1: "🌤️", 2: "⛅", 3: "🌥️",
-  45: "🌫️", 48: "🌫️",
-  51: "🌦️", 53: "🌦️", 55: "🌦️",
-  56: "🌨️", 57: "🌨️",
-  61: "🌧️", 63: "🌧️", 65: "🌧️",
-  66: "🌨️", 67: "🌨️",
-  71: "🌨️", 73: "🌨️", 75: "🌨️",
-  77: "🌨️",
-  80: "🌦️", 81: "🌦️", 82: "⛈️",
-  85: "🌨️", 86: "🌨️",
-  95: "⛈️", 96: "⛈️", 99: "⛈️",
-};
-
-const WMO_DESC = {
-  0: "Clear sky",
-  1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
-  45: "Foggy", 48: "Icy fog",
-  51: "Light drizzle", 53: "Moderate drizzle", 55: "Dense drizzle",
-  56: "Freezing drizzle", 57: "Heavy freezing drizzle",
-  61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain",
-  66: "Freezing rain", 67: "Heavy freezing rain",
-  71: "Slight snow", 73: "Moderate snow", 75: "Heavy snow",
-  77: "Snow grains",
-  80: "Slight showers", 81: "Moderate showers", 82: "Violent showers",
-  85: "Slight snow showers", 86: "Heavy snow showers",
-  95: "Thunderstorm", 96: "Thunderstorm w/ hail", 99: "Severe thunderstorm",
-};
-
-// Convert SVG data-space coordinates to approximate lat/lng
-// Calibrated from: Metro Manila (367.5,465)→14.6°N 121°E,
-//   Batanes (435,37.5)→20.5°N 121.9°E, Tawi-Tawi (292.5,1170)→5.1°N 119.7°E
-function _svgToLatLng(svgX, svgY) {
-  const lat = 20.5 - (svgY - 37.5) * 0.01358;
-  const lon = 118.7 + (svgX - 195) * 0.01350;
-  return { lat, lon };
-}
-
-function _parseTranslate(transform) {
-  const m = transform.match(/translate\(\s*([^,]+),\s*([^)]+)\)/);
-  if (!m) return null;
-  return { x: parseFloat(m[1]), y: parseFloat(m[2]) };
-}
-
-function _getProvScreenPos(prov) {
-  const pt = _parseTranslate(prov.transform);
-  if (!pt || !_svg) return null;
-  const t = d3.zoomTransform(_svg.node());
-  const [px, py] = t.apply([pt.x, pt.y]);
-  return { x: px, y: py };
-}
-
-function _positionWeatherOverlay(prov) {
-  const overlay = document.getElementById("weather-overlay");
-  const pos = _getProvScreenPos(prov);
-  if (!pos || !overlay) return;
-  // Offset upward so emoji floats above the land
-  overlay.style.left = pos.x + "px";
-  overlay.style.top = (pos.y - 28) + "px";
-}
-
-function updateWeatherEmojiPosition() {
-  if (!_currentWeatherProv || _activeToolId !== "weather" || !_weatherEmojiEnabled) return;
-  const overlay = document.getElementById("weather-overlay");
-  if (overlay && overlay.classList.contains("is-visible")) {
-    _positionWeatherOverlay(_currentWeatherProv);
-  }
-}
-
-function _setTwemoji(overlay, emoji) {
-  overlay.innerHTML = emoji;
-  if (typeof twemoji !== "undefined") {
-    twemoji.parse(overlay, { folder: "svg", ext: ".svg" });
-  }
-}
-
-async function fetchAndShowWeather(prov) {
-  const pt = _parseTranslate(prov.transform);
-  if (!pt) return;
-  const { lat, lon } = _svgToLatLng(pt.x, pt.y);
-  _currentWeatherProv = prov;
-
-  const overlay = document.getElementById("weather-overlay");
-  if (!overlay) return;
-  if (_weatherEmojiEnabled) {
-    _setTwemoji(overlay, "⏳");
-    _positionWeatherOverlay(prov);
-    overlay.classList.add("is-visible");
-  }
-
-  if (_activeToolId === "weather") {
-    const hint = document.getElementById("weather-tool-hint");
-    if (hint) hint.textContent = `Loading weather for ${prov.id}…`;
-  }
-
-  try {
-    const url =
-      `https://api.open-meteo.com/v1/forecast` +
-      `?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}` +
-      `&current=weather_code,temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m&forecast_days=1`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("weather fetch failed");
-    const data = await res.json();
-    const cur = data.current ?? {};
-    const code = cur.weather_code ?? 0;
-    const emoji = WMO_EMOJI[code] ?? "🌡️";
-    _setTwemoji(overlay, emoji);
-    if (_weatherEmojiEnabled) _positionWeatherOverlay(prov);
-
-    _lastWeatherInfo = {
-      prov: prov.id,
-      region: PROVINCE_REGION[prov.id] ?? "",
-      emoji,
-      temp: cur.temperature_2m != null ? Math.round(cur.temperature_2m) : "—",
-      feelsLike: cur.apparent_temperature != null ? Math.round(cur.apparent_temperature) : "—",
-      humidity: cur.relative_humidity_2m != null ? cur.relative_humidity_2m : "—",
-      wind: cur.wind_speed_10m != null ? Math.round(cur.wind_speed_10m) : "—",
-      condition: WMO_DESC[code] ?? "Unknown",
-    };
-
-    if (_activeToolId === "weather") {
-      _renderWeatherTool();
-    }
-  } catch {
-    _setTwemoji(overlay, "🌡️");
-    if (_activeToolId === "weather") {
-      const hint = document.getElementById("weather-tool-hint");
-      if (hint) hint.textContent = "Could not load weather data.";
-    }
-  }
-}
-
-function clearWeatherEmoji() {
-  _currentWeatherProv = null;
-  _lastWeatherInfo = null;
-  const overlay = document.getElementById("weather-overlay");
-  if (overlay) overlay.classList.remove("is-visible");
-}
 
 // ── Helpers ────────────────────────────────────────────────────
 function fitTransform(w, h) {
@@ -336,6 +191,27 @@ const TOOLS = [
     desc: "Search and browse all 81 provinces by region.",
   },
   {
+    id: "geoguesser",
+    icon: "📍",
+    color: "#fce7f3",
+    title: "Local Guesser",
+    desc: "Guess the province from a map view.",
+  },
+  {
+    id: "travel",
+    icon: "✈️",
+    color: "#f0fdf4",
+    title: "Travel Level",
+    desc: "Track how well you've explored.",
+  },
+  {
+    id: "roulette",
+    icon: "🎲",
+    color: "#fff7ed",
+    title: "Province Roulette",
+    desc: "Spin to randomly pick a province.",
+  },
+  {
     id: "weather",
     icon: "🌤️",
     color: "#e0f2fe",
@@ -349,20 +225,6 @@ const TOOLS = [
     title: "Province Quiz",
     desc: "Test how well you know Philippine geography.",
   },
-  {
-    id: "facts",
-    icon: "✨",
-    color: "#fef3c7",
-    title: "Fun Facts",
-    desc: "Discover trivias about the Philippines.",
-  },
-  {
-    id: "travel",
-    icon: "✈️",
-    color: "#f0fdf4",
-    title: "Travel Level",
-    desc: "Track how well you've explored.",
-  },
 ];
 
 function showToolsHome() {
@@ -370,6 +232,8 @@ function showToolsHome() {
   clearWeatherEmoji();
   _clearQuizHighlight();
   _clearTravelColors();
+  _rouletteClearHighlight();
+  _ggClearHighlights();
   setSidebarTitle("Tools");
   document.getElementById("info-panel").innerHTML = `
     <div class="tools-list">
@@ -392,523 +256,10 @@ function showToolsHome() {
       if (card.dataset.tool === "explore") showIdlePanel();
       else if (card.dataset.tool === "weather") showWeatherTool();
       else if (card.dataset.tool === "quiz") showQuizTool();
-      else if (card.dataset.tool === "facts") showFactsTool();
       else if (card.dataset.tool === "travel") showTravelTool();
+      else if (card.dataset.tool === "roulette") showRouletteTool();
+      else if (card.dataset.tool === "geoguesser") showGeoGuesserTool();
     });
-  });
-}
-
-// ── Weather tool ───────────────────────────────────────────────
-function showWeatherTool() {
-  _activeToolId = "weather";
-  _lastWeatherInfo = null;
-  setSidebarTitle("Weather");
-  _clearQuizHighlight();
-  _renderWeatherTool();
-  // If a province is already selected, fetch its weather right away
-  if (_selectedGroup) {
-    fetchAndShowWeather(d3.select(_selectedGroup).datum());
-  }
-}
-
-function _renderWeatherTool() {
-  const hintText = "Select a province to see its weather.";
-  const emojiChecked = _weatherEmojiEnabled ? "true" : "false";
-
-  const provCard = _lastWeatherInfo ? `
-    <div class="weather-prov-card">
-      <div class="weather-prov-header">
-        <span class="weather-prov-name">${escapeHtml(_lastWeatherInfo.prov)}</span>
-        <span class="weather-prov-region">${escapeHtml(_lastWeatherInfo.region)}</span>
-      </div>
-      <div class="weather-prov-main">
-        <span class="weather-prov-emoji-wrap" id="weather-prov-emoji-el">${_lastWeatherInfo.emoji}</span>
-        <div class="weather-prov-temp-block">
-          <span class="weather-prov-temp">${_lastWeatherInfo.temp}°C</span>
-          <span class="weather-prov-cond">${escapeHtml(_lastWeatherInfo.condition)}</span>
-        </div>
-      </div>
-      <div class="weather-prov-grid">
-        <div class="weather-prov-stat">
-          <span class="weather-prov-stat-label">Feels like</span>
-          <span class="weather-prov-stat-val">${_lastWeatherInfo.feelsLike}°C</span>
-        </div>
-        <div class="weather-prov-stat">
-          <span class="weather-prov-stat-label">Humidity</span>
-          <span class="weather-prov-stat-val">${_lastWeatherInfo.humidity}%</span>
-        </div>
-        <div class="weather-prov-stat">
-          <span class="weather-prov-stat-label">Wind</span>
-          <span class="weather-prov-stat-val">${_lastWeatherInfo.wind} km/h</span>
-        </div>
-      </div>
-    </div>
-  ` : "";
-
-  document.getElementById("info-panel").innerHTML = `
-    <button class="tool-back-btn" id="weather-back">‹ Back</button>
-    <div class="weather-tool-body">
-      <div class="weather-tool-icon">🌤️</div>
-      <div class="weather-tool-row">
-        <span class="weather-tool-label">Show emoji on map</span>
-        <button class="sp-toggle" id="weather-emoji-toggle" role="switch"
-          aria-checked="${emojiChecked}" title="Toggle map emoji">
-          <span class="sp-toggle-track"><span class="sp-toggle-thumb"></span></span>
-        </button>
-      </div>
-      <p class="weather-tool-hint" id="weather-tool-hint">${hintText}</p>
-      ${provCard}
-    </div>
-  `;
-
-  if (_lastWeatherInfo) {
-    const emojiEl = document.getElementById("weather-prov-emoji-el");
-    if (emojiEl && typeof twemoji !== "undefined") {
-      twemoji.parse(emojiEl, { folder: "svg", ext: ".svg" });
-    }
-  }
-
-  document.getElementById("weather-back").addEventListener("click", () => {
-    _activeToolId = null;
-    _lastWeatherInfo = null;
-    showToolsHome();
-  });
-
-  document.getElementById("weather-emoji-toggle").addEventListener("click", function () {
-    _weatherEmojiEnabled = !_weatherEmojiEnabled;
-    this.setAttribute("aria-checked", String(_weatherEmojiEnabled));
-    if (_weatherEmojiEnabled && _lastWeatherInfo && _currentWeatherProv) {
-      const overlay = document.getElementById("weather-overlay");
-      if (overlay) overlay.classList.add("is-visible");
-      _positionWeatherOverlay(_currentWeatherProv);
-    } else {
-      const overlay = document.getElementById("weather-overlay");
-      if (overlay) overlay.classList.remove("is-visible");
-    }
-  });
-}
-
-// ── Province Quiz ──────────────────────────────────────────────
-let _quizScore = { correct: 0, total: 0 };
-let _quizHighlight = null;
-
-function _clearQuizHighlight() {
-  if (_quizHighlight) {
-    d3.select(_quizHighlight).classed("is-quiz", false);
-    _quizHighlight = null;
-  }
-}
-
-function showQuizTool() {
-  _quizScore = { correct: 0, total: 0 };
-  _renderQuizQuestion();
-}
-
-function _renderQuizQuestion() {
-  setSidebarTitle("Province Quiz");
-  const allProvinces = Object.keys(PROVINCE_REGION);
-  const prov = allProvinces[Math.floor(Math.random() * allProvinces.length)];
-  const correctRegion = PROVINCE_REGION[prov];
-  const allRegions = [...new Set(Object.values(PROVINCE_REGION))];
-  const wrongs = allRegions
-    .filter((r) => r !== correctRegion)
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 3);
-  const choices = [...wrongs, correctRegion].sort(() => Math.random() - 0.5);
-
-  // Highlight province on map
-  _clearQuizHighlight();
-  const grp = _g.selectAll(".province-group").filter((d) => d.id === prov).node();
-  if (grp) {
-    d3.select(grp).classed("is-quiz", true).raise();
-    _quizHighlight = grp;
-  }
-
-  document.getElementById("info-panel").innerHTML = `
-    <button class="tool-back-btn" id="quiz-back">‹ Back</button>
-    <div class="quiz-score-bar">
-      <span class="quiz-score-label">Score</span>
-      <span class="quiz-score-val">${_quizScore.correct} / ${_quizScore.total}</span>
-    </div>
-    <div class="quiz-question">
-      <div class="quiz-q-sub">Which region is</div>
-      <div class="quiz-q-prov">${escapeHtml(prov)}</div>
-      <div class="quiz-q-sub">located in?</div>
-    </div>
-    <div class="quiz-choices">
-      ${choices.map((c) => `
-        <button class="quiz-choice" data-correct="${c === correctRegion}">
-          ${escapeHtml(c)}
-        </button>
-      `).join("")}
-    </div>
-  `;
-
-  document.getElementById("quiz-back").addEventListener("click", () => {
-    _clearQuizHighlight();
-    showToolsHome();
-  });
-
-  document.querySelectorAll(".quiz-choice").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const correct = btn.dataset.correct === "true";
-      _quizScore.total++;
-      if (correct) _quizScore.correct++;
-      document.querySelectorAll(".quiz-choice").forEach((b) => {
-        b.disabled = true;
-        if (b.dataset.correct === "true") b.classList.add("is-correct");
-        else if (b === btn) b.classList.add("is-wrong");
-      });
-      setTimeout(() => {
-        _clearQuizHighlight();
-        _renderQuizQuestion();
-      }, 1300);
-    });
-  });
-}
-
-// ── Fun Facts ──────────────────────────────────────────────────
-const FUN_FACTS = [
-  { prov: "Batanes", fact: "Batanes is the northernmost province of the Philippines. Its iconic stone houses were built to withstand fierce typhoons that tear through the island chain." },
-  { prov: "Palawan", fact: "Puerto Princesa Subterranean River in Palawan is one of the New Seven Wonders of Nature — a navigable underground river flowing 8.2 km through a cave to the sea." },
-  { prov: "Cebu", fact: "Cebu hosted the first Spanish settlement in the Philippines in 1565, making it the oldest established city in the country." },
-  { prov: "Ilocos Norte", fact: "The Bangui Windmills in Ilocos Norte stretch along 1.8 km of coastline and supply a significant portion of the province's electricity needs." },
-  { prov: "Ifugao", fact: "The Banaue Rice Terraces in Ifugao are over 2,000 years old, carved into the Cordillera mountains by the Ifugao people — often called the 8th Wonder of the World." },
-  { prov: "Camarines Sur", fact: "CamSur Watersports Complex in Camarines Sur is one of the largest cable wakeboarding parks in Asia, drawing athletes from around the world." },
-  { prov: "Tawi-Tawi", fact: "Tawi-Tawi is the southernmost province of the Philippines — geographically closer to Malaysia's Sabah state than to Manila." },
-  { prov: "Laguna", fact: "The Laguna Copperplate Inscription, found in 1989, is the oldest known written document discovered in the Philippines, dated to 900 CE." },
-  { prov: "Pampanga", fact: "Pampanga is the 'Culinary Capital of the Philippines', the origin of beloved dishes like sisig, tocino, and morcon." },
-  { prov: "Benguet", fact: "Benguet supplies most of the country's cut flowers and ornamental plants, earning it the nickname 'Salad Bowl of the Philippines'." },
-  { prov: "Leyte", fact: "The Battle of Leyte Gulf in October 1944 was the largest naval battle in history by number of ships engaged — a turning point in WWII's Pacific Theater." },
-  { prov: "Masbate", fact: "Masbate is known as the 'Rodeo Capital of the Philippines' and holds an annual festival where cowboys compete in cattle-wrangling events." },
-  { prov: "Surigao del Norte", fact: "Sohoton Cove in Surigao del Norte is home to millions of stingless jellyfish. At night, the lagoon glows with natural bioluminescence." },
-  { prov: "Quezon", fact: "Quezon province is home to the Quezon National Park, a refuge for Philippine wildlife including the endangered Philippine eagle." },
-  { prov: "Mountain Province", fact: "Sagada in Mountain Province is famous for its Hanging Coffins — ancient burial practice where coffins are literally suspended on cliff faces." },
-];
-
-let _factIndex = 0;
-
-function showFactsTool() {
-  _factIndex = Math.floor(Math.random() * FUN_FACTS.length);
-  _renderFact();
-}
-
-function _renderFact() {
-  setSidebarTitle("Fun Facts");
-  const f = FUN_FACTS[_factIndex];
-
-  // Highlight the province on the map
-  _clearQuizHighlight();
-  const grp = _g.selectAll(".province-group").filter((d) => d.id === f.prov).node();
-  if (grp) {
-    d3.select(grp).classed("is-quiz", true).raise();
-    _quizHighlight = grp;
-  }
-
-  document.getElementById("info-panel").innerHTML = `
-    <button class="tool-back-btn" id="facts-back">‹ Back</button>
-    <div class="fact-card">
-      <div class="fact-prov">${escapeHtml(f.prov)}</div>
-      <div class="fact-text">${escapeHtml(f.fact)}</div>
-    </div>
-    <div class="fact-nav">
-      <span class="fact-counter">${_factIndex + 1} / ${FUN_FACTS.length}</span>
-      <button class="fact-next-btn" id="fact-next">Next Fact →</button>
-    </div>
-  `;
-
-  document.getElementById("facts-back").addEventListener("click", () => {
-    _clearQuizHighlight();
-    showToolsHome();
-  });
-
-  document.getElementById("fact-next").addEventListener("click", () => {
-    _factIndex = (_factIndex + 1) % FUN_FACTS.length;
-    _renderFact();
-  });
-}
-
-// ── Travel Level tool ──────────────────────────────────────────
-const TRAVEL_LEVELS = [
-  { id: "lived",    label: "Lived",    color: "#7c3aed", weight: 5, desc: "Spent a significant part of life here" },
-  { id: "stayed",   label: "Stayed",   color: "#2563eb", weight: 4, desc: "Slept at least one night" },
-  { id: "visited",  label: "Visited",  color: "#0891b2", weight: 3, desc: "Spent hours exploring" },
-  { id: "alighted", label: "Alighted", color: "#16a34a", weight: 2, desc: "Short stopover or transfer" },
-  { id: "passed",   label: "Passed",   color: "#d97706", weight: 1, desc: "Passed through, never set foot" },
-];
-
-const _LUZON_REGIONS    = ["Region I — Ilocos","Region II — Cagayan Valley","Region III — Central Luzon","Region IVA — Calabarzon","MIMAROPA","Region V — Bicol","NCR — National Capital Region","CAR"];
-const _VISAYAS_REGIONS  = ["Region VI — Western Visayas","Region VII — Central Visayas","Region VIII — Eastern Visayas"];
-const _MINDANAO_REGIONS = ["Region IX — Zamboanga Peninsula","Region X — Northern Mindanao","Region XI — Davao Region","Region XII — SOCCSKSARGEN","Region XIII — Caraga","BARMM"];
-
-function _travelProvsByRegions(regions) {
-  return Object.entries(PROVINCE_REGION).filter(([, r]) => regions.includes(r)).map(([p]) => p);
-}
-
-const TRAVEL_ACHIEVEMENTS = [
-  { id: "first",   icon: "👣", title: "First Steps",        desc: "Log your first province",
-    progress: m => ({ n: Math.min(Object.keys(m).length, 1), total: 1 }) },
-  { id: "ten",     icon: "🗺️", title: "Wanderer",           desc: "Log 10 provinces",
-    progress: m => ({ n: Math.min(Object.keys(m).length, 10), total: 10 }) },
-  { id: "twenty5", icon: "🌟", title: "Trailblazer",        desc: "Log 25 provinces",
-    progress: m => ({ n: Math.min(Object.keys(m).length, 25), total: 25 }) },
-  { id: "fifty",   icon: "🏅", title: "Half the Map",       desc: "Log 50 provinces",
-    progress: m => ({ n: Math.min(Object.keys(m).length, 50), total: 50 }) },
-  { id: "home",    icon: "🏠", title: "Called It Home",     desc: "Mark at least one province as Lived",
-    progress: m => ({ n: Object.values(m).some(v => v === "lived") ? 1 : 0, total: 1 }) },
-  { id: "luzon",   icon: "🚗", title: "Luzon Explorer",     desc: "Log all Luzon provinces",
-    progress: m => { const p = _travelProvsByRegions(_LUZON_REGIONS);    return { n: p.filter(x => m[x]).length, total: p.length }; } },
-  { id: "visayas", icon: "⛵", title: "Visayas Voyager",    desc: "Log all Visayas provinces",
-    progress: m => { const p = _travelProvsByRegions(_VISAYAS_REGIONS);  return { n: p.filter(x => m[x]).length, total: p.length }; } },
-  { id: "mndnao",  icon: "🦅", title: "Mindanao Eagle",     desc: "Log all Mindanao provinces",
-    progress: m => { const p = _travelProvsByRegions(_MINDANAO_REGIONS); return { n: p.filter(x => m[x]).length, total: p.length }; } },
-  { id: "car",     icon: "⛰️", title: "Highland Bound",     desc: "Log all Cordillera provinces",
-    progress: m => { const p = _travelProvsByRegions(["CAR"]);   return { n: p.filter(x => m[x]).length, total: p.length }; } },
-  { id: "barmm",   icon: "🕌", title: "BARMM Brave",        desc: "Log all BARMM provinces",
-    progress: m => { const p = _travelProvsByRegions(["BARMM"]); return { n: p.filter(x => m[x]).length, total: p.length }; } },
-  { id: "legend",  icon: "🇵🇭", title: "Philippine Legend", desc: "Log all 83 provinces",
-    progress: m => { const t = Object.keys(PROVINCE_REGION).length; return { n: Math.min(Object.keys(m).length, t), total: t }; } },
-];
-
-function _travelLoad() {
-  try {
-    const raw = localStorage.getItem("geopinas-travel");
-    if (raw) _travelMap = JSON.parse(raw);
-  } catch { /* ignore */ }
-}
-
-function _travelSave() {
-  try { localStorage.setItem("geopinas-travel", JSON.stringify(_travelMap)); } catch { /* ignore */ }
-}
-
-function _travelSetLevel(provId, levelId) {
-  if (levelId) _travelMap[provId] = levelId;
-  else delete _travelMap[provId];
-  _travelSave();
-  _applyTravelColors();
-}
-
-function _applyTravelColors() {
-  if (!_g) return;
-  _g.selectAll(".province-group").each(function(d) {
-    const lvl = _travelMap[d.id];
-    TRAVEL_LEVELS.forEach(l => d3.select(this).classed(`is-tl-${l.id}`, lvl === l.id));
-  });
-}
-
-function _clearTravelColors() {
-  if (!_g) return;
-  _g.selectAll(".province-group").each(function() {
-    TRAVEL_LEVELS.forEach(l => d3.select(this).classed(`is-tl-${l.id}`, false));
-  });
-  _closeTravelPicker();
-}
-
-function _travelScore() {
-  const all = Object.keys(PROVINCE_REGION);
-  const logged = all.filter(p => _travelMap[p]).length;
-  return { score: Math.round(logged / all.length * 1000) / 10, logged, total: all.length };
-}
-
-function showTravelTool() {
-  _activeToolId = "travel";
-  _clearQuizHighlight();
-  clearWeatherEmoji();
-  _applyTravelColors();
-  setSidebarTitle("Travel Level");
-  _renderTravelOverview();
-}
-
-function _renderTravelOverview() {
-  if (_selectedGroup) {
-    d3.select(_selectedGroup).classed("is-selected", false);
-    _selectedGroup = null;
-  }
-
-  const { score, logged, total } = _travelScore();
-
-  const legendHtml = TRAVEL_LEVELS.map(l => `
-    <span class="tl-legend-item">
-      <span class="tl-legend-dot" style="background:${l.color}"></span>
-      <span class="tl-legend-label">${l.label}</span>
-    </span>
-  `).join("");
-
-  const achieveHtml = TRAVEL_ACHIEVEMENTS.map(a => {
-    const { n, total: t } = a.progress(_travelMap);
-    const unlocked = n >= t;
-    return `
-      <div class="tl-achieve${unlocked ? " is-unlocked" : ""}">
-        <span class="tl-achieve-icon">${a.icon}</span>
-        <div class="tl-achieve-body">
-          <span class="tl-achieve-title">${escapeHtml(a.title)}</span>
-          <span class="tl-achieve-desc">${escapeHtml(a.desc)}</span>
-        </div>
-        <span class="tl-achieve-progress">${n}/${t}</span>
-      </div>
-    `;
-  }).join("");
-
-  document.getElementById("info-panel").innerHTML = `
-    <button class="tool-back-btn" id="tl-back">‹ Back</button>
-    <div class="tl-body">
-      <div class="tl-score-wrap">
-        <span class="tl-score-num">${score}<span class="tl-score-pct">%</span></span>
-        <span class="tl-score-label">${logged} of ${total} provinces logged</span>
-      </div>
-      <div class="tl-progress-bar-wrap">
-        <div class="tl-progress-bar">
-          <div class="tl-progress-fill" style="width:${score}%"></div>
-        </div>
-      </div>
-      <div class="tl-legend">${legendHtml}</div>
-      <p class="tl-hint">Tap a province on the map to set your travel level.</p>
-      <div class="tl-achieve-header">Achievements</div>
-      <div class="tl-achieve-list">${achieveHtml}</div>
-      <div class="tl-reset-wrap">
-        <button class="tl-reset-btn" id="tl-reset-btn" title="Hold to reset all travel data">
-          <span class="tl-reset-label">Hold to Reset</span>
-          <span class="tl-reset-bar"><span class="tl-reset-fill" id="tl-reset-fill"></span></span>
-        </button>
-      </div>
-    </div>
-  `;
-
-  document.getElementById("tl-back").addEventListener("click", () => {
-    _activeToolId = null;
-    _clearTravelColors();
-    showToolsHome();
-  });
-
-  // Hold-to-reset: 3 seconds
-  const resetBtn = document.getElementById("tl-reset-btn");
-  const resetFill = document.getElementById("tl-reset-fill");
-  const HOLD_MS = 3000;
-  let _holdStart = null;
-  let _holdRaf = null;
-
-  function _holdTick() {
-    const elapsed = Date.now() - _holdStart;
-    const pct = Math.min(elapsed / HOLD_MS * 100, 100);
-    resetFill.style.width = pct + "%";
-    if (pct < 100) {
-      _holdRaf = requestAnimationFrame(_holdTick);
-    } else {
-      _travelMap = {};
-      _travelSave();
-      _applyTravelColors();
-      _renderTravelOverview();
-    }
-  }
-
-  function _startHold() {
-    _holdStart = Date.now();
-    resetBtn.classList.add("is-holding");
-    _holdRaf = requestAnimationFrame(_holdTick);
-  }
-
-  function _cancelHold() {
-    if (_holdRaf) cancelAnimationFrame(_holdRaf);
-    _holdRaf = null;
-    _holdStart = null;
-    resetFill.style.width = "0%";
-    resetBtn.classList.remove("is-holding");
-  }
-
-  resetBtn.addEventListener("mousedown", _startHold);
-  resetBtn.addEventListener("touchstart", (e) => { e.preventDefault(); _startHold(); }, { passive: false });
-  resetBtn.addEventListener("mouseup", _cancelHold);
-  resetBtn.addEventListener("mouseleave", _cancelHold);
-  resetBtn.addEventListener("touchend", _cancelHold);
-  resetBtn.addEventListener("touchcancel", _cancelHold);
-}
-
-function _closeTravelPicker() {
-  const popup = document.getElementById("tl-picker-popup");
-  if (popup) {
-    popup.classList.remove("is-visible");
-    popup.innerHTML = "";
-  }
-}
-
-function _renderTravelPicker(d, event) {
-  const provId = d.id;
-  const current = _travelMap[provId];
-  const region = PROVINCE_REGION[provId] ?? "";
-
-  const levelsHtml = TRAVEL_LEVELS.map(l => `
-    <button class="tl-level-btn${current === l.id ? " is-active" : ""}" data-level="${l.id}"
-      style="--tl-color:${l.color}">
-      <span class="tl-level-dot"></span>
-      <span class="tl-level-body">
-        <span class="tl-level-label">${l.label}</span>
-        <span class="tl-level-desc">${l.desc}</span>
-      </span>
-      ${current === l.id ? `<span class="tl-level-check">✓</span>` : ""}
-    </button>
-  `).join("");
-
-  const popup = document.getElementById("tl-picker-popup");
-  popup.innerHTML = `
-    <div class="tl-popup-header">
-      <div class="tl-popup-prov">
-        <span class="tl-picker-name">${escapeHtml(provId)}</span>
-        <span class="tl-picker-region">${escapeHtml(region)}</span>
-      </div>
-      <button class="tl-popup-close" id="tl-popup-close" aria-label="Close">✕</button>
-    </div>
-    <div class="tl-levels-list">${levelsHtml}</div>
-    ${current ? `<button class="tl-clear-btn" id="tl-clear">Remove level</button>` : ""}
-  `;
-
-  // Position near clicked province, keeping popup inside map bounds
-  const wrap = document.getElementById("map-wrap");
-  const wrapRect = wrap.getBoundingClientRect();
-  const popupW = 240;
-  const popupH = 320;
-  let x, y;
-
-  if (event) {
-    x = event.clientX - wrapRect.left + 12;
-    y = event.clientY - wrapRect.top - 20;
-  } else {
-    const pos = _getProvScreenPos(d);
-    x = pos ? pos.x + 12 : wrapRect.width / 2;
-    y = pos ? pos.y - 20 : wrapRect.height / 2;
-  }
-
-  // Clamp inside map
-  x = Math.min(Math.max(x, 8), wrapRect.width - popupW - 8);
-  y = Math.min(Math.max(y, 8), wrapRect.height - popupH - 8);
-
-  popup.style.left = x + "px";
-  popup.style.top = y + "px";
-  popup.classList.add("is-visible");
-  popup.removeAttribute("aria-hidden");
-
-  document.getElementById("tl-popup-close").addEventListener("click", (e) => {
-    e.stopPropagation();
-    _closeTravelPicker();
-    if (_selectedGroup) {
-      d3.select(_selectedGroup).classed("is-selected", false);
-      _selectedGroup = null;
-    }
-  });
-
-  popup.querySelectorAll(".tl-level-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      _travelSetLevel(provId, btn.dataset.level);
-      _renderTravelOverview();
-      _renderTravelPicker(d, null);
-    });
-  });
-
-  popup.querySelector("#tl-clear")?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    _travelSetLevel(provId, null);
-    _renderTravelOverview();
-    _renderTravelPicker(d, null);
   });
 }
 
@@ -1058,6 +409,10 @@ function initMap() {
         // stay on explore panel, nothing to update
       } else if (_activeToolId === "travel") {
         // already handled above
+      } else if (_activeToolId === "roulette") {
+        // keep roulette panel
+      } else if (_activeToolId === "geoguesser") {
+        // keep geoguesser panel
       } else {
         showToolsHome();
       }
@@ -1136,6 +491,10 @@ function onProvinceClick(event, d) {
       showIdlePanel();
     } else if (_activeToolId === "travel") {
       _closeTravelPicker();
+    } else if (_activeToolId === "roulette") {
+      if (!_rouletteSpinning) showRouletteTool();
+    } else if (_activeToolId === "geoguesser") {
+      _ggGuess(d.id);
     } else {
       showToolsHome();
     }
@@ -1149,6 +508,10 @@ function onProvinceClick(event, d) {
     fetchAndShowWeather(d);
   } else if (_activeToolId === "travel") {
     _renderTravelPicker(d, event);
+  } else if (_activeToolId === "roulette") {
+    if (!_rouletteSpinning) showProvinceInfo(d);
+  } else if (_activeToolId === "geoguesser") {
+    _ggGuess(d.id);
   } else {
     showProvinceInfo(d);
   }
@@ -1424,224 +787,3 @@ function showProvinceInfo(prov) {
     }
   });
 }
-
-// ── Boot ───────────────────────────────────────────────────────
-(function boot() {
-  _travelLoad();
-  initMap();
-  showToolsHome();
-
-  // ── Settings panel: proximity reveal + toggle open/close ─────
-  const settingsTrigger = document.getElementById("settings-trigger");
-  const settingsBtn = document.getElementById("settings-btn");
-  const mapWrap = document.getElementById("map-wrap");
-
-  // Show gear button when cursor is within ~90px of top-right corner
-  mapWrap.addEventListener("mousemove", (e) => {
-    const rect = mapWrap.getBoundingClientRect();
-    const dx = rect.right - e.clientX;
-    const dy = e.clientY - rect.top;
-    const near = Math.sqrt(dx * dx + dy * dy) < 90;
-    settingsTrigger.classList.toggle("is-near", near);
-  });
-
-  mapWrap.addEventListener("mouseleave", () => {
-    settingsTrigger.classList.remove("is-near");
-  });
-
-  // Toggle panel open/closed on gear button click
-  settingsBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const open = settingsTrigger.classList.toggle("panel-open");
-    settingsBtn.classList.toggle("is-active", open);
-  });
-
-  // Close panel when clicking outside
-  document.addEventListener("click", (e) => {
-    if (!settingsTrigger.contains(e.target)) {
-      settingsTrigger.classList.remove("panel-open");
-      settingsBtn.classList.remove("is-active");
-    }
-  });
-
-  // ── Dark mode toggle ──────────────────────────────────────────
-  const darkToggle = document.getElementById("darkmode-toggle");
-  const _savedTheme = localStorage.getItem("geopinas-theme");
-  const _prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const _initDark = _savedTheme ? _savedTheme === "dark" : _prefersDark;
-  if (_initDark) {
-    document.documentElement.setAttribute("data-theme", "dark");
-    darkToggle.setAttribute("aria-checked", "true");
-  }
-  darkToggle.addEventListener("click", () => {
-    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    const next = isDark ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
-    darkToggle.setAttribute("aria-checked", String(!isDark));
-    localStorage.setItem("geopinas-theme", next);
-  });
-
-  // ── Sea texture toggle ────────────────────────────────────────
-  const seaToggle = document.getElementById("sea-texture-toggle");
-  const _initSeaTex = localStorage.getItem("geopinas-sea-texture");
-  if (_initSeaTex === "false") {
-    seaToggle.setAttribute("aria-checked", "false");
-    // ocean-pattern not in DOM yet; patched after initMap via MutationObserver below
-  }
-  seaToggle.addEventListener("click", () => {
-    const on = seaToggle.getAttribute("aria-checked") === "true";
-    seaToggle.setAttribute("aria-checked", String(!on));
-    const pattern = document.getElementById("ocean-pattern");
-    if (pattern) pattern.style.opacity = on ? "0" : "1";
-    localStorage.setItem("geopinas-sea-texture", String(!on));
-  });
-  // Apply saved sea-texture after initMap (ocean-pattern now exists)
-  if (_initSeaTex === "false") {
-    const pattern = document.getElementById("ocean-pattern");
-    if (pattern) pattern.style.opacity = "0";
-  }
-
-  // ── Borders toggle ────────────────────────────────────────────
-  const bordersToggle = document.getElementById("borders-toggle");
-  const _initBorders = localStorage.getItem("geopinas-borders");
-  if (_initBorders === "false") {
-    bordersToggle.setAttribute("aria-checked", "false");
-    document.documentElement.classList.add("no-borders");
-  }
-  bordersToggle.addEventListener("click", () => {
-    const on = bordersToggle.getAttribute("aria-checked") === "true";
-    bordersToggle.setAttribute("aria-checked", String(!on));
-    document.documentElement.classList.toggle("no-borders", on);
-    localStorage.setItem("geopinas-borders", String(!on));
-  });
-
-  // ── Sea color slider ──────────────────────────────────────────
-  const SEA_COLOR_STOPS = [
-    { v: 0,   r: 255, g: 255, b: 255 },
-    { v: 33,  r: 135, g: 206, b: 235 },  // sky blue
-    { v: 66,  r: 27,  g: 58,  b: 107 },  // default navy
-    { v: 100, r: 2,   g: 8,   b: 18  },
-  ];
-  const SEA_COLOR_DEFAULT = 66;
-
-  function _seaColor(val) {
-    let lo = SEA_COLOR_STOPS[0], hi = SEA_COLOR_STOPS[SEA_COLOR_STOPS.length - 1];
-    for (let i = 0; i < SEA_COLOR_STOPS.length - 1; i++) {
-      if (val >= SEA_COLOR_STOPS[i].v && val <= SEA_COLOR_STOPS[i + 1].v) {
-        lo = SEA_COLOR_STOPS[i]; hi = SEA_COLOR_STOPS[i + 1]; break;
-      }
-    }
-    const t = hi.v === lo.v ? 0 : (val - lo.v) / (hi.v - lo.v);
-    const r = Math.round(lo.r + (hi.r - lo.r) * t);
-    const g = Math.round(lo.g + (hi.g - lo.g) * t);
-    const b = Math.round(lo.b + (hi.b - lo.b) * t);
-    return `rgb(${r},${g},${b})`;
-  }
-
-  function _applySeaColor(val) {
-    const color = _seaColor(val);
-    document.documentElement.style.setProperty("--ocean", color);
-    const bg = document.getElementById("ocean-bg");
-    if (bg) bg.setAttribute("fill", color);
-  }
-
-  const seaColorSlider = document.getElementById("sea-color-slider");
-  const seaColorReset = document.getElementById("sea-color-reset");
-  const _initSeaVal = Number(localStorage.getItem("geopinas-sea-color") ?? SEA_COLOR_DEFAULT);
-  seaColorSlider.value = _initSeaVal;
-  _applySeaColor(_initSeaVal);
-  seaColorSlider.addEventListener("input", () => {
-    const v = Number(seaColorSlider.value);
-    _applySeaColor(v);
-    localStorage.setItem("geopinas-sea-color", v);
-  });
-  seaColorReset.addEventListener("click", () => {
-    seaColorSlider.value = SEA_COLOR_DEFAULT;
-    _applySeaColor(SEA_COLOR_DEFAULT);
-    localStorage.setItem("geopinas-sea-color", SEA_COLOR_DEFAULT);
-  });
-
-  // ── Land color slider ─────────────────────────────────────────
-  const LAND_COLOR_STOPS = [
-    { v: 0,   r: 255, g: 255, b: 255 },
-    { v: 50,  r: 22,  g: 110, b: 62  },  // default #166e3e
-    { v: 100, r: 5,   g: 30,  b: 15  },
-  ];
-  const LAND_COLOR_DEFAULT = 50;
-
-  function _landColor(val) {
-    let lo = LAND_COLOR_STOPS[0], hi = LAND_COLOR_STOPS[LAND_COLOR_STOPS.length - 1];
-    for (let i = 0; i < LAND_COLOR_STOPS.length - 1; i++) {
-      if (val >= LAND_COLOR_STOPS[i].v && val <= LAND_COLOR_STOPS[i + 1].v) {
-        lo = LAND_COLOR_STOPS[i]; hi = LAND_COLOR_STOPS[i + 1]; break;
-      }
-    }
-    const t = hi.v === lo.v ? 0 : (val - lo.v) / (hi.v - lo.v);
-    const r = Math.round(lo.r + (hi.r - lo.r) * t);
-    const g = Math.round(lo.g + (hi.g - lo.g) * t);
-    const b = Math.round(lo.b + (hi.b - lo.b) * t);
-    return `rgb(${r},${g},${b})`;
-  }
-
-  function _applyLandColor(val) {
-    const fill = _landColor(val);
-    const t2 = val / 100;
-    const hr = Math.round(22 * t2 * 0.6);
-    const hg = Math.round(110 * t2 * 0.6 + (1 - t2) * 200);
-    const hb = Math.round(62 * t2 * 0.6 + (1 - t2) * 200);
-    const hover = val < 5 ? "rgb(200,200,200)" : `rgb(${hr},${hg},${hb})`;
-    document.documentElement.style.setProperty("--province-fill", fill);
-    document.documentElement.style.setProperty("--province-hover", hover);
-  }
-
-  const landColorSlider = document.getElementById("land-color-slider");
-  const landColorReset = document.getElementById("land-color-reset");
-  const _initLandVal = Number(localStorage.getItem("geopinas-land-color") ?? LAND_COLOR_DEFAULT);
-  landColorSlider.value = _initLandVal;
-  _applyLandColor(_initLandVal);
-  landColorSlider.addEventListener("input", () => {
-    const v = Number(landColorSlider.value);
-    _applyLandColor(v);
-    localStorage.setItem("geopinas-land-color", v);
-  });
-  landColorReset.addEventListener("click", () => {
-    landColorSlider.value = LAND_COLOR_DEFAULT;
-    _applyLandColor(LAND_COLOR_DEFAULT);
-    localStorage.setItem("geopinas-land-color", LAND_COLOR_DEFAULT);
-  });
-
-  // ── Border color swatches ─────────────────────────────────────
-  const BORDER_DEFAULT = "#95ffc1";
-  const _initBorderColor = localStorage.getItem("geopinas-border-color") ?? BORDER_DEFAULT;
-  document.documentElement.style.setProperty("--province-border", _initBorderColor);
-  document.querySelectorAll(".sp-swatch").forEach(s => {
-    s.setAttribute("aria-pressed", s.dataset.color === _initBorderColor ? "true" : "false");
-  });
-  document.getElementById("border-swatches").addEventListener("click", (e) => {
-    const btn = e.target.closest(".sp-swatch");
-    if (!btn) return;
-    const color = btn.dataset.color;
-    document.documentElement.style.setProperty("--province-border", color);
-    document.querySelectorAll(".sp-swatch").forEach(s => s.setAttribute("aria-pressed", "false"));
-    btn.setAttribute("aria-pressed", "true");
-    localStorage.setItem("geopinas-border-color", color);
-  });
-
-  // Sidebar collapse toggle
-  const sidebar = document.getElementById("sidebar");
-  document.getElementById("sidebar-toggle").addEventListener("click", () => {
-    const collapsed = sidebar.classList.toggle("is-collapsed");
-    document
-      .getElementById("sidebar-toggle")
-      .setAttribute(
-        "aria-label",
-        collapsed ? "Expand sidebar" : "Collapse sidebar",
-      );
-    // Resize map after the CSS transition finishes
-    sidebar.addEventListener(
-      "transitionend",
-      () => window.dispatchEvent(new Event("resize")),
-      { once: true },
-    );
-  });
-})();

@@ -915,19 +915,23 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
 .tool-back-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  padding: 0 0 12px 0;
+  gap: 6px;
+  background: var(--bg-card, var(--bg-sidebar));
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px 6px 8px;
+  margin-bottom: 12px;
   font-family: var(--font);
   font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-faint);
+  font-weight: 600;
+  color: var(--text-muted);
   cursor: pointer;
-  transition: color 0.12s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .tool-back-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
   color: var(--accent);
 }
 
@@ -1022,6 +1026,76 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
 .quiz-choice:disabled {
   cursor: default;
 }
+
+/* ── Quiz summary screen ── */
+.quiz-summary {
+  padding: 4px 0;
+}
+.quiz-summary-grade {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 2px;
+}
+.quiz-summary-score {
+  font-size: 2rem;
+  font-weight: 900;
+  text-align: center;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.quiz-summary-total {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.quiz-summary-tag {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.quiz-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.quiz-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+.quiz-summary-row.is-correct { background: #dcfce7; color: #166534; }
+.quiz-summary-row.is-wrong   { background: #fee2e2; color: #991b1b; }
+.quiz-summary-num  { font-weight: 700; min-width: 18px; }
+.quiz-summary-prov { flex: 1; font-weight: 600; }
+
+.quiz-play-again-btn {
+  width: 100%;
+  padding: 11px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: opacity 0.15s;
+}
+.quiz-play-again-btn:hover { opacity: 0.88; }
+
+[data-theme="dark"] .quiz-summary-row.is-correct { background: #14532d; color: #bbf7d0; }
+[data-theme="dark"] .quiz-summary-row.is-wrong   { background: #7f1d1d; color: #fecaca; }
 
 /* ── Weather tool panel ────────────────────────────────── */
 .weather-tool-body {
@@ -1173,6 +1247,358 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
 
 [data-theme="dark"] .weather-prov-stat {
   background: #0f172a;
+}
+
+/* ── Province Roulette tool ─────────────────────────────── */
+
+/* Map highlights */
+.province-group.is-roulette .province {
+  fill: #fbbf24;
+}
+
+@keyframes roulette-winner-pulse {
+  0%   { fill: #fbbf24; }
+  50%  { fill: #f97316; }
+  100% { fill: #fbbf24; }
+}
+
+.province-group.is-roulette-winner .province {
+  fill: #f97316;
+  animation: roulette-winner-pulse 1.1s ease-in-out infinite;
+}
+
+/* Panel layout */
+.rl-tool-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 0 20px;
+}
+
+.rl-dice-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 72px;
+  justify-content: center;
+}
+
+.rl-dice-icon {
+  font-size: 3.2rem;
+  line-height: 1;
+  display: block;
+  user-select: none;
+}
+
+@keyframes rl-dice-shake {
+  0%   { transform: rotate(0deg)   scale(1); }
+  20%  { transform: rotate(-18deg) scale(1.18); }
+  40%  { transform: rotate(16deg)  scale(1.18); }
+  60%  { transform: rotate(-12deg) scale(1.12); }
+  80%  { transform: rotate(10deg)  scale(1.12); }
+  100% { transform: rotate(0deg)   scale(1); }
+}
+
+.rl-dice-icon.is-spinning {
+  animation: rl-dice-shake 0.35s ease-in-out infinite;
+}
+
+.rl-spin-prov {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-height: 1.2em;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+/* Filter section */
+.rl-filter-section {
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.rl-filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px 7px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rl-region-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.rl-pool-count {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.rl-groups {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Group row (Luzon / Visayas / Mindanao) */
+.rl-group {
+  border-bottom: 1px solid var(--border);
+}
+.rl-group:last-child {
+  border-bottom: none;
+}
+
+.rl-group-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.rl-group-btn:hover {
+  background: var(--bg);
+}
+
+.rl-group-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.12s;
+  color: transparent;
+}
+
+.rl-group-btn.is-all .rl-group-check,
+.rl-group-btn.is-partial .rl-group-check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.rl-group-btn.is-partial .rl-group-check {
+  background: var(--accent);
+  opacity: 0.7;
+}
+
+.rl-group-check svg {
+  width: 10px;
+  height: 10px;
+}
+
+.rl-group-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+}
+
+.rl-group-btn.is-all .rl-group-label {
+  color: var(--accent-dark);
+}
+
+.rl-group-count {
+  font-size: 0.67rem;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* Individual region checkboxes */
+.rl-check-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 0 10px 10px 36px;
+}
+
+.rl-check-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s;
+}
+
+.rl-check-row:hover {
+  background: var(--bg);
+}
+
+.rl-checkbox {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-sidebar);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.12s;
+  color: transparent;
+}
+
+.rl-checkbox.is-checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.rl-checkbox svg {
+  width: 10px;
+  height: 8px;
+}
+
+.rl-check-label {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.2;
+  transition: color 0.12s;
+}
+
+.rl-check-row.is-checked .rl-check-label {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Spin button */
+.rl-spin-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: opacity 0.15s, transform 0.1s;
+  letter-spacing: 0.02em;
+}
+
+.rl-spin-btn:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.rl-spin-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.rl-spin-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rl-spin-btn.is-spinning {
+  background: var(--text-muted);
+}
+
+.rl-spin-btn.is-again {
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+}
+
+.rl-spin-btn.is-again:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Result card */
+.rl-result-card {
+  background: var(--bg-sidebar);
+  border: 2px solid var(--accent);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  text-align: center;
+}
+
+.rl-result-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.rl-result-prov {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.rl-result-region {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .rl-filter-section {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .rl-filter-header {
+  border-color: #334155;
+}
+
+[data-theme="dark"] .rl-group {
+  border-color: #334155;
+}
+
+[data-theme="dark"] .rl-group-btn:hover {
+  background: #0f172a;
+}
+
+[data-theme="dark"] .rl-group-check {
+  background: #0f172a;
+  border-color: #475569;
+}
+
+[data-theme="dark"] .rl-checkbox {
+  background: #0f172a;
+  border-color: #475569;
+}
+
+[data-theme="dark"] .rl-check-row:hover {
+  background: #0f172a;
+}
+
+[data-theme="dark"] .rl-result-card {
+  background: #1e293b;
 }
 
 /* ── Travel Level tool ──────────────────────────────────── */
@@ -2004,6 +2430,383 @@ html:not([data-theme="dark"]) .sp-toggle-track {
 }
 
 /* ── Responsive ────────────────────────────────────────── */
+/* ── Local Guesser tool ─────────────────────────────────── */
+.province-group.is-gg-correct .province {
+  fill: #4ade80;
+  animation: gg-correct-pulse 1s ease-in-out infinite;
+}
+.province-group.is-gg-wrong .province {
+  fill: #f87171;
+}
+
+@keyframes gg-correct-pulse {
+  0%, 100% { fill: #4ade80; }
+  50%       { fill: #22c55e; }
+}
+
+.gg-score-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0 10px;
+}
+.gg-score-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.gg-score-val {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.gg-preview-wrap {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  border-radius: 10px;
+  /* negative inset on top/sides lets the 36px pin overflow without clipping;
+     bottom stays flush so tiles don't bleed below the card */
+  clip-path: inset(-44px -24px 0 -24px round 10px);
+  border: 1.5px solid var(--border);
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.gg-map-preview {
+  width: 100%;
+  height: 100%;
+}
+
+/* Prevent Leaflet pointer-events from absorbing the click overlay */
+.gg-map-preview .leaflet-interactive { pointer-events: none; }
+
+/* Unclip Leaflet containers so pin markers aren't cropped */
+.gg-map-preview .leaflet-container,
+#gg-map-modal .leaflet-container { overflow: visible; }
+.gg-map-preview .leaflet-map-pane,
+#gg-map-modal .leaflet-map-pane { overflow: visible; }
+
+.gg-expand-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1000;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 7px;
+  cursor: pointer;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s;
+}
+.gg-expand-btn:hover { background: #fff; }
+
+/* ── Fullscreen modal ── */
+@keyframes gg-overlay-in  { from { opacity: 0; }          to { opacity: 1; } }
+@keyframes gg-overlay-out { from { opacity: 1; }          to { opacity: 0; } }
+@keyframes gg-modal-in    { from { opacity: 0; transform: scale(0.88) translateY(24px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes gg-modal-out   { from { opacity: 1; transform: scale(1) translateY(0); }       to { opacity: 0; transform: scale(0.88) translateY(24px); } }
+
+.gg-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.68);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: gg-overlay-in 0.22s ease;
+}
+.gg-modal-overlay.is-closing {
+  animation: gg-overlay-out 0.2s ease forwards;
+}
+
+.gg-modal-inner {
+  position: relative;
+  width: min(90vw, 900px);
+  height: min(80vh, 700px);
+  border-radius: 14px;
+  clip-path: inset(0 round 14px);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  animation: gg-modal-in 0.28s cubic-bezier(0.34, 1.28, 0.64, 1);
+}
+.gg-modal-overlay.is-closing .gg-modal-inner {
+  animation: gg-modal-out 0.2s ease forwards;
+}
+
+#gg-map-modal {
+  width: 100%;
+  height: 100%;
+}
+
+.gg-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10000;
+  background: rgba(255,255,255,0.92);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s;
+}
+.gg-modal-close:hover { background: #fff; }
+
+.gg-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0 0 8px;
+}
+
+.gg-result-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.gg-result-card.is-correct {
+  background: #dcfce7;
+  border: 1.5px solid #4ade80;
+  color: #166534;
+}
+.gg-result-card.is-wrong {
+  background: #fee2e2;
+  border: 1.5px solid #f87171;
+  color: #991b1b;
+}
+.gg-result-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.gg-next-btn {
+  width: 100%;
+  padding: 11px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: opacity 0.15s;
+}
+.gg-next-btn:hover {
+  opacity: 0.88;
+}
+
+[data-theme="dark"] .gg-result-card.is-correct {
+  background: #14532d;
+  border-color: #4ade80;
+  color: #bbf7d0;
+}
+[data-theme="dark"] .gg-result-card.is-wrong {
+  background: #7f1d1d;
+  border-color: #f87171;
+  color: #fecaca;
+}
+
+/* ── Game bar (round + streak + timer) ── */
+.gg-game-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0 2px;
+}
+.gg-round-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.gg-round-label strong {
+  color: var(--text);
+  font-size: 0.88rem;
+}
+.gg-round-of { opacity: 0.5; }
+
+.gg-streak {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #f97316;
+}
+.gg-streak.is-hot { animation: gg-streak-pulse 0.45s ease; }
+@keyframes gg-streak-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.gg-timer {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 28px;
+  text-align: right;
+}
+.gg-timer.is-urgent {
+  color: #ef4444;
+  animation: gg-timer-blink 0.5s ease infinite;
+}
+@keyframes gg-timer-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ── Timer bar ── */
+.gg-timer-bar {
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.gg-timer-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.9s linear, background 0.3s;
+}
+.gg-timer-fill.is-urgent { background: #ef4444; }
+
+/* ── Distance chip inside result card ── */
+.gg-distance {
+  display: block;
+  font-size: 0.74rem;
+  margin-top: 3px;
+  opacity: 0.72;
+}
+
+/* ── Score pop (floating +1 / ✕) ── */
+@keyframes gg-score-pop {
+  0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -130%) scale(1.5); }
+}
+.gg-score-pop {
+  position: fixed;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.2rem;
+  font-weight: 900;
+  pointer-events: none;
+  z-index: 9998;
+  animation: gg-score-pop 0.65s ease forwards;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.gg-score-pop.is-correct { color: #22c55e; }
+.gg-score-pop.is-wrong   { color: #ef4444; }
+
+/* ── Summary screen ── */
+.gg-summary {
+  padding: 6px 0 4px;
+}
+.gg-summary-grade {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 2px;
+}
+.gg-summary-score {
+  font-size: 2rem;
+  font-weight: 900;
+  text-align: center;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.gg-summary-total {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.gg-summary-tag {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.gg-summary-streak {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #f97316;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.gg-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.gg-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+.gg-summary-row.is-correct { background: #dcfce7; color: #166534; }
+.gg-summary-row.is-wrong   { background: #fee2e2; color: #991b1b; }
+.gg-summary-num  { font-weight: 700; min-width: 16px; }
+.gg-summary-prov { flex: 1; font-weight: 600; }
+.gg-summary-dist { font-size: 0.72rem; opacity: 0.72; white-space: nowrap; }
+
+.gg-play-again-btn {
+  width: 100%;
+  padding: 11px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: opacity 0.15s;
+}
+.gg-play-again-btn:hover { opacity: 0.88; }
+
+[data-theme="dark"] .gg-summary-row.is-correct { background: #14532d; color: #bbf7d0; }
+[data-theme="dark"] .gg-summary-row.is-wrong   { background: #7f1d1d; color: #fecaca; }
+
+/* Soften CartoDB dark_nolabels from pitch-black to a warm dark slate */
+[data-theme="dark"] .gg-map-preview,
+[data-theme="dark"] #gg-map-modal {
+  filter: brightness(1.55) contrast(0.88) saturate(1.1);
+}
+
+/* ────────────────────────────────────────────────────────── */
+
 @media (max-width: 640px) {
   :root {
     --sidebar-w: 220px;

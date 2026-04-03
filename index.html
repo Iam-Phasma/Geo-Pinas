@@ -38,6 +38,7 @@
     />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -195,7 +196,17 @@
 
     <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
+    <!-- Tools (must load after app.js; travel before roulette) -->
+    <script src="js/tools/weather.js"></script>
+    <script src="js/tools/quiz.js"></script>
+    <script src="js/tools/travel.js"></script>
+    <script src="js/tools/roulette.js"></script>
+    <script src="js/tools/geoguesser.js"></script>
+    <!-- Boot: runs last, after all tools are defined -->
+    <script src="js/boot.js"></script>
   </body>
 </html>
