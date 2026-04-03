@@ -7,7 +7,7 @@
 
 "use strict";
 
-const CONVEX_SITE_URL = "https://brazen-bird-53.convex.site";
+const CONVEX_SITE_URL = "https://industrious-heron-706.convex.site";
 
 (async function trackVisitor() {
   try {
