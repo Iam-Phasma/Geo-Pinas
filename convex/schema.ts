@@ -5,4 +5,8 @@ export default defineSchema({
   visitors: defineTable({
     count: v.number(),
   }),
+  visitorIps: defineTable({
+    ip: v.string(),
+    lastVisit: v.number(),
+  }).index("by_ip", ["ip"]),
 });
