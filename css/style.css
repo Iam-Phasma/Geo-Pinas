@@ -1076,7 +1076,6 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
 }
 
 .snap-preview-download {
-  flex: 1;
   background: var(--accent, #3b82f6);
   border: none;
   border-radius: 8px;

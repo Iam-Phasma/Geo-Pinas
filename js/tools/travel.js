@@ -543,13 +543,13 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
   // Geo Pinas
   ctx.fillStyle = "#c13724";
   ctx.font = `900 ${fs(0.110)}px 'Impact', sans-serif`;
-  ctx.fillText("Geo Pinas", ix, cy + titleH);
+  ctx.fillText("Philippines", ix, cy + titleH);
   cy += titleH;
 
   // My Travel Level Postcard
   ctx.fillStyle = "#e1503d";
   ctx.font = `600  ${fs(0.026)}px Georgia, serif`;
-  ctx.fillText("My Travel Level Postcard", ix, cy + subtitleH * 0.82);
+  ctx.fillText("#My-Travel-Level-Postcard", ix, cy + subtitleH * 0.82);
   cy += subtitleH + gap;
 
   // Score %
@@ -561,7 +561,7 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
   // Province count 
   ctx.fillStyle = "#198c36";
   ctx.font = `bold  ${fs(0.026)}px Georgia, serif`;
-  ctx.fillText(`${logged} of ${total} provinces explored`, ix, cy + countH * 0.78);
+  ctx.fillText(`Got ${logged} of ${total} provinces explored`, ix, cy + countH * 0.78);
   cy += countH + gap + 20;
 
   // Levels
@@ -633,11 +633,28 @@ function _showPostcardPreview(canvas) {
   document.getElementById("snap-preview-close").addEventListener("click", close);
   document.getElementById("snap-preview-cancel").addEventListener("click", close);
   document.getElementById("snap-preview-dl").addEventListener("click", () => {
-    const link = document.createElement("a");
-    link.download = "geo-pinas-travel.png";
-    link.href = dataUrl;
-    link.click();
-    close();
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], "geo-pinas-travel.png", { type: "image/png" });
+      // On mobile, use Web Share API so the image goes to the photo gallery
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: "Geo Pinas Travel Postcard" });
+          close();
+          return;
+        } catch (e) {
+          if (e.name === "AbortError") { close(); return; }
+          // fall through to normal download on share failure
+        }
+      }
+      // Desktop / fallback: trigger a normal file download
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = "geo-pinas-travel.png";
+      link.href = url;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      close();
+    }, "image/png");
   });
 }
 
