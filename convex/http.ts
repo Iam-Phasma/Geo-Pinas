@@ -3,7 +3,6 @@ import { trackVisit } from "./visitors";
 
 const http = httpRouter();
 
-// POST /track — increment visitor count and return the new total
 http.route({
   path: "/track",
   method: "POST",

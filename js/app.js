@@ -7,22 +7,16 @@
 
 "use strict";
 
-// ── Visitor counter ────────────────────────────────────────────
-// Replace this URL after running `npx convex dev`.
-// It will look like: https://your-project-name.convex.site
 const CONVEX_SITE_URL = "https://brazen-bird-53.convex.site";
 
 (async function trackVisitor() {
-  if (!CONVEX_SITE_URL || CONVEX_SITE_URL === "YOUR_CONVEX_SITE_URL") return;
   try {
     const res = await fetch(`${CONVEX_SITE_URL}/track`, { method: "POST" });
     if (!res.ok) return;
     const { count } = await res.json();
     const el = document.getElementById("visitor-count");
     if (el) el.textContent = count.toLocaleString();
-  } catch {
-    // silently fail — counter is non-critical
-  }
+  } catch {}
 })();
 
 
