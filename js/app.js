@@ -656,9 +656,9 @@ const TRAVEL_ACHIEVEMENTS = [
     progress: m => ({ n: Math.min(Object.keys(m).length, 50), total: 50 }) },
   { id: "home",    icon: "🏠", title: "Called It Home",     desc: "Mark at least one province as Lived",
     progress: m => ({ n: Object.values(m).some(v => v === "lived") ? 1 : 0, total: 1 }) },
-  { id: "luzon",   icon: "🏆", title: "Luzon Explorer",     desc: "Log all Luzon provinces",
+  { id: "luzon",   icon: "🚗", title: "Luzon Explorer",     desc: "Log all Luzon provinces",
     progress: m => { const p = _travelProvsByRegions(_LUZON_REGIONS);    return { n: p.filter(x => m[x]).length, total: p.length }; } },
-  { id: "visayas", icon: "🏆", title: "Visayas Voyager",    desc: "Log all Visayas provinces",
+  { id: "visayas", icon: "⛵", title: "Visayas Voyager",    desc: "Log all Visayas provinces",
     progress: m => { const p = _travelProvsByRegions(_VISAYAS_REGIONS);  return { n: p.filter(x => m[x]).length, total: p.length }; } },
   { id: "mndnao",  icon: "🦅", title: "Mindanao Eagle",     desc: "Log all Mindanao provinces",
     progress: m => { const p = _travelProvsByRegions(_MINDANAO_REGIONS); return { n: p.filter(x => m[x]).length, total: p.length }; } },
@@ -706,12 +706,8 @@ function _clearTravelColors() {
 
 function _travelScore() {
   const all = Object.keys(PROVINCE_REGION);
-  let sum = 0, logged = 0;
-  for (const p of all) {
-    const lvl = _travelMap[p];
-    if (lvl) { logged++; sum += TRAVEL_LEVELS.find(l => l.id === lvl)?.weight ?? 0; }
-  }
-  return { score: Math.round(sum / (all.length * 5) * 1000) / 10, logged, total: all.length };
+  const logged = all.filter(p => _travelMap[p]).length;
+  return { score: Math.round(logged / all.length * 1000) / 10, logged, total: all.length };
 }
 
 function showTravelTool() {
