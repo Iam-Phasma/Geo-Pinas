@@ -1308,6 +1308,40 @@ function selectProvinceById(id) {
   showProvinceInfo(d3.select(grp).datum());
 }
 
+async function _fetchProvinceWiki(provName) {
+  const section = document.getElementById("explore-wiki-section");
+  if (!section) return;
+
+  const tryFetch = async (title) => {
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) throw new Error(res.status);
+    return res.json();
+  };
+
+  let data = null;
+  const attempts = [`${provName}, Philippines`, provName, `${provName} (province)`];
+  for (const title of attempts) {
+    try { data = await tryFetch(title); break; } catch { /* try next */ }
+  }
+
+  if (!data) {
+    section.innerHTML = "";
+    return;
+  }
+
+  // Trim extract to ~3 sentences
+  const sentences = (data.extract || "").replace(/\n/g, " ").split(/(?<=[.!?])\s+/);
+  const extract = sentences.slice(0, 3).join(" ");
+
+  section.innerHTML = `
+    ${data.description ? `<div class="exp-wiki-desc">${escapeHtml(data.description)}</div>` : ""}
+    ${extract ? `<p class="exp-wiki-extract">${escapeHtml(extract)}</p>` : ""}
+    <a class="exp-wiki-link" href="${escapeHtml(data.content_urls?.desktop?.page ?? "")}"
+       target="_blank" rel="noopener noreferrer">Read more on Wikipedia ↗</a>
+  `;
+}
+
 function showProvinceInfo(prov) {
   _activeToolId = null;
   setSidebarTitle(prov.id);
@@ -1339,7 +1373,14 @@ function showProvinceInfo(prov) {
     </div>`
         : ""
     }
+    <div id="explore-wiki-section" class="explore-wiki-section">
+      <div class="exp-wiki-skeleton"></div>
+      <div class="exp-wiki-skeleton" style="width:85%"></div>
+      <div class="exp-wiki-skeleton" style="width:65%"></div>
+    </div>
   `;
+
+  _fetchProvinceWiki(prov.id);
 
   document.querySelector(".info-back").addEventListener("click", () => {
     if (_selectedGroup) {
@@ -1417,41 +1458,63 @@ function showProvinceInfo(prov) {
 
   // ── Dark mode toggle ──────────────────────────────────────────
   const darkToggle = document.getElementById("darkmode-toggle");
-  // Respect device preference on load
-  if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  const _savedTheme = localStorage.getItem("geopinas-theme");
+  const _prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const _initDark = _savedTheme ? _savedTheme === "dark" : _prefersDark;
+  if (_initDark) {
     document.documentElement.setAttribute("data-theme", "dark");
     darkToggle.setAttribute("aria-checked", "true");
   }
   darkToggle.addEventListener("click", () => {
     const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    document.documentElement.setAttribute("data-theme", isDark ? "light" : "dark");
+    const next = isDark ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
     darkToggle.setAttribute("aria-checked", String(!isDark));
+    localStorage.setItem("geopinas-theme", next);
   });
 
   // ── Sea texture toggle ────────────────────────────────────────
   const seaToggle = document.getElementById("sea-texture-toggle");
+  const _initSeaTex = localStorage.getItem("geopinas-sea-texture");
+  if (_initSeaTex === "false") {
+    seaToggle.setAttribute("aria-checked", "false");
+    // ocean-pattern not in DOM yet; patched after initMap via MutationObserver below
+  }
   seaToggle.addEventListener("click", () => {
     const on = seaToggle.getAttribute("aria-checked") === "true";
     seaToggle.setAttribute("aria-checked", String(!on));
     const pattern = document.getElementById("ocean-pattern");
     if (pattern) pattern.style.opacity = on ? "0" : "1";
+    localStorage.setItem("geopinas-sea-texture", String(!on));
   });
+  // Apply saved sea-texture after initMap (ocean-pattern now exists)
+  if (_initSeaTex === "false") {
+    const pattern = document.getElementById("ocean-pattern");
+    if (pattern) pattern.style.opacity = "0";
+  }
 
   // ── Borders toggle ────────────────────────────────────────────
   const bordersToggle = document.getElementById("borders-toggle");
+  const _initBorders = localStorage.getItem("geopinas-borders");
+  if (_initBorders === "false") {
+    bordersToggle.setAttribute("aria-checked", "false");
+    document.documentElement.classList.add("no-borders");
+  }
   bordersToggle.addEventListener("click", () => {
     const on = bordersToggle.getAttribute("aria-checked") === "true";
     bordersToggle.setAttribute("aria-checked", String(!on));
     document.documentElement.classList.toggle("no-borders", on);
+    localStorage.setItem("geopinas-borders", String(!on));
   });
 
   // ── Sea color slider ──────────────────────────────────────────
   const SEA_COLOR_STOPS = [
     { v: 0,   r: 255, g: 255, b: 255 },
-    { v: 50,  r: 27,  g: 58,  b: 107 },
+    { v: 33,  r: 135, g: 206, b: 235 },  // sky blue
+    { v: 66,  r: 27,  g: 58,  b: 107 },  // default navy
     { v: 100, r: 2,   g: 8,   b: 18  },
   ];
-  const SEA_COLOR_DEFAULT = 50;
+  const SEA_COLOR_DEFAULT = 66;
 
   function _seaColor(val) {
     let lo = SEA_COLOR_STOPS[0], hi = SEA_COLOR_STOPS[SEA_COLOR_STOPS.length - 1];
@@ -1476,10 +1539,84 @@ function showProvinceInfo(prov) {
 
   const seaColorSlider = document.getElementById("sea-color-slider");
   const seaColorReset = document.getElementById("sea-color-reset");
-  seaColorSlider.addEventListener("input", () => _applySeaColor(Number(seaColorSlider.value)));
+  const _initSeaVal = Number(localStorage.getItem("geopinas-sea-color") ?? SEA_COLOR_DEFAULT);
+  seaColorSlider.value = _initSeaVal;
+  _applySeaColor(_initSeaVal);
+  seaColorSlider.addEventListener("input", () => {
+    const v = Number(seaColorSlider.value);
+    _applySeaColor(v);
+    localStorage.setItem("geopinas-sea-color", v);
+  });
   seaColorReset.addEventListener("click", () => {
     seaColorSlider.value = SEA_COLOR_DEFAULT;
     _applySeaColor(SEA_COLOR_DEFAULT);
+    localStorage.setItem("geopinas-sea-color", SEA_COLOR_DEFAULT);
+  });
+
+  // ── Land color slider ─────────────────────────────────────────
+  const LAND_COLOR_STOPS = [
+    { v: 0,   r: 255, g: 255, b: 255 },
+    { v: 50,  r: 22,  g: 110, b: 62  },  // default #166e3e
+    { v: 100, r: 5,   g: 30,  b: 15  },
+  ];
+  const LAND_COLOR_DEFAULT = 50;
+
+  function _landColor(val) {
+    let lo = LAND_COLOR_STOPS[0], hi = LAND_COLOR_STOPS[LAND_COLOR_STOPS.length - 1];
+    for (let i = 0; i < LAND_COLOR_STOPS.length - 1; i++) {
+      if (val >= LAND_COLOR_STOPS[i].v && val <= LAND_COLOR_STOPS[i + 1].v) {
+        lo = LAND_COLOR_STOPS[i]; hi = LAND_COLOR_STOPS[i + 1]; break;
+      }
+    }
+    const t = hi.v === lo.v ? 0 : (val - lo.v) / (hi.v - lo.v);
+    const r = Math.round(lo.r + (hi.r - lo.r) * t);
+    const g = Math.round(lo.g + (hi.g - lo.g) * t);
+    const b = Math.round(lo.b + (hi.b - lo.b) * t);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function _applyLandColor(val) {
+    const fill = _landColor(val);
+    const t2 = val / 100;
+    const hr = Math.round(22 * t2 * 0.6);
+    const hg = Math.round(110 * t2 * 0.6 + (1 - t2) * 200);
+    const hb = Math.round(62 * t2 * 0.6 + (1 - t2) * 200);
+    const hover = val < 5 ? "rgb(200,200,200)" : `rgb(${hr},${hg},${hb})`;
+    document.documentElement.style.setProperty("--province-fill", fill);
+    document.documentElement.style.setProperty("--province-hover", hover);
+  }
+
+  const landColorSlider = document.getElementById("land-color-slider");
+  const landColorReset = document.getElementById("land-color-reset");
+  const _initLandVal = Number(localStorage.getItem("geopinas-land-color") ?? LAND_COLOR_DEFAULT);
+  landColorSlider.value = _initLandVal;
+  _applyLandColor(_initLandVal);
+  landColorSlider.addEventListener("input", () => {
+    const v = Number(landColorSlider.value);
+    _applyLandColor(v);
+    localStorage.setItem("geopinas-land-color", v);
+  });
+  landColorReset.addEventListener("click", () => {
+    landColorSlider.value = LAND_COLOR_DEFAULT;
+    _applyLandColor(LAND_COLOR_DEFAULT);
+    localStorage.setItem("geopinas-land-color", LAND_COLOR_DEFAULT);
+  });
+
+  // ── Border color swatches ─────────────────────────────────────
+  const BORDER_DEFAULT = "#95ffc1";
+  const _initBorderColor = localStorage.getItem("geopinas-border-color") ?? BORDER_DEFAULT;
+  document.documentElement.style.setProperty("--province-border", _initBorderColor);
+  document.querySelectorAll(".sp-swatch").forEach(s => {
+    s.setAttribute("aria-pressed", s.dataset.color === _initBorderColor ? "true" : "false");
+  });
+  document.getElementById("border-swatches").addEventListener("click", (e) => {
+    const btn = e.target.closest(".sp-swatch");
+    if (!btn) return;
+    const color = btn.dataset.color;
+    document.documentElement.style.setProperty("--province-border", color);
+    document.querySelectorAll(".sp-swatch").forEach(s => s.setAttribute("aria-pressed", "false"));
+    btn.setAttribute("aria-pressed", "true");
+    localStorage.setItem("geopinas-border-color", color);
   });
 
   // Sidebar collapse toggle

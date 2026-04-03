@@ -779,6 +779,59 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   margin: 16px 0;
 }
 
+/* ── Province Wikipedia section ────────────────────────── */
+.explore-wiki-section {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.exp-wiki-skeleton {
+  display: block;
+  height: 11px;
+  width: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg,
+    var(--border) 25%,
+    color-mix(in srgb, var(--border) 60%, transparent) 50%,
+    var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+.exp-wiki-desc {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--text-faint);
+  line-height: 1.4;
+}
+
+.exp-wiki-extract {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.exp-wiki-link {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+  margin-top: 2px;
+}
+
+.exp-wiki-link:hover {
+  text-decoration: underline;
+}
+
 /* ── Tools home cards ──────────────────────────────────── */
 .tools-list {
   display: flex;
@@ -1827,10 +1880,17 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   -webkit-appearance: none;
   height: 4px;
   border-radius: 99px;
-  background: linear-gradient(to right, #ffffff, #1b3a6b, #020812);
   outline: none;
   cursor: pointer;
   display: block;
+}
+
+.sp-slider--sea {
+  background: linear-gradient(to right, #ffffff, #87ceeb, #1b3a6b, #020812);
+}
+
+.sp-slider--land {
+  background: linear-gradient(to right, #ffffff, #166e3e, #05190f);
 }
 
 .sp-slider::-webkit-slider-thumb {
@@ -1852,6 +1912,34 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   border: none;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
   cursor: pointer;
+}
+
+/* Border color swatches */
+.sp-swatches {
+  display: flex;
+  gap: 7px;
+  padding: 2px 0 4px;
+}
+
+.sp-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: border-color 0.15s, transform 0.1s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.sp-swatch:hover {
+  transform: scale(1.15);
+}
+
+.sp-swatch[aria-pressed="true"] {
+  border-color: #3b82f6;
+  transform: scale(1.15);
 }
 
 /* ── Settings panel light mode ──────────────────────────── */
