@@ -380,6 +380,7 @@ function initMap() {
       ) {
         _wasDragging = true;
         tooltip.classList.remove("is-visible");
+        if (_activeToolId === "travel") _closeTravelPicker();
       }
       _g.attr("transform", event.transform);
       updateWeatherEmojiPosition();

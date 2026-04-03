@@ -326,7 +326,7 @@ function _renderTravelPicker(d, event) {
       e.stopPropagation();
       _travelSetLevel(provId, btn.dataset.level);
       _renderTravelOverview();
-      _renderTravelPicker(d, null);
+      _closeTravelPicker();
     });
   });
 
