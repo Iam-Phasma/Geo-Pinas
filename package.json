@@ -1,5 +1,5 @@
 {
-  "name": "geo-pinas",
+  "name": "terralyft",
   "version": "1.0.0",
   "description": "An interactive Philippine province map with explore, weather, travel tracking, quiz, and fun facts tools. Built for fun, free and open source.",
   "main": "index.js",

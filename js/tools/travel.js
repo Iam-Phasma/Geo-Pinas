@@ -91,13 +91,13 @@ const TRAVEL_ACHIEVEMENTS = [
 
 function _travelLoad() {
   try {
-    const raw = localStorage.getItem("geopinas-travel");
+    const raw = localStorage.getItem("terralyft-travel");
     if (raw) _travelMap = JSON.parse(raw);
   } catch { /* ignore */ }
 }
 
 function _travelSave() {
-  try { localStorage.setItem("geopinas-travel", JSON.stringify(_travelMap)); } catch { /* ignore */ }
+  try { localStorage.setItem("terralyft-travel", JSON.stringify(_travelMap)); } catch { /* ignore */ }
 }
 
 function _travelSetLevel(provId, levelId) {
@@ -171,7 +171,7 @@ function _renderTravelOverview() {
   document.getElementById("info-panel").innerHTML = `
     <div class="tl-top-row">
       <button class="tool-back-btn" id="tl-back">‹ Back</button>
-      <button class="tl-snap-btn" id="tl-snap-btn" title="Snap">📸 Snap</button>
+      <button class="tl-snap-btn" id="tl-snap-btn" title="Snap"${score === 0 ? " disabled" : ""}>📸 Snap</button>
     </div>
     <div class="tl-body">
       <div class="tl-score-wrap">
@@ -540,10 +540,10 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
   const iRight = CARD_W - OUTER;
   let cy = FRAME_Y + gap;
 
-  // Geo Pinas
+  // Terralyft
   ctx.fillStyle = "#c13724";
   ctx.font = `900 ${fs(0.110)}px 'Impact', sans-serif`;
-  ctx.fillText("Philippines", ix, cy + titleH);
+  ctx.fillText("Terralyft", ix, cy + titleH);
   cy += titleH;
 
   // My Travel Level Postcard
@@ -634,11 +634,11 @@ function _showPostcardPreview(canvas) {
   document.getElementById("snap-preview-cancel").addEventListener("click", close);
   document.getElementById("snap-preview-dl").addEventListener("click", () => {
     canvas.toBlob(async (blob) => {
-      const file = new File([blob], "geo-pinas-travel.png", { type: "image/png" });
+      const file = new File([blob], "terralyft-travel.png", { type: "image/png" });
       // On mobile, use Web Share API so the image goes to the photo gallery
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: "Geo Pinas Travel Postcard" });
+          await navigator.share({ files: [file], title: "Terralyft Travel Postcard" });
           close();
           return;
         } catch (e) {
@@ -649,7 +649,7 @@ function _showPostcardPreview(canvas) {
       // Desktop / fallback: trigger a normal file download
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.download = "geo-pinas-travel.png";
+      link.download = "terralyft-travel.png";
       link.href = url;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);

@@ -1,5 +1,5 @@
 /* ============================================================
-   GEO PINAS — app.js
+   TERRALYFT — app.js
    Core: map rendering, interaction, navigation, and helpers.
    Tool logic lives in js/tools/. Boot logic in js/boot.js.
    Load order: data.js → app.js → tools/*.js → boot.js

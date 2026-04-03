@@ -45,7 +45,7 @@
 
   // ── Dark mode toggle ──────────────────────────────────────────
   const darkToggle = document.getElementById("darkmode-toggle");
-  const _savedTheme = localStorage.getItem("geopinas-theme");
+  const _savedTheme = localStorage.getItem("terralyft-theme");
   const _prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const _initDark = _savedTheme ? _savedTheme === "dark" : _prefersDark;
   if (_initDark) {
@@ -57,12 +57,12 @@
     const next = isDark ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
     darkToggle.setAttribute("aria-checked", String(!isDark));
-    localStorage.setItem("geopinas-theme", next);
+    localStorage.setItem("terralyft-theme", next);
   });
 
   // ── Sea texture toggle ────────────────────────────────────────
   const seaToggle = document.getElementById("sea-texture-toggle");
-  const _initSeaTex = localStorage.getItem("geopinas-sea-texture");
+  const _initSeaTex = localStorage.getItem("terralyft-sea-texture");
   if (_initSeaTex === "false") {
     seaToggle.setAttribute("aria-checked", "false");
     // ocean-pattern not in DOM yet; patched after initMap via MutationObserver below
@@ -72,7 +72,7 @@
     seaToggle.setAttribute("aria-checked", String(!on));
     const pattern = document.getElementById("ocean-pattern");
     if (pattern) pattern.style.opacity = on ? "0" : "1";
-    localStorage.setItem("geopinas-sea-texture", String(!on));
+    localStorage.setItem("terralyft-sea-texture", String(!on));
   });
   // Apply saved sea-texture after initMap (ocean-pattern now exists)
   if (_initSeaTex === "false") {
@@ -82,7 +82,7 @@
 
   // ── Borders toggle ────────────────────────────────────────────
   const bordersToggle = document.getElementById("borders-toggle");
-  const _initBorders = localStorage.getItem("geopinas-borders");
+  const _initBorders = localStorage.getItem("terralyft-borders");
   if (_initBorders === "false") {
     bordersToggle.setAttribute("aria-checked", "false");
     document.documentElement.classList.add("no-borders");
@@ -91,7 +91,7 @@
     const on = bordersToggle.getAttribute("aria-checked") === "true";
     bordersToggle.setAttribute("aria-checked", String(!on));
     document.documentElement.classList.toggle("no-borders", on);
-    localStorage.setItem("geopinas-borders", String(!on));
+    localStorage.setItem("terralyft-borders", String(!on));
   });
 
   // ── Sea color slider ──────────────────────────────────────────
@@ -126,18 +126,18 @@
 
   const seaColorSlider = document.getElementById("sea-color-slider");
   const seaColorReset = document.getElementById("sea-color-reset");
-  const _initSeaVal = Number(localStorage.getItem("geopinas-sea-color") ?? SEA_COLOR_DEFAULT);
+  const _initSeaVal = Number(localStorage.getItem("terralyft-sea-color") ?? SEA_COLOR_DEFAULT);
   seaColorSlider.value = _initSeaVal;
   _applySeaColor(_initSeaVal);
   seaColorSlider.addEventListener("input", () => {
     const v = Number(seaColorSlider.value);
     _applySeaColor(v);
-    localStorage.setItem("geopinas-sea-color", v);
+    localStorage.setItem("terralyft-sea-color", v);
   });
   seaColorReset.addEventListener("click", () => {
     seaColorSlider.value = SEA_COLOR_DEFAULT;
     _applySeaColor(SEA_COLOR_DEFAULT);
-    localStorage.setItem("geopinas-sea-color", SEA_COLOR_DEFAULT);
+    localStorage.setItem("terralyft-sea-color", SEA_COLOR_DEFAULT);
   });
 
   // ── Land color slider ─────────────────────────────────────────
@@ -175,23 +175,23 @@
 
   const landColorSlider = document.getElementById("land-color-slider");
   const landColorReset = document.getElementById("land-color-reset");
-  const _initLandVal = Number(localStorage.getItem("geopinas-land-color") ?? LAND_COLOR_DEFAULT);
+  const _initLandVal = Number(localStorage.getItem("terralyft-land-color") ?? LAND_COLOR_DEFAULT);
   landColorSlider.value = _initLandVal;
   _applyLandColor(_initLandVal);
   landColorSlider.addEventListener("input", () => {
     const v = Number(landColorSlider.value);
     _applyLandColor(v);
-    localStorage.setItem("geopinas-land-color", v);
+    localStorage.setItem("terralyft-land-color", v);
   });
   landColorReset.addEventListener("click", () => {
     landColorSlider.value = LAND_COLOR_DEFAULT;
     _applyLandColor(LAND_COLOR_DEFAULT);
-    localStorage.setItem("geopinas-land-color", LAND_COLOR_DEFAULT);
+    localStorage.setItem("terralyft-land-color", LAND_COLOR_DEFAULT);
   });
 
   // ── Border color swatches ─────────────────────────────────────
   const BORDER_DEFAULT = "#95ffc1";
-  const _initBorderColor = localStorage.getItem("geopinas-border-color") ?? BORDER_DEFAULT;
+  const _initBorderColor = localStorage.getItem("terralyft-border-color") ?? BORDER_DEFAULT;
   document.documentElement.style.setProperty("--province-border", _initBorderColor);
   document.querySelectorAll(".sp-swatch").forEach(s => {
     s.setAttribute("aria-pressed", s.dataset.color === _initBorderColor ? "true" : "false");
@@ -203,7 +203,7 @@
     document.documentElement.style.setProperty("--province-border", color);
     document.querySelectorAll(".sp-swatch").forEach(s => s.setAttribute("aria-pressed", "false"));
     btn.setAttribute("aria-pressed", "true");
-    localStorage.setItem("geopinas-border-color", color);
+    localStorage.setItem("terralyft-border-color", color);
   });
 
   // ── Sidebar collapse / mobile bottom sheet ───────────────────

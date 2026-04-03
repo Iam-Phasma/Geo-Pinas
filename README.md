@@ -1,4 +1,4 @@
-# Geo Pinas
+# Terralyft
 
 An interactive Philippine province map built for fun, free and open source.
 
