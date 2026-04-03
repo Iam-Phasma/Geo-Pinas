@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://iam-phasma.github.io/Geo-Pinas/sitemap.xml
