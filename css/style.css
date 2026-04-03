@@ -194,6 +194,13 @@ body {
   gap: 12px;
 }
 
+.header-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
 .logo {
   font-size: 1.25rem;
   font-weight: 700;
