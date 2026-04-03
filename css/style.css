@@ -380,6 +380,11 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   opacity: 1;
 }
 
+/* Hide hover tooltip on touch devices — province name shows in panel instead */
+@media (pointer: coarse) {
+  .tooltip { display: none !important; }
+}
+
 /* ── Sidebar ───────────────────────────────────────────── */
 #sidebar {
   width: var(--sidebar-w);
