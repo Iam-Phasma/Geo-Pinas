@@ -279,6 +279,45 @@ function _ggClearHighlights() {
     d3.select(node).classed("is-gg-correct", false).classed("is-gg-wrong", false);
   });
   _ggHighlights = [];
+  _g.select("#gg-line-layer").remove();
+}
+
+function _ggProvSvgCenter(provId) {
+  const grp = _g.selectAll(".province-group").filter(d => d.id === provId).node();
+  if (!grp) return null;
+  const m = (grp.getAttribute("transform") || "").match(/translate\(\s*([\d.]+)[,\s]+([\d.]+)/);
+  const tx = m ? +m[1] : 0;
+  const ty = m ? +m[2] : 0;
+  const pathEl = grp.querySelector(".province");
+  if (!pathEl) return { x: tx, y: ty };
+  const b = pathEl.getBBox();
+  return { x: tx + b.x + b.width / 2, y: ty + b.y + b.height / 2 };
+}
+
+function _ggDrawGuessingLine(correctId, guessId) {
+  _g.select("#gg-line-layer").remove();
+  if (!guessId || correctId === guessId) return;
+  const a = _ggProvSvgCenter(correctId);
+  const b = _ggProvSvgCenter(guessId);
+  if (!a || !b) return;
+
+  const layer = _g.append("g").attr("id", "gg-line-layer");
+
+  layer.append("line")
+    .attr("x1", a.x).attr("y1", a.y)
+    .attr("x2", b.x).attr("y2", b.y)
+    .attr("stroke", "#f97316")
+    .attr("stroke-width", 5)
+    .attr("stroke-dasharray", "7 5")
+    .attr("opacity", 0.9);
+
+  [a, b].forEach(p => {
+    layer.append("circle")
+      .attr("cx", p.x).attr("cy", p.y).attr("r", 3)
+      .attr("fill", "#f97316")
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 1);
+  });
 }
 
 function _ggHighlight(provId, cls) {
@@ -302,6 +341,7 @@ function showGeoGuesserTool() {
 
 function _ggShowIntro() {
   document.getElementById("info-panel").innerHTML = `
+    <button class="tool-back-btn" id="gg-intro-back">‹ Back</button>
     <div class="gg-intro">
       <div class="gg-intro-icon">📍</div>
       <h2 class="gg-intro-title">Local Guesser</h2>
@@ -315,6 +355,11 @@ function _ggShowIntro() {
       <button class="gg-start-btn" id="gg-start-btn">Start Game</button>
     </div>
   `;
+  document.getElementById("gg-intro-back").addEventListener("click", () => {
+    _ggReset();
+    _activeToolId = null;
+    showToolsHome();
+  });
   document.getElementById("gg-start-btn").addEventListener("click", _ggNewRound);
 }
 
@@ -323,6 +368,11 @@ function _ggNewRound() {
   _ggDestroyModal();
   _ggAnswered = false;
   _ggClearHighlights();
+  // Clear any province selection left from the guess click
+  if (_selectedGroup) {
+    d3.select(_selectedGroup).classed("is-selected", false);
+    _selectedGroup = null;
+  }
   _ggRoundNum++;
 
   if (_ggRoundNum > _GG_MAX_ROUNDS) {
@@ -504,7 +554,10 @@ function _ggGuess(guessProvId) {
   _ggHistory.push({ correct, timedOut, prov: _ggRound.prov, guess: guessProvId, dist });
 
   _ggHighlight(_ggRound.prov, "is-gg-correct");
-  if (!timedOut && !correct) _ggHighlight(guessProvId, "is-gg-wrong");
+  if (!timedOut && !correct) {
+    _ggHighlight(guessProvId, "is-gg-wrong");
+    _ggDrawGuessingLine(_ggRound.prov, guessProvId);
+  }
 
   _ggScorePop(correct);
   _renderGeoGuesser({ correct, timedOut, prov: _ggRound.prov, dist });
