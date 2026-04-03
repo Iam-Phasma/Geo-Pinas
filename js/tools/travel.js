@@ -622,7 +622,7 @@ function _showPostcardPreview(canvas) {
       </div>
       <div class="snap-preview-actions">
         <button class="snap-preview-cancel" id="snap-preview-cancel">Cancel</button>
-        <button class="snap-preview-download" id="snap-preview-dl">⬇ Download PNG</button>
+        <button class="snap-preview-download" id="snap-preview-dl">Download</button>
       </div>
     </div>
   `;

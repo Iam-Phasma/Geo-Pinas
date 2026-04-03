@@ -567,7 +567,7 @@ function showIdlePanel() {
       .join("");
     list.querySelectorAll(".idle-prov-btn").forEach((btn) => {
       btn.addEventListener("click", () =>
-        selectProvinceById(btn.dataset.province),
+        selectProvinceById(btn.dataset.province, true),
       );
     });
   }
@@ -648,7 +648,7 @@ function showIdlePanel() {
       btn.addEventListener("click", () => {
         searchInput.value = "";
         suggBox.hidden = true;
-        selectProvinceById(btn.dataset.province);
+        selectProvinceById(btn.dataset.province, true);
       });
     });
   });
@@ -665,7 +665,7 @@ function showIdlePanel() {
   });
 }
 
-function selectProvinceById(id) {
+function selectProvinceById(id, fromExplore = false) {
   const grp = _g
     .selectAll(".province-group")
     .filter((d) => d.id === id)
@@ -676,7 +676,7 @@ function selectProvinceById(id) {
   }
   _selectedGroup = grp;
   d3.select(grp).classed("is-selected", true).raise();
-  showProvinceInfo(d3.select(grp).datum());
+  showProvinceInfo(d3.select(grp).datum(), fromExplore);
 }
 
 async function _fetchProvinceWiki(provName) {
@@ -713,7 +713,7 @@ async function _fetchProvinceWiki(provName) {
   `;
 }
 
-function showProvinceInfo(prov) {
+function showProvinceInfo(prov, fromExplore = false) {
   _activeToolId = null;
   setSidebarTitle(prov.id);
   _clearQuizHighlight();
@@ -758,7 +758,8 @@ function showProvinceInfo(prov) {
       d3.select(_selectedGroup).classed("is-selected", false);
       _selectedGroup = null;
     }
-    showToolsHome();
+    if (fromExplore) showIdlePanel();
+    else showToolsHome();
   });
 
   if (!initialSrc) return;

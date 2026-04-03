@@ -206,21 +206,53 @@
     localStorage.setItem("geopinas-border-color", color);
   });
 
-  // Sidebar collapse toggle
+  // ── Sidebar collapse / mobile bottom sheet ───────────────────
   const sidebar = document.getElementById("sidebar");
-  document.getElementById("sidebar-toggle").addEventListener("click", () => {
+  const sidebarToggle = document.getElementById("sidebar-toggle");
+  const mobileBackdrop = document.getElementById("mobile-backdrop");
+
+  function isMobile() { return window.innerWidth <= 640; }
+
+  function openMobileSheet() {
+    sidebar.classList.remove("is-collapsed");
+    sidebar.classList.add("is-mobile-open");
+    mobileBackdrop.classList.add("is-visible");
+    sidebarToggle.textContent = "×";
+    sidebarToggle.setAttribute("aria-label", "Close panel");
+    sidebarToggle.setAttribute("title", "Close");
+  }
+  window._openMobileSheet = openMobileSheet;
+
+  function closeMobileSheet() {
+    sidebar.classList.remove("is-mobile-open");
+    mobileBackdrop.classList.remove("is-visible");
+    sidebarToggle.textContent = "‹";
+    sidebarToggle.setAttribute("aria-label", "Collapse sidebar");
+    sidebarToggle.setAttribute("title", "Collapse");
+  }
+
+  sidebarToggle.addEventListener("click", () => {
+    if (isMobile()) { closeMobileSheet(); return; }
     const collapsed = sidebar.classList.toggle("is-collapsed");
-    document
-      .getElementById("sidebar-toggle")
-      .setAttribute(
-        "aria-label",
-        collapsed ? "Expand sidebar" : "Collapse sidebar",
-      );
-    // Resize map after the CSS transition finishes
+    sidebarToggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
     sidebar.addEventListener(
       "transitionend",
       () => window.dispatchEvent(new Event("resize")),
       { once: true },
     );
+  });
+
+  document.getElementById("mobile-fab").addEventListener("click", openMobileSheet);
+  mobileBackdrop.addEventListener("click", closeMobileSheet);
+
+  // Restore desktop state on resize out of mobile
+  window.addEventListener("resize", () => {
+    if (!isMobile()) {
+      sidebar.classList.remove("is-mobile-open");
+      mobileBackdrop.classList.remove("is-visible");
+      sidebarToggle.textContent = "‹";
+      sidebarToggle.setAttribute("aria-label", "Collapse sidebar");
+      sidebarToggle.setAttribute("title", "Collapse");
+    }
   });
 })();

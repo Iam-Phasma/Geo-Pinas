@@ -37,6 +37,7 @@ new MutationObserver(() => {
 let _ggRound         = null;
 let _ggAnswered      = false;
 let _ggScore         = { correct: 0, total: 0 };
+const _GG_HALF_DIST  = 100; // km threshold for half-point
 let _ggRoundNum      = 0;
 let _ggStreak        = 0;
 let _ggBestStreak    = 0;
@@ -151,10 +152,11 @@ function _ggTickTimer() {
 }
 
 // ── Score pop ─────────────────────────────────────────────────
-function _ggScorePop(correct) {
+// result: 'correct' | 'half' | 'wrong'
+function _ggScorePop(result) {
   const el = document.createElement("div");
-  el.className = "gg-score-pop " + (correct ? "is-correct" : "is-wrong");
-  el.textContent = correct ? "+1" : "\u2715";
+  el.className = "gg-score-pop " + (result === "correct" ? "is-correct" : result === "half" ? "is-half" : "is-wrong");
+  el.textContent = result === "correct" ? "+1" : result === "half" ? "+½" : "✕";
   document.body.appendChild(el);
   el.addEventListener("animationend", () => el.remove(), { once: true });
 }
@@ -167,7 +169,7 @@ function _ggReset() {
   _ggStopTimer();
   _ggRound      = null;
   _ggAnswered   = false;
-  _ggScore      = { correct: 0, total: 0 };
+  _ggScore      = { correct: 0, half: 0, total: 0 };
   _ggRoundNum   = 0;
   _ggStreak     = 0;
   _ggBestStreak = 0;
@@ -415,7 +417,7 @@ function _renderGeoGuesser(result) {
   const scoreHtml = `
     <div class="gg-score-bar">
       <span class="gg-score-label">Score</span>
-      <span class="gg-score-val">${_ggScore.correct} / ${_ggScore.total}</span>
+      <span class="gg-score-val">${_ggScore.correct % 1 === 0 ? _ggScore.correct : _ggScore.correct.toFixed(1)} / ${_ggScore.total}</span>
     </div>`;
 
   let resultHtml;
@@ -495,9 +497,9 @@ function _ggShowSummary() {
                 : 'Keep practicing!';
 
   const rows = _ggHistory.map((h, i) => `
-    <div class="gg-summary-row ${h.correct ? 'is-correct' : 'is-wrong'}">
+    <div class="gg-summary-row ${h.correct ? 'is-correct' : h.half ? 'is-half' : 'is-wrong'}">
       <span class="gg-summary-num">${i + 1}</span>
-      <span class="gg-summary-icon">${h.correct ? '\u2705' : h.timedOut ? '\u23F0' : '\u274C'}</span>
+      <span class="gg-summary-icon">${h.correct ? '\u2705' : h.half ? '\u00bd' : h.timedOut ? '\u23F0' : '\u274C'}</span>
       <span class="gg-summary-prov">${escapeHtml(h.prov)}</span>
       ${h.dist != null ? `<span class="gg-summary-dist">\u2248 ${Math.round(h.dist).toLocaleString()} km</span>` : ''}
     </div>`).join('');
@@ -506,7 +508,7 @@ function _ggShowSummary() {
     <button class="tool-back-btn" id="gg-back">\u2039 Back</button>
     <div class="gg-summary">
       <div class="gg-summary-grade">${grade}</div>
-      <div class="gg-summary-score">${correct} <span class="gg-summary-total">/ ${total}</span></div>
+      <div class="gg-summary-score">${correct % 1 === 0 ? correct : correct.toFixed(1)} <span class="gg-summary-total">/ ${total}</span></div>
       <div class="gg-summary-tag">${tag}</div>
       ${_ggBestStreak >= 2 ? `<div class="gg-summary-streak">\uD83D\uDD25 Best streak: ${_ggBestStreak}</div>` : ''}
       <div class="gg-summary-list">${rows}</div>
@@ -533,32 +535,44 @@ function _ggGuess(guessProvId) {
   const timedOut = guessProvId === null;
   const correct  = !timedOut && guessProvId === _ggRound.prov;
 
-  _ggScore.total++;
-  if (correct) {
-    _ggScore.correct++;
-    _ggStreak++;
-    if (_ggStreak > _ggBestStreak) _ggBestStreak = _ggStreak;
-  } else {
-    _ggStreak = 0;
-  }
-
   let dist = null;
+  let half = false;
   if (!correct && !timedOut) {
     const correctC = _ggProvCentroid(_ggRound.prov);
     const guessC   = _ggProvCentroid(guessProvId);
     if (correctC && guessC) {
       dist = _ggHaversine(guessC.lat, guessC.lng, correctC.lat, correctC.lng);
+      half = dist <= _GG_HALF_DIST;
     }
   }
 
-  _ggHistory.push({ correct, timedOut, prov: _ggRound.prov, guess: guessProvId, dist });
+  _ggScore.total++;
+  if (correct) {
+    _ggScore.correct++;
+    _ggStreak++;
+    if (_ggStreak > _ggBestStreak) _ggBestStreak = _ggStreak;
+  } else if (half) {
+    _ggScore.correct += 0.5;
+    _ggScore.half++;
+    // half-point doesn't reset or extend streak
+  } else {
+    _ggStreak = 0;
+  }
+
+  _ggHistory.push({ correct, half, timedOut, prov: _ggRound.prov, guess: guessProvId, dist });
 
   _ggHighlight(_ggRound.prov, "is-gg-correct");
   if (!timedOut && !correct) {
-    _ggHighlight(guessProvId, "is-gg-wrong");
+    _ggHighlight(guessProvId, half ? "is-gg-half" : "is-gg-wrong");
     _ggDrawGuessingLine(_ggRound.prov, guessProvId);
   }
 
-  _ggScorePop(correct);
-  _renderGeoGuesser({ correct, timedOut, prov: _ggRound.prov, dist });
+  const popResult = correct ? "correct" : half ? "half" : "wrong";
+  _ggScorePop(popResult);
+  _renderGeoGuesser({ correct, half, timedOut, prov: _ggRound.prov, dist });
+
+  // Auto-open the panel on mobile so the result is immediately visible
+  if (window.innerWidth <= 640 && typeof window._openMobileSheet === "function") {
+    window._openMobileSheet();
+  }
 }
