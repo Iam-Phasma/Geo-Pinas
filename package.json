@@ -1,0 +1,24 @@
+{
+  "name": "geo-pinas",
+  "version": "1.0.0",
+  "description": "An interactive Philippine province map with explore, weather, travel tracking, quiz, and fun facts tools. Built for fun, free and open source.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Iam-Phasma/Geo-Pinas.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Iam-Phasma/Geo-Pinas/issues"
+  },
+  "homepage": "https://github.com/Iam-Phasma/Geo-Pinas#readme",
+  "dependencies": {
+    "convex": "^1.34.1"
+  }
+}
