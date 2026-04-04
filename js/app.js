@@ -682,7 +682,12 @@ async function _fetchProvinceWiki(provName) {
   const stripHtml = (html) => {
     const tmp = document.createElement("div");
     tmp.innerHTML = html;
-    tmp.querySelectorAll("style, script, sup, .reference, .mw-editsection, .noprint, table").forEach(el => el.remove());
+    tmp.querySelectorAll(
+      "style, script, sup, figure, figcaption, svg, canvas, img, " +
+      "table, .reference, .mw-editsection, .noprint, .thumb, " +
+      ".gallery, .wikitable, .infobox, .navbox, .mbox, .ambox, " +
+      ".mw-empty-elt, .sistersitebox, .hatnote, .toc"
+    ).forEach(el => el.remove());
     return (tmp.textContent || tmp.innerText || "").replace(/\s+/g, " ").trim();
   };
 
