@@ -316,7 +316,14 @@ body {
 }
 
 [data-theme="dark"] #tilt-controls {
-  background: var(--surface);
+  background: #1e293b;
+  border-color: #334155;
+}
+
+[data-theme="dark"] #tilt-reset {
+  background: #1e293b;
+  border-color: #334155;
+  color: var(--text-muted);
 }
 
 .tilt-icon {
@@ -1239,6 +1246,126 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   color: var(--accent);
 }
 
+/* ── About button ──────────────────────────────────────── */
+.about-btn {
+  display: block;
+  width: fit-content;
+  margin: 4px auto 0;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.about-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── About panel ───────────────────────────────────────── */
+.about-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.about-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.about-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: var(--bg-card, var(--bg-sidebar));
+  border: 1.5px solid var(--border);
+  padding: 5px;
+  flex-shrink: 0;
+}
+.about-app-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.about-app-tagline {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.about-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0 0 6px;
+}
+.about-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+.about-list {
+  margin: 0 0 4px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.about-list li {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+.about-list a,
+.about-credit a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.about-list a:hover,
+.about-credit a:hover {
+  text-decoration: underline;
+}
+.about-credit {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+.about-github-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 14px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-card, var(--bg-sidebar));
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.about-github-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Shared tl-top-row ─────────────────────────────────── */
 .tl-top-row {
   display: flex;
   align-items: center;

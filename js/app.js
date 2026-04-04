@@ -253,6 +253,7 @@ function showToolsHome() {
         </button>
       `).join("")}
     </div>
+    <button class="about-btn" id="about-btn">About Terralyft</button>
   `;
   document.querySelectorAll(".tool-card").forEach((card) => {
     card.addEventListener("click", () => {
@@ -263,6 +264,64 @@ function showToolsHome() {
       else if (card.dataset.tool === "geoguesser") showGeoGuesserTool();
     });
   });
+
+  document.getElementById("about-btn").addEventListener("click", showAboutPanel);
+}
+
+// ── About panel ────────────────────────────────────────────────
+function showAboutPanel() {
+  setSidebarTitle("About");
+  document.getElementById("info-panel").innerHTML = `
+    <button class="tool-back-btn" id="about-back">‹ Back</button>
+    <div class="about-panel">
+      <div class="about-logo-row">
+        <img src="favicon.svg" alt="Terralyft" class="about-logo" aria-hidden="true"/>
+        <div>
+          <div class="about-app-name">Terralyft</div>
+          <div class="about-app-tagline">Interactive Philippine Province Map</div>
+        </div>
+      </div>
+      <p class="about-desc">An interactive Philippine province map built for fun, free and open source.</p>
+
+      <div class="about-section-title">Features</div>
+      <ul class="about-list">
+        <li>All 81 provinces + NCR across Luzon, Visayas, Mindanao</li>
+        <li><strong>Explore</strong> — browse provinces by region, Wikipedia summaries &amp; flags</li>
+        <li><strong>Weather</strong> — live conditions per province via Open-Meteo</li>
+        <li><strong>Travel Level</strong> — track &amp; score your provincial visits</li>
+        <li><strong>Travel Snapshot</strong> — downloadable postcard PNG of your travel map</li>
+        <li><strong>Province Quiz</strong> — test your Philippine geography knowledge</li>
+        <li><strong>Local Guesser</strong> — guess the province from its map shape</li>
+        <li><strong>Roulette</strong> — spin to pick a random province</li>
+        <li>Map customization: colors, borders, sea texture, dark mode</li>
+        <li>3D tilt &amp; perspective view</li>
+      </ul>
+
+      <div class="about-section-title">Tech Stack</div>
+      <ul class="about-list">
+        <li><a href="https://d3js.org/" target="_blank" rel="noopener">D3.js v7</a> — SVG rendering, zoom &amp; pan</li>
+        <li><a href="https://github.com/twitter/twemoji" target="_blank" rel="noopener">Twemoji</a> — emoji weather icons</li>
+        <li><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo API</a> — free weather data</li>
+        <li><a href="https://en.wikipedia.org/api/rest_v1/" target="_blank" rel="noopener">Wikipedia REST API</a> — province summaries</li>
+        <li><a href="https://convex.dev" target="_blank" rel="noopener">Convex</a> — serverless visitor tracking</li>
+        <li>Canvas API — postcard snapshot with 2× supersampling</li>
+        <li>Vanilla JS + SVG — no framework, no build step</li>
+      </ul>
+
+      <div class="about-section-title">Credits</div>
+      <p class="about-credit">Travel Level concept inspired by <a href="https://my-philippines-travel-level.com/" target="_blank" rel="noopener">My Philippines Travel Level</a>.</p>
+      <p class="about-credit">Province map shapes adapted from <a href="https://github.com/OSSPhilippines/philippines-travel-level-map" target="_blank" rel="noopener">OSSPhilippines / philippines-travel-level-map</a> (GPL-3.0).</p>
+      <p class="about-credit">Built with <a href="https://github.com/features/copilot" target="_blank" rel="noopener">GitHub Copilot</a> (Claude). Any random features are strictly the author's own doing.</p>
+
+      <div class="about-section-title">License</div>
+      <p class="about-credit">Distributed under <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL-3.0</a>. Source code is publicly available.</p>
+
+      <a class="about-github-btn" href="https://github.com/Iam-Phasma/Geo-Pinas" target="_blank" rel="noopener">
+        View on GitHub ↗
+      </a>
+    </div>
+  `;
+  document.getElementById("about-back").addEventListener("click", showToolsHome);
 }
 
 // ── Map init ───────────────────────────────────────────────────

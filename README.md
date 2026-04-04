@@ -31,7 +31,7 @@ Open: https://iam-phasma.github.io/Geo-Pinas/
 
 ## AI-Assisted Development
 
-This project was built in close collaboration with **GitHub Copilot** (powered by Claude Sonnet). AI was used heavily throughout.
+Built heavily with GitHub Copilot (powered by Claude); any embarrassing or random features, however, are strictly my own doing.
 
 ## Inspiration & Credits
 
