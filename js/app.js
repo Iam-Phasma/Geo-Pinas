@@ -676,34 +676,103 @@ async function _fetchProvinceWiki(provName) {
   const section = document.getElementById("explore-wiki-section");
   if (!section) return;
 
-  const tryFetch = async (title) => {
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-    const res = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!res.ok) throw new Error(res.status);
-    return res.json();
+  const attempts = [`${provName}, Philippines`, provName, `${provName} (province)`];
+
+  // Strip HTML tags (including <style>/<script> text) to plain text
+  const stripHtml = (html) => {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    tmp.querySelectorAll("style, script, sup, .reference, .mw-editsection, .noprint, table").forEach(el => el.remove());
+    return (tmp.textContent || tmp.innerText || "").replace(/\s+/g, " ").trim();
   };
 
-  let data = null;
-  const attempts = [`${provName}, Philippines`, provName, `${provName} (province)`];
+  // First N sentences of plain text
+  const firstSentences = (text, n = 3) =>
+    text.split(/(?<=[.!?])\s+/).slice(0, n).join(" ");
+
+  // ── 1. Fetch summary (proven reliable for lead text) ─────────
+  let sumData = null, canonicalTitle = null;
   for (const title of attempts) {
-    try { data = await tryFetch(title); break; } catch { /* try next */ }
+    try {
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+      const res = await fetch(url, { headers: { Accept: "application/json" } });
+      if (!res.ok) throw new Error(res.status);
+      sumData = await res.json();
+      // Use the normalised title returned by Wikipedia (handles redirects)
+      canonicalTitle = sumData.titles?.normalized || sumData.title || title;
+      break;
+    } catch { /* try next */ }
   }
 
-  if (!data) {
-    section.innerHTML = "";
-    return;
+  if (!sumData) { section.innerHTML = ""; return; }
+
+  const leadText   = firstSentences(sumData.extract?.replace(/\n/g, " ") || "", 3);
+  const description = sumData.description || "";
+  const wikiUrl    = sumData.content_urls?.desktop?.page
+                     || `https://en.wikipedia.org/wiki/${encodeURIComponent(canonicalTitle)}`;
+
+  // ── 2. Fetch section list via action API (reliable) ──────────
+  let wikiSections = [];
+  try {
+    const apiUrl = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(canonicalTitle)}&prop=sections&format=json&origin=*`;
+    const res  = await fetch(apiUrl);
+    const json = await res.json();
+    const ALLOWED_SECTIONS = /etymology|history|geography|demograph|economy|economic|biodiversity|wildlife|flora|fauna|attraction|tourism|tourist|culture|cultural|arts|heritage|government|politics|infrastructure|transport|climate|environment|natural/i;
+    wikiSections = (json.parse?.sections || []).filter(s => s.toclevel === 1 && s.line && ALLOWED_SECTIONS.test(stripHtml(s.line).trim()));
+  } catch { /* no chips, render without them */ }
+
+  // ── 3. Render ─────────────────────────────────────────────────
+  function renderSection(text, activeIdx, loading = false) {
+    // Preserve chips scroll position across re-renders
+    const prevChips = section.querySelector(".exp-wiki-chips");
+    const chipsScroll = prevChips ? prevChips.scrollLeft : 0;
+
+    const chips = [
+      `<button class="exp-wiki-chip${activeIdx === -1 ? " is-active" : ""}" data-sec="-1">Overview</button>`,
+      ...wikiSections.map((s, i) =>
+        `<button class="exp-wiki-chip${activeIdx === i ? " is-active" : ""}" data-sec="${i}">${escapeHtml(stripHtml(s.line))}</button>`)
+    ].join("");
+
+    section.innerHTML = `
+      ${wikiSections.length ? `<div class="exp-wiki-chips">${chips}</div>` : ""}
+      ${description && activeIdx === -1 ? `<div class="exp-wiki-desc">${escapeHtml(description)}</div>` : ""}
+      <p class="exp-wiki-extract">${loading ? "" : escapeHtml(text)}</p>
+      ${loading ? `
+        <div class="exp-wiki-skeleton"></div>
+        <div class="exp-wiki-skeleton" style="width:90%"></div>
+        <div class="exp-wiki-skeleton" style="width:75%"></div>
+        <div class="exp-wiki-skeleton" style="width:85%"></div>
+      ` : ""}
+      <a class="exp-wiki-link" href="${escapeHtml(wikiUrl)}"
+         target="_blank" rel="noopener noreferrer">Read more on Wikipedia ↗</a>
+    `;
+
+    const newChips = section.querySelector(".exp-wiki-chips");
+    if (newChips && chipsScroll) newChips.scrollLeft = chipsScroll;
+
+    section.querySelectorAll(".exp-wiki-chip").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const i = parseInt(btn.dataset.sec, 10);
+        if (i === -1) {
+          renderSection(leadText, -1);
+        } else {
+          renderSection("", i, true);
+          try {
+            const s = wikiSections[i];
+            const apiUrl = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(canonicalTitle)}&prop=text&section=${s.index}&format=json&origin=*`;
+            const res  = await fetch(apiUrl);
+            const json = await res.json();
+            const sectionText = firstSentences(stripHtml(json.parse?.text?.["*"] || ""), 4);
+            renderSection(sectionText || "No content available.", i);
+          } catch {
+            renderSection("Could not load section.", i);
+          }
+        }
+      });
+    });
   }
 
-  // Trim extract to ~3 sentences
-  const sentences = (data.extract || "").replace(/\n/g, " ").split(/(?<=[.!?])\s+/);
-  const extract = sentences.slice(0, 3).join(" ");
-
-  section.innerHTML = `
-    ${data.description ? `<div class="exp-wiki-desc">${escapeHtml(data.description)}</div>` : ""}
-    ${extract ? `<p class="exp-wiki-extract">${escapeHtml(extract)}</p>` : ""}
-    <a class="exp-wiki-link" href="${escapeHtml(data.content_urls?.desktop?.page ?? "")}"
-       target="_blank" rel="noopener noreferrer">Read more on Wikipedia ↗</a>
-  `;
+  renderSection(leadText, -1);
 }
 
 function showProvinceInfo(prov, fromExplore = false) {

@@ -975,6 +975,48 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   text-decoration: underline;
 }
 
+.exp-wiki-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+}
+
+.exp-wiki-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.exp-wiki-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.exp-wiki-chip:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.exp-wiki-chip.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
 /* ── Tools home cards ──────────────────────────────────── */
 .tools-list {
   display: flex;
