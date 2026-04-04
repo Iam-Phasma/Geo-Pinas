@@ -97,11 +97,12 @@
   // ── Sea color slider ──────────────────────────────────────────
   const SEA_COLOR_STOPS = [
     { v: 0,   r: 255, g: 255, b: 255 },
-    { v: 33,  r: 135, g: 206, b: 235 },  // sky blue
-    { v: 66,  r: 27,  g: 58,  b: 107 },  // default navy
+    { v: 20,  r: 182, g: 225, b: 243 },  // default light blue
+    { v: 40,  r: 135, g: 206, b: 235 },  // sky blue
+    { v: 70,  r: 27,  g: 58,  b: 107 },  // navy
     { v: 100, r: 2,   g: 8,   b: 18  },
   ];
-  const SEA_COLOR_DEFAULT = 66;
+  const SEA_COLOR_DEFAULT = 20;
 
   function _seaColor(val) {
     let lo = SEA_COLOR_STOPS[0], hi = SEA_COLOR_STOPS[SEA_COLOR_STOPS.length - 1];
@@ -190,7 +191,7 @@
   });
 
   // ── Border color swatches ─────────────────────────────────────
-  const BORDER_DEFAULT = "#95ffc1";
+  const BORDER_DEFAULT = "#0a3d1f";
   const _initBorderColor = localStorage.getItem("terralyft-border-color") ?? BORDER_DEFAULT;
   document.documentElement.style.setProperty("--province-border", _initBorderColor);
   document.querySelectorAll(".sp-swatch").forEach(s => {
