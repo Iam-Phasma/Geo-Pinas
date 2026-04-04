@@ -969,9 +969,32 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   color: var(--accent);
   text-decoration: none;
   margin-top: 2px;
+  align-self: flex-start;
 }
 
 .exp-wiki-link:hover {
+  text-decoration: underline;
+}
+
+.exp-map-link {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #16a34a;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-top: 2px;
+  text-align: left;
+  align-self: flex-start;
+}
+
+[data-theme="dark"] .exp-map-link {
+  color: #4ade80;
+}
+
+.exp-map-link:hover {
   text-decoration: underline;
 }
 
@@ -3106,7 +3129,8 @@ html:not([data-theme="dark"]) .sp-toggle-track {
   animation: gg-modal-out 0.2s ease forwards;
 }
 
-#gg-map-modal {
+#gg-map-modal,
+#prov-map-leaflet {
   width: 100%;
   height: 100%;
 }
@@ -3501,6 +3525,60 @@ html:not([data-theme="dark"]) .sp-toggle-track {
 
 /* ── Satellite toggle button (legacy, unused) ── */
 .gg-sat-btn { display: none; }
+
+/* ── Province map modal tile toggle ── */
+.prov-map-tile-toggle {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  display: flex;
+  gap: 0;
+  background: var(--bg-sidebar, #fff);
+  border: 1.5px solid var(--border, #e2e8f0);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.prov-map-tile-btn {
+  padding: 6px 18px;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  border-radius: 8px;
+  margin: 3px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.prov-map-tile-btn.is-active {
+  background: var(--accent-light, #dbeafe);
+  color: var(--accent, #2563eb);
+}
+
+.prov-map-tile-btn:not(.is-active):hover {
+  color: var(--text, #0f172a);
+}
+
+[data-theme="dark"] .prov-map-tile-toggle {
+  background: var(--bg-sidebar);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .prov-map-tile-btn {
+  color: var(--text-muted);
+}
+
+[data-theme="dark"] .prov-map-tile-btn.is-active {
+  background: #1e3a5f;
+  color: #93c5fd;
+}
 
 /* ── Rotation badge (kept for possible reuse) ── */
 .gg-rotation-badge {

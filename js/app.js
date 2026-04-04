@@ -750,7 +750,11 @@ async function _fetchProvinceWiki(provName) {
       ` : ""}
       <a class="exp-wiki-link" href="${escapeHtml(wikiUrl)}"
          target="_blank" rel="noopener noreferrer">Read more on Wikipedia ↗</a>
+      <button class="exp-map-link" id="exp-map-btn">View on Maps ↗</button>
     `;
+
+    const mapBtn = section.querySelector("#exp-map-btn");
+    if (mapBtn) mapBtn.addEventListener("click", () => _showProvMapModal(provName));
 
     const newChips = section.querySelector(".exp-wiki-chips");
     if (newChips && chipsScroll) newChips.scrollLeft = chipsScroll;
@@ -778,6 +782,92 @@ async function _fetchProvinceWiki(provName) {
   }
 
   renderSection(leadText, -1);
+}
+
+function _showProvMapModal(provName) {
+  const existing = document.getElementById("prov-map-overlay");
+  if (existing) existing.remove();
+
+  const loc = typeof _ggProvCentroid === "function" ? _ggProvCentroid(provName) : null;
+  const center = loc ? [loc.lat, loc.lng] : [12.8797, 121.774];
+  const zoom   = 9;
+
+  const overlay = document.createElement("div");
+  overlay.id        = "prov-map-overlay";
+  overlay.className = "gg-modal-overlay";
+  overlay.innerHTML = `
+    <div class="gg-modal-inner">
+      <button class="gg-modal-close" id="prov-map-close" aria-label="Close">✕</button>
+      <div class="prov-map-tile-toggle" id="prov-map-toggle">
+        <button class="prov-map-tile-btn is-active" data-mode="map">Map</button>
+        <button class="prov-map-tile-btn" data-mode="sat">Satellite</button>
+      </div>
+      <div id="prov-map-leaflet"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  let provMap = null;
+  let isSat   = false;
+
+  const OV_LABELS_URL = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png";
+  const OV_ATT        = "&copy; OpenStreetMap &copy; CARTO";
+
+  setTimeout(() => {
+    const mapEl = document.getElementById("prov-map-leaflet");
+    if (!mapEl || !window.L) return;
+
+    const tileUrl = typeof _ggTileUrl === "function" ? _ggTileUrl() : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
+    const tileAtt = "&copy; OpenStreetMap &copy; CARTO";
+    const satUrl  = typeof _GG_TILE_SAT !== "undefined" ? _GG_TILE_SAT : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    const satAtt  = typeof _GG_TILE_SAT_ATT !== "undefined" ? _GG_TILE_SAT_ATT : "Tiles &copy; Esri";
+
+    provMap = L.map(mapEl, {
+      center,
+      zoom,
+      zoomControl: true,
+      scrollWheelZoom: true,
+      attributionControl: true,
+      maxBounds: typeof _GG_PH_BOUNDS !== "undefined" ? _GG_PH_BOUNDS : undefined,
+      maxBoundsViscosity: 1.0,
+    });
+    const baseLayer = L.tileLayer(tileUrl, { maxZoom: 19, attribution: tileAtt });
+    baseLayer.options._isBase = true;
+    baseLayer.addTo(provMap);
+
+    const labelsLayer = L.tileLayer(OV_LABELS_URL, { maxZoom: 19, attribution: OV_ATT, pane: "overlayPane" });
+    labelsLayer.addTo(provMap);
+
+    const swapBase = () => {
+      provMap.eachLayer(l => { if (l.options && l.options._isBase) provMap.removeLayer(l); });
+      const bl = L.tileLayer(isSat ? satUrl : tileUrl, { maxZoom: 19, attribution: isSat ? satAtt : tileAtt });
+      bl.options._isBase = true;
+      bl.addTo(provMap);
+      labelsLayer.addTo(provMap); // keep labels on top
+    };
+
+    overlay.querySelectorAll(".prov-map-tile-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        isSat = btn.dataset.mode === "sat";
+        overlay.querySelectorAll(".prov-map-tile-btn").forEach(b => b.classList.toggle("is-active", b === btn));
+        swapBase();
+      });
+    });
+  }, 50);
+
+  const close = () => {
+    overlay.classList.add("is-closing");
+    overlay.addEventListener("animationend", () => {
+      if (provMap) { try { provMap.remove(); } catch {} }
+      overlay.remove();
+    }, { once: true });
+  };
+
+  document.getElementById("prov-map-close").addEventListener("click", close);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+  document.addEventListener("keydown", function onEsc(e) {
+    if (e.key === "Escape") { close(); document.removeEventListener("keydown", onEsc); }
+  });
 }
 
 function showProvinceInfo(prov, fromExplore = false) {
