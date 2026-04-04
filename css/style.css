@@ -2712,7 +2712,22 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.4);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+}
+
+.sp-section {
+  font-size: 0.60rem;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.32);
+  margin: 2px 0 4px;
+}
+
+.sp-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 8px 0;
 }
 
 .sp-row {
@@ -2871,6 +2886,14 @@ html:not([data-theme="dark"]) #settings-panel {
 
 html:not([data-theme="dark"]) .sp-title {
   color: rgba(0, 0, 0, 0.35);
+}
+
+html:not([data-theme="dark"]) .sp-section {
+  color: rgba(0, 0, 0, 0.38);
+}
+
+html:not([data-theme="dark"]) .sp-divider {
+  background: rgba(0, 0, 0, 0.10);
 }
 
 html:not([data-theme="dark"]) .sp-row-name {
