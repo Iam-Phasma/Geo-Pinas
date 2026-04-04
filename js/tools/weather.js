@@ -74,8 +74,12 @@ function _positionWeatherOverlay(prov) {
   overlay.style.top = (pos.y - 28) + "px";
 }
 
+function _isWeatherContext() {
+  return _exploreTab === "weather";
+}
+
 function updateWeatherEmojiPosition() {
-  if (!_currentWeatherProv || _activeToolId !== "weather" || !_weatherEmojiEnabled) return;
+  if (!_currentWeatherProv || !_isWeatherContext() || !_weatherEmojiEnabled) return;
   const overlay = document.getElementById("weather-overlay");
   if (overlay && overlay.classList.contains("is-visible")) {
     _positionWeatherOverlay(_currentWeatherProv);
@@ -103,9 +107,8 @@ async function fetchAndShowWeather(prov) {
     overlay.classList.add("is-visible");
   }
 
-  if (_activeToolId === "weather") {
-    const hint = document.getElementById("weather-tool-hint");
-    if (hint) hint.textContent = `Loading weather for ${prov.id}…`;
+  if (_isWeatherContext()) {
+    _renderExploreWeatherSection();
   }
 
   try {
@@ -133,14 +136,13 @@ async function fetchAndShowWeather(prov) {
       condition: WMO_DESC[code] ?? "Unknown",
     };
 
-    if (_activeToolId === "weather") {
-      _renderWeatherTool();
+    if (_isWeatherContext()) {
+      _renderExploreWeatherSection();
     }
   } catch {
     _setTwemoji(overlay, "🌡️");
-    if (_activeToolId === "weather") {
-      const hint = document.getElementById("weather-tool-hint");
-      if (hint) hint.textContent = "Could not load weather data.";
+    if (_isWeatherContext()) {
+      _renderExploreWeatherSection();
     }
   }
 }
@@ -153,92 +155,80 @@ function clearWeatherEmoji() {
 }
 
 
-// ── Weather tool ───────────────────────────────────────────────
-function showWeatherTool() {
-  _activeToolId = "weather";
-  _lastWeatherInfo = null;
-  setSidebarTitle("Weather");
-  _clearQuizHighlight();
-  _renderWeatherTool();
-  // If a province is already selected, fetch its weather right away
-  if (_selectedGroup) {
-    fetchAndShowWeather(d3.select(_selectedGroup).datum());
-  }
-}
+// ── Weather section renderer (embedded in Explore) ────────────
+function _renderExploreWeatherSection() {
+  const section = document.getElementById("explore-weather-section");
+  if (!section) return;
 
-function _renderWeatherTool() {
-  const hintText = "Select a province to see its weather.";
   const emojiChecked = _weatherEmojiEnabled ? "true" : "false";
 
-  const provCard = _lastWeatherInfo ? `
-    <div class="weather-prov-card">
-      <div class="weather-prov-header">
-        <span class="weather-prov-name">${escapeHtml(_lastWeatherInfo.prov)}</span>
-        <span class="weather-prov-region">${escapeHtml(_lastWeatherInfo.region)}</span>
-      </div>
-      <div class="weather-prov-main">
-        <span class="weather-prov-emoji-wrap" id="weather-prov-emoji-el">${_lastWeatherInfo.emoji}</span>
-        <div class="weather-prov-temp-block">
-          <span class="weather-prov-temp">${_lastWeatherInfo.temp}°C</span>
-          <span class="weather-prov-cond">${escapeHtml(_lastWeatherInfo.condition)}</span>
-        </div>
-      </div>
-      <div class="weather-prov-grid">
-        <div class="weather-prov-stat">
-          <span class="weather-prov-stat-label">Feels like</span>
-          <span class="weather-prov-stat-val">${_lastWeatherInfo.feelsLike}°C</span>
-        </div>
-        <div class="weather-prov-stat">
-          <span class="weather-prov-stat-label">Humidity</span>
-          <span class="weather-prov-stat-val">${_lastWeatherInfo.humidity}%</span>
-        </div>
-        <div class="weather-prov-stat">
-          <span class="weather-prov-stat-label">Wind</span>
-          <span class="weather-prov-stat-val">${_lastWeatherInfo.wind} km/h</span>
-        </div>
-      </div>
-    </div>
-  ` : "";
-
-  document.getElementById("info-panel").innerHTML = `
-    <button class="tool-back-btn" id="weather-back">‹ Back</button>
-    <div class="weather-tool-body">
-      <div class="weather-tool-icon">🌤️</div>
-      <div class="weather-tool-row">
-        <span class="weather-tool-label">Show emoji on map</span>
-        <button class="sp-toggle" id="weather-emoji-toggle" role="switch"
-          aria-checked="${emojiChecked}" title="Toggle map emoji">
-          <span class="sp-toggle-track"><span class="sp-toggle-thumb"></span></span>
-        </button>
-      </div>
-      <p class="weather-tool-hint" id="weather-tool-hint">${hintText}</p>
-      ${provCard}
+  const toggleRow = `
+    <div class="weather-tool-row explore-weather-toggle-row">
+      <span class="weather-tool-label">Show emoji on map</span>
+      <button class="sp-toggle" id="weather-emoji-toggle" role="switch"
+        aria-checked="${emojiChecked}" title="Toggle map emoji">
+        <span class="sp-toggle-track"><span class="sp-toggle-thumb"></span></span>
+      </button>
     </div>
   `;
 
-  if (_lastWeatherInfo) {
+  // Loading state
+  if (!_lastWeatherInfo) {
+    section.innerHTML = toggleRow + `<p class="weather-tool-hint">Loading weather…</p>`;
+    _attachEmojiToggle();
+    return;
+  }
+
+  // Province weather card
+  section.innerHTML = toggleRow + `
+      <div class="weather-prov-card">
+        <div class="weather-prov-header">
+          <span class="weather-prov-name">${escapeHtml(_lastWeatherInfo.prov)}</span>
+          <span class="weather-prov-region">${escapeHtml(_lastWeatherInfo.region)}</span>
+        </div>
+        <div class="weather-prov-main">
+          <span class="weather-prov-emoji-wrap" id="weather-prov-emoji-el">${_lastWeatherInfo.emoji}</span>
+          <div class="weather-prov-temp-block">
+            <span class="weather-prov-temp">${_lastWeatherInfo.temp}°C</span>
+            <span class="weather-prov-cond">${escapeHtml(_lastWeatherInfo.condition)}</span>
+          </div>
+        </div>
+        <div class="weather-prov-grid">
+          <div class="weather-prov-stat">
+            <span class="weather-prov-stat-label">Feels like</span>
+            <span class="weather-prov-stat-val">${_lastWeatherInfo.feelsLike}°C</span>
+          </div>
+          <div class="weather-prov-stat">
+            <span class="weather-prov-stat-label">Humidity</span>
+            <span class="weather-prov-stat-val">${_lastWeatherInfo.humidity}%</span>
+          </div>
+          <div class="weather-prov-stat">
+            <span class="weather-prov-stat-label">Wind</span>
+            <span class="weather-prov-stat-val">${_lastWeatherInfo.wind} km/h</span>
+          </div>
+        </div>
+      </div>
+    `;
     const emojiEl = document.getElementById("weather-prov-emoji-el");
     if (emojiEl && typeof twemoji !== "undefined") {
       twemoji.parse(emojiEl, { folder: "svg", ext: ".svg" });
     }
-  }
+    _attachEmojiToggle();
+}
 
-  document.getElementById("weather-back").addEventListener("click", () => {
-    _activeToolId = null;
-    _lastWeatherInfo = null;
-    showToolsHome();
-  });
-
-  document.getElementById("weather-emoji-toggle").addEventListener("click", function () {
+function _attachEmojiToggle() {
+  const btn = document.getElementById("weather-emoji-toggle");
+  if (!btn) return;
+  btn.addEventListener("click", function () {
     _weatherEmojiEnabled = !_weatherEmojiEnabled;
     this.setAttribute("aria-checked", String(_weatherEmojiEnabled));
-    if (_weatherEmojiEnabled && _lastWeatherInfo && _currentWeatherProv) {
-      const overlay = document.getElementById("weather-overlay");
+    const overlay = document.getElementById("weather-overlay");
+    if (_weatherEmojiEnabled && _currentWeatherProv) {
       if (overlay) overlay.classList.add("is-visible");
       _positionWeatherOverlay(_currentWeatherProv);
     } else {
-      const overlay = document.getElementById("weather-overlay");
       if (overlay) overlay.classList.remove("is-visible");
     }
   });
 }
+

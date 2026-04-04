@@ -32,8 +32,7 @@ let _wasDragging = false;
 let _zoom = null;
 let _svg = null;
 let _g = null;
-let _activeToolId = null;
-
+let _activeToolId = null;let _exploreTab = "info"; // "info" | "weather"
 // ── Helpers ────────────────────────────────────────────────────
 function fitTransform(w, h) {
   const scale = Math.min(w / MAP_W, h / MAP_H) * 0.92;
@@ -218,13 +217,6 @@ const TOOLS = [
     desc: "Spin to randomly pick a province.",
   },
   {
-    id: "weather",
-    icon: "🌤️",
-    color: "#e0f2fe",
-    title: "Weather",
-    desc: "Show live weather on selected provinces.",
-  },
-  {
     id: "quiz",
     icon: "🧠",
     color: "#ede9fe",
@@ -235,6 +227,7 @@ const TOOLS = [
 
 function showToolsHome() {
   _activeToolId = null;
+  _exploreTab = "info";
   clearWeatherEmoji();
   _clearQuizHighlight();
   _clearTravelColors();
@@ -260,7 +253,6 @@ function showToolsHome() {
   document.querySelectorAll(".tool-card").forEach((card) => {
     card.addEventListener("click", () => {
       if (card.dataset.tool === "explore") showIdlePanel();
-      else if (card.dataset.tool === "weather") showWeatherTool();
       else if (card.dataset.tool === "quiz") showQuizTool();
       else if (card.dataset.tool === "travel") showTravelTool();
       else if (card.dataset.tool === "roulette") showRouletteTool();
@@ -410,11 +402,10 @@ function initMap() {
     if (_selectedGroup) {
       d3.select(_selectedGroup).classed("is-selected", false);
       _selectedGroup = null;
-      if (_activeToolId === "weather") {
+      if (_activeToolId === "explore") {
         clearWeatherEmoji();
-        _renderWeatherTool();
-      } else if (_activeToolId === "explore") {
-        // stay on explore panel, nothing to update
+        _lastWeatherInfo = null;
+        showIdlePanel();
       } else if (_activeToolId === "travel") {
         // already handled above
       } else if (_activeToolId === "roulette") {
@@ -491,11 +482,9 @@ function onProvinceClick(event, d) {
     _selectedGroup = null;
   }
   if (isSame) {
-    if (_activeToolId === "weather") {
-      // Stay on weather tool, just clear the province card
+    if (_activeToolId === "explore") {
       clearWeatherEmoji();
-      _renderWeatherTool();
-    } else if (_activeToolId === "explore") {
+      _lastWeatherInfo = null;
       showIdlePanel();
     } else if (_activeToolId === "travel") {
       _closeTravelPicker();
@@ -512,8 +501,8 @@ function onProvinceClick(event, d) {
   _selectedGroup = this;
   d3.select(this).classed("is-selected", true).raise();
 
-  if (_activeToolId === "weather") {
-    fetchAndShowWeather(d);
+  if (_activeToolId === "explore") {
+    showProvinceInfo(d, true);
   } else if (_activeToolId === "travel") {
     _renderTravelPicker(d, event);
   } else if (_activeToolId === "roulette") {
@@ -529,6 +518,7 @@ function onProvinceClick(event, d) {
 function showIdlePanel() {
   _activeToolId = "explore";
   clearWeatherEmoji();
+  _lastWeatherInfo = null;
   setSidebarTitle("Explore");
   // Build region → sorted provinces map
   const regionMap = {};
@@ -543,14 +533,17 @@ function showIdlePanel() {
     <button class="tool-back-btn" id="explore-back">‹ Back</button>
     <div class="idle-sticky">
       <div class="idle-search-wrap">
+        <svg class="idle-search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8.5" cy="8.5" r="5.5"/><line x1="13.5" y1="13.5" x2="18" y2="18"/>
+        </svg>
         <input id="idle-search" class="idle-search" type="text"
           placeholder="Search province…" autocomplete="off" spellcheck="false" />
         <ul id="idle-suggestions" class="idle-suggestions" role="listbox" hidden></ul>
       </div>
       <div class="idle-filter-wrap">
-        <div class="idle-filter-label">Region</div>
         <button class="idle-dropdown-btn" id="idle-dropdown-btn" aria-haspopup="listbox" aria-expanded="false">
-          <span id="idle-dropdown-label">All Regions</span>
+          <span class="idle-dropdown-prefix">Region</span>
+          <span class="idle-dropdown-value" id="idle-dropdown-label">All</span>
           <span class="idle-dropdown-chevron">›</span>
         </button>
         <ul class="idle-dropdown-list" id="idle-dropdown-list" role="listbox" hidden>
@@ -559,6 +552,9 @@ function showIdlePanel() {
         </ul>
       </div>
     </div>
+    <div class="idle-prov-header">
+      <span class="idle-prov-count" id="idle-prov-count">${allProvs.length} provinces</span>
+    </div>
     <ul class="idle-prov-list" id="idle-prov-list"></ul>
   `;
 
@@ -566,11 +562,13 @@ function showIdlePanel() {
 
   function renderProvList(filter = "") {
     const list = document.getElementById("idle-prov-list");
+    const countEl = document.getElementById("idle-prov-count");
     const provs = filter ? (regionMap[filter] || []).slice().sort() : allProvs;
+    if (countEl) countEl.textContent = `${provs.length} province${provs.length !== 1 ? "s" : ""}`;
     list.innerHTML = provs
       .map(
         (p) =>
-          `<li><button class="idle-prov-btn" data-province="${escapeHtml(p)}">${escapeHtml(p)}</button></li>`,
+          `<li><button class="idle-prov-btn" data-province="${escapeHtml(p)}"><span class="idle-prov-name">${escapeHtml(p)}</span><span class="idle-prov-arrow">›</span></button></li>`,
       )
       .join("");
     list.querySelectorAll(".idle-prov-btn").forEach((btn) => {
@@ -610,7 +608,7 @@ function showIdlePanel() {
   dropList.querySelectorAll(".idle-dropdown-option").forEach((opt) => {
     opt.addEventListener("click", () => {
       activeRegion = opt.dataset.region;
-      dropLabel.textContent = activeRegion || "All Regions";
+      dropLabel.textContent = activeRegion ? activeRegion.replace(/^Region\s*/i, "").trim() || activeRegion : "All";
       dropList
         .querySelectorAll(".idle-dropdown-option")
         .forEach((o) =>
@@ -618,15 +616,12 @@ function showIdlePanel() {
         );
       closeDropdown();
       renderProvList(activeRegion);
-      // clear search
       document.getElementById("idle-search").value = "";
       document.getElementById("idle-suggestions").hidden = true;
     });
   });
 
   document.addEventListener("click", closeDropdown, { once: false });
-  // prevent the listener stacking — use a named teardown on panel replacement
-  // (re-running showIdlePanel replaces innerHTML, so old listeners die with the nodes)
 
   // ── Search / autocomplete ────────────────────────────────
   const searchInput = document.getElementById("idle-search");
@@ -634,17 +629,9 @@ function showIdlePanel() {
 
   searchInput.addEventListener("input", () => {
     const q = searchInput.value.trim().toLowerCase();
-    if (!q) {
-      suggBox.hidden = true;
-      return;
-    }
-    const matches = allProvs
-      .filter((p) => p.toLowerCase().includes(q))
-      .slice(0, 8);
-    if (!matches.length) {
-      suggBox.hidden = true;
-      return;
-    }
+    if (!q) { suggBox.hidden = true; return; }
+    const matches = allProvs.filter((p) => p.toLowerCase().includes(q)).slice(0, 8);
+    if (!matches.length) { suggBox.hidden = true; return; }
     suggBox.innerHTML = matches
       .map(
         (p) =>
@@ -662,16 +649,14 @@ function showIdlePanel() {
   });
 
   searchInput.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      searchInput.value = "";
-      suggBox.hidden = true;
-    }
+    if (e.key === "Escape") { searchInput.value = ""; suggBox.hidden = true; }
   });
 
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".idle-search-wrap")) suggBox.hidden = true;
   });
 }
+
 
 function selectProvinceById(id, fromExplore = false) {
   const grp = _g
@@ -722,19 +707,26 @@ async function _fetchProvinceWiki(provName) {
 }
 
 function showProvinceInfo(prov, fromExplore = false) {
-  _activeToolId = null;
+  if (_exploreTab === "info") {
+    clearWeatherEmoji();
+    _lastWeatherInfo = null;
+  }
+  _activeToolId = fromExplore ? "explore" : null;
   setSidebarTitle(prov.id);
   _clearQuizHighlight();
-  clearWeatherEmoji();
 
   const region = PROVINCE_REGION[prov.id] || "";
   const provFlagSrc = _provFlagUrl(prov.id);
   const regFlagSrc = region ? _regionFlagUrl(region) : null;
-  // Use province flag first; if null skip straight to region fallback
   const initialSrc = provFlagSrc ?? regFlagSrc;
 
-  document.getElementById("info-panel").innerHTML = `
-    <button class="info-back" aria-label="Back to tools">‹ Back</button>
+  const tabBar = `
+    <div class="gg-map-switcher province-tab-bar">
+      <button class="gg-map-sw-btn${_exploreTab === "info" ? " is-active" : ""}" data-tab="info">Info</button>
+      <button class="gg-map-sw-btn${_exploreTab === "weather" ? " is-active" : ""}" data-tab="weather">Weather</button>
+    </div>`;
+
+  const infoSection = `
     <div class="info-header">
       <div class="info-flag-card${initialSrc ? " flag-loading" : ""}" id="info-flag-card"${!initialSrc ? ' style="display:none"' : ""}>
         <img class="info-flag-img" id="info-flag-img"
@@ -744,55 +736,68 @@ function showProvinceInfo(prov, fromExplore = false) {
       <div class="info-name">${escapeHtml(prov.id)}</div>
     </div>
     <hr class="info-divider" />
-    ${
-      region
-        ? `<div class="info-row">
-      <div class="info-label">REGION</div>
-      <div class="info-value">${escapeHtml(region)}</div>
-    </div>`
-        : ""
-    }
+    ${region ? `<div class="info-row"><div class="info-label">REGION</div><div class="info-value">${escapeHtml(region)}</div></div>` : ""}
     <div id="explore-wiki-section" class="explore-wiki-section">
       <div class="exp-wiki-skeleton"></div>
       <div class="exp-wiki-skeleton" style="width:85%"></div>
       <div class="exp-wiki-skeleton" style="width:65%"></div>
-    </div>
+    </div>`;
+
+  const weatherSection = `<div id="explore-weather-section" class="explore-weather-section"></div>`;
+
+  document.getElementById("info-panel").innerHTML = `
+    <button class="info-back" aria-label="Back">‹ Back</button>
+    ${tabBar}
+    ${_exploreTab === "info" ? infoSection : weatherSection}
   `;
 
-  _fetchProvinceWiki(prov.id);
+  // Tab switcher
+  document.querySelectorAll(".province-tab-bar .gg-map-sw-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const newTab = btn.dataset.tab;
+      if (newTab === _exploreTab) return;
+      _exploreTab = newTab;
+      showProvinceInfo(prov, fromExplore);
+    });
+  });
 
+  // Back button
   document.querySelector(".info-back").addEventListener("click", () => {
     if (_selectedGroup) {
       d3.select(_selectedGroup).classed("is-selected", false);
       _selectedGroup = null;
     }
+    clearWeatherEmoji();
+    _lastWeatherInfo = null;
+    _exploreTab = "info";
     if (fromExplore) showIdlePanel();
     else showToolsHome();
   });
 
-  if (!initialSrc) return;
-
-  // Flag fallback: if province flag loaded (provFlagSrc was used), on error try region flag; else hide
-  const flagImg = document.getElementById("info-flag-img");
-  const flagCard = document.getElementById("info-flag-card");
-
-  // Reveal flag card (triggering slide animation) once image loads
-  const revealFlag = () => flagCard.classList.remove("flag-loading");
-  if (flagImg.complete && flagImg.naturalWidth > 0) {
-    revealFlag();
-  } else {
-    flagImg.addEventListener("load", revealFlag, { once: true });
-  }
-
-  flagImg.addEventListener("error", () => {
-    if (provFlagSrc && regFlagSrc) {
-      flagImg.removeEventListener("error", arguments.callee);
-      flagImg.onerror = () => {
-        flagCard.style.display = "none";
-      };
-      flagImg.src = regFlagSrc;
+  if (_exploreTab === "info") {
+    _fetchProvinceWiki(prov.id);
+    if (!initialSrc) return;
+    const flagImg = document.getElementById("info-flag-img");
+    const flagCard = document.getElementById("info-flag-card");
+    const revealFlag = () => flagCard.classList.remove("flag-loading");
+    if (flagImg.complete && flagImg.naturalWidth > 0) {
+      revealFlag();
     } else {
-      flagCard.style.display = "none";
+      flagImg.addEventListener("load", revealFlag, { once: true });
     }
-  });
+    flagImg.addEventListener("error", () => {
+      if (provFlagSrc && regFlagSrc) {
+        flagImg.removeEventListener("error", arguments.callee);
+        flagImg.onerror = () => { flagCard.style.display = "none"; };
+        flagImg.src = regFlagSrc;
+      } else {
+        flagCard.style.display = "none";
+      }
+    });
+  } else if (_exploreTab === "weather") {
+    _lastWeatherInfo = null;
+    _currentWeatherProv = null;
+    _renderExploreWeatherSection();
+    fetchAndShowWeather(prov);
+  }
 }
