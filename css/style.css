@@ -264,16 +264,113 @@ body {
   min-width: 0;
   background: var(--ocean);
   cursor: grab;
+  perspective: 950px;
+  perspective-origin: center 55%;
 }
 
 #map-wrap.is-dragging {
   cursor: grabbing;
 }
 
+/* Tiltable canvas — wraps SVG + weather overlay.
+   Bleeds -20% top and -15% left/right beyond the wrap so the
+   horizon edge never shows at any tilt up to 30°. */
+#map-tilt-frame {
+  position: absolute;
+  top: -40%;
+  left: -22%;
+  right: -22%;
+  bottom: 0;
+  /* Adjust origin to ~55% of wrap height despite top overhang:
+     63% of 1.2×H (frame) = 0.756H; minus 0.2H (overhang) ≈ 0.556H of wrap */
+  transform-origin: center 63%;
+  transform: rotateX(0deg);
+  transition: transform 0.12s ease;
+  will-change: transform;
+  z-index: 1;
+}
+
 #map {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* ── Tilt controls ──────────────────────────────────────── */
+#tilt-controls {
+  position: absolute;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  user-select: none;
+  width: 36px;
+}
+
+[data-theme="dark"] #tilt-controls {
+  background: var(--surface);
+}
+
+.tilt-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Vertical range slider */
+.tilt-slider-input {
+  -webkit-appearance: slider-vertical;
+  appearance: auto;
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 20px;
+  height: 80px;
+  cursor: pointer;
+  accent-color: var(--accent, #16a34a);
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+}
+
+#tilt-reset {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.1s,
+    color 0.1s,
+    border-color 0.1s;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+#tilt-reset:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+#tilt-reset:active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
 }
 
 /* Province groups — cursor + accessibility */
@@ -417,7 +514,6 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   overflow-y: auto;
   min-height: 0;
   padding: 0 18px 20px;
-  scrollbar-gutter: stable;
 }
 
 #sidebar.is-collapsed {
@@ -2062,11 +2158,10 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
 
 .rl-spin-btn:hover:not(:disabled) {
   opacity: 0.88;
-  transform: translateY(-1px);
 }
 
 .rl-spin-btn:active:not(:disabled) {
-  transform: translateY(0);
+  opacity: 0.7;
 }
 
 .rl-spin-btn:disabled {
@@ -2985,17 +3080,33 @@ html:not([data-theme="dark"]) .sp-toggle-track {
 #weather-overlay {
   position: absolute;
   pointer-events: none;
-  font-size: 2rem;
+  background: #fff;
+  border-radius: 12px;
+  padding: 7px 8px;
   line-height: 1;
-  transform: translate(-50%, -100%);
+  transform: translate(-50%, calc(-100% - 9px));
+  transform-origin: bottom center;
   opacity: 0;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+  /* drop-shadow covers the bubble + tail pseudo-element */
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.30));
   transition:
     opacity 0.25s ease,
     top 0.12s ease,
     left 0.12s ease;
   z-index: 15;
   user-select: none;
+}
+
+/* Downward speech-bubble tail */
+#weather-overlay::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #fff;
 }
 
 /* Twemoji img sizing inside the overlay */
@@ -3680,6 +3791,7 @@ html:not([data-theme="dark"]) .sp-toggle-track {
   .mobile-sheet-handle { display: flex; }
   #mobile-backdrop { display: block; }
   #mobile-fab { display: flex; }
+  #tilt-controls { display: none; }
 
   /* Settings: always tap-accessible on touch devices */
   #settings-trigger { opacity: 1 !important; }

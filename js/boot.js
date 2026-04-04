@@ -215,6 +215,12 @@
   function isMobile() { return window.innerWidth <= 640; }
 
   function openMobileSheet() {
+    // Reset + disable tilt while the bottom sheet is open
+    if (typeof window._resetTilt === "function") window._resetTilt();
+    if (typeof window._resetZoom === "function") window._resetZoom();
+    document.getElementById("tilt-controls").setAttribute("inert", "");
+    document.getElementById("tilt-controls").style.opacity = "0.35";
+    document.getElementById("tilt-controls").style.pointerEvents = "none";
     sidebar.classList.remove("is-collapsed");
     sidebar.classList.add("is-mobile-open");
     mobileBackdrop.classList.add("is-visible");
@@ -225,6 +231,9 @@
   window._openMobileSheet = openMobileSheet;
 
   function closeMobileSheet() {
+    document.getElementById("tilt-controls").removeAttribute("inert");
+    document.getElementById("tilt-controls").style.opacity = "";
+    document.getElementById("tilt-controls").style.pointerEvents = "";
     sidebar.classList.remove("is-mobile-open");
     mobileBackdrop.classList.remove("is-visible");
     sidebarToggle.textContent = "‹";

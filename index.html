@@ -83,11 +83,17 @@
 
       <main id="main">
         <div id="map-wrap">
-          <svg
-            id="map"
-            role="img"
-            aria-label="Interactive map of Philippine provinces"
-          ></svg>
+          <!-- Tiltable canvas: SVG + weather overlay -->
+          <div id="map-tilt-frame">
+            <svg
+              id="map"
+              role="img"
+              aria-label="Interactive map of Philippine provinces"
+            ></svg>
+          </div>
+
+          <!-- Weather emoji overlay (positioned per selected province in #map-wrap space) -->
+          <div id="weather-overlay" aria-hidden="true"></div>
           <div id="tooltip" class="tooltip" aria-live="polite"></div>
           <div id="zoom-controls" aria-label="Map zoom controls">
             <button id="zoom-in" title="Zoom in" aria-label="Zoom in">+</button>
@@ -176,8 +182,21 @@
             Tools
           </button>
 
-          <!-- Weather emoji overlay (positioned per selected province) -->
-          <div id="weather-overlay" aria-hidden="true"></div>
+          <!-- Tilt controls (bottom-left) -->
+          <div id="tilt-controls" aria-label="Map tilt controls">
+            <svg class="tilt-icon" width="15" height="15" viewBox="0 0 15 15" fill="none"
+              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <!-- vanishing-point perspective icon -->
+              <line x1="7.5" y1="2" x2="1" y2="13"/>
+              <line x1="7.5" y1="2" x2="14" y2="13"/>
+              <line x1="1" y1="13" x2="14" y2="13"/>
+              <line x1="3.5" y1="8.8" x2="11.5" y2="8.8"/>
+            </svg>
+            <input type="range" id="tilt-slider" min="0" max="30" value="0" step="1"
+              class="tilt-slider-input" aria-label="Map tilt angle" title="Map tilt (0–30°)">
+            <button id="tilt-reset" title="Reset tilt" aria-label="Reset tilt">⊙</button>
+          </div>
 
           <!-- Travel level picker popup (appears over map on province click) -->
           <div id="tl-picker-popup" class="tl-picker-popup" aria-hidden="true"></div>
@@ -228,7 +247,7 @@
     <script src="js/tools/quiz.js"></script>
     <script src="js/tools/travel.js"></script>
     <script src="js/tools/roulette.js"></script>
-    <script src="js/tools/geoguesser.js"></script>
+    <script src="js/tools/localguesser.js"></script>
     <!-- Boot: runs last, after all tools are defined -->
     <script src="js/boot.js"></script>
   </body>

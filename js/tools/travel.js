@@ -291,7 +291,6 @@ function _renderTravelPicker(d, event) {
   const wrap = document.getElementById("map-wrap");
   const wrapRect = wrap.getBoundingClientRect();
   const popupW = 240;
-  const popupH = 320;
   let x, y;
 
   if (event) {
@@ -303,14 +302,17 @@ function _renderTravelPicker(d, event) {
     y = pos ? pos.y - 20 : wrapRect.height / 2;
   }
 
-  // Clamp inside map
+  // Clamp X first, then measure real height after render to clamp Y
   x = Math.min(Math.max(x, 8), wrapRect.width - popupW - 8);
-  y = Math.min(Math.max(y, 8), wrapRect.height - popupH - 8);
-
   popup.style.left = x + "px";
   popup.style.top = y + "px";
   popup.classList.add("is-visible");
   popup.removeAttribute("aria-hidden");
+
+  // Clamp Y using the actual rendered height
+  const popupH = popup.offsetHeight;
+  y = Math.min(Math.max(y, 8), wrapRect.height - popupH - 8);
+  popup.style.top = y + "px";
 
   document.getElementById("tl-popup-close").addEventListener("click", (e) => {
     e.stopPropagation();
@@ -364,15 +366,19 @@ function _snapTravel() {
   const svgStr = [
     `<svg xmlns="http://www.w3.org/2000/svg"`,
     ` viewBox="0 0 ${MAP_W} ${MAP_H}" width="${MAP_W}" height="${MAP_H}">`,
-    `<defs>`,
-    `<pattern id="ocean-wave" x="0" y="0" width="32" height="16" patternUnits="userSpaceOnUse">`,
-    `<rect width="32" height="16" fill="none"/>`,
-    `<path d="M0 12 L8 4 L16 12 L24 4 L32 12" fill="none" stroke="#5087df"`,
-    ` stroke-opacity="0.35" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>`,
-    `</pattern>`,
-    `</defs>`,
+    ...(localStorage.getItem("terralyft-sea-texture") !== "false" ? [
+      `<defs>`,
+      `<pattern id="ocean-wave" x="0" y="0" width="32" height="16" patternUnits="userSpaceOnUse">`,
+      `<rect width="32" height="16" fill="none"/>`,
+      `<path d="M0 12 L8 4 L16 12 L24 4 L32 12" fill="none" stroke="#5087df"`,
+      ` stroke-opacity="0.35" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>`,
+      `</pattern>`,
+      `</defs>`,
+    ] : []),
     `<rect width="${MAP_W}" height="${MAP_H}" fill="${oceanColor}"/>`,
-    `<rect width="${MAP_W}" height="${MAP_H}" fill="url(#ocean-wave)"/>`,
+    ...(localStorage.getItem("terralyft-sea-texture") !== "false" ? [
+      `<rect width="${MAP_W}" height="${MAP_H}" fill="url(#ocean-wave)"/>`,
+    ] : []),
     provPaths,
     `</svg>`,
   ].join("");

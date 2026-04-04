@@ -36,8 +36,12 @@ let _activeToolId = null;let _exploreTab = "info"; // "info" | "weather"
 // ── Helpers ────────────────────────────────────────────────────
 function fitTransform(w, h) {
   const scale = Math.min(w / MAP_W, h / MAP_H) * 0.92;
+  // Offset so the map centers in the *visible* viewport (= #map-wrap) rather than
+  // the full SVG canvas. The bleed is CSS left:-22%, top:-30% on #map-tilt-frame.
+  const ox = w * 0.22;
+  const oy = h * 0.40;
   return d3.zoomIdentity
-    .translate((w - MAP_W * scale) / 2, (h - MAP_H * scale) / 2)
+    .translate(ox + (w - MAP_W * scale) / 2, oy + (h - MAP_H * scale) / 2)
     .scale(scale);
 }
 
@@ -264,7 +268,12 @@ function showToolsHome() {
 // ── Map init ───────────────────────────────────────────────────
 function initMap() {
   const container = document.getElementById("map-wrap");
-  const { width, height } = container.getBoundingClientRect();
+  // Visible viewport dims — used for fitTransform and pan extents
+  const { width: wrapW, height: wrapH } = container.getBoundingClientRect();
+  // Full SVG canvas dims (frame bleeds beyond wrap) — used for SVG attr sizing
+  const { width, height } = document
+    .getElementById("map-tilt-frame")
+    .getBoundingClientRect();
 
   _svg = d3.select("#map").attr("width", width).attr("height", height);
 
@@ -344,14 +353,14 @@ function initMap() {
     });
 
   // ── D3 Zoom & Pan ─────────────────────────────────────────
-  const initT = fitTransform(width, height);
+  const initT = fitTransform(wrapW, wrapH);
 
   // Pad in data-space so at the fit zoom the map can slide ~85% of
   // a viewport dimension off-screen in any direction before clamping.
   function calcPad(w, h, k) {
     return { x: (w * 0.85) / k, y: (h * 0.85) / k };
   }
-  let pad = calcPad(width, height, initT.k);
+  let pad = calcPad(wrapW, wrapH, initT.k);
 
   function applyTranslateExtent(w, h, k) {
     const p = calcPad(w, h, k);
@@ -388,7 +397,7 @@ function initMap() {
     });
 
   _svg.call(_zoom).on("dblclick.zoom", null);
-  applyTranslateExtent(width, height, initT.k);
+  applyTranslateExtent(wrapW, wrapH, initT.k);
   _svg.call(_zoom.transform, initT);
   _svg.on("dblclick", resetZoom);
 
@@ -415,6 +424,9 @@ function initMap() {
       } else {
         showToolsHome();
       }
+    } else if (_activeToolId === "explore") {
+      // No province selected — if still showing a province panel, go back to list
+      showIdlePanel();
     }
   });
 
@@ -429,6 +441,7 @@ function initMap() {
     applyTranslateExtent(w, h, t.k);
     _svg.transition().duration(380).call(_zoom.transform, t);
   }
+  window._resetZoom = resetZoom;
 
   document
     .getElementById("zoom-in")
@@ -438,17 +451,44 @@ function initMap() {
     .addEventListener("click", () => zoomBy(1 / 1.6));
   document.getElementById("zoom-reset").addEventListener("click", resetZoom);
 
+  // ── Tilt control ───────────────────────────────────────────
+  const tiltFrame = document.getElementById("map-tilt-frame");
+  const tiltSlider = document.getElementById("tilt-slider");
+  const tiltResetBtn = document.getElementById("tilt-reset");
+
+  function applyTilt(deg) {
+    tiltFrame.style.transform = `rotateX(${deg}deg)`;
+  }
+
+  tiltSlider.addEventListener("input", () => applyTilt(Number(tiltSlider.value)));
+
+  tiltResetBtn.addEventListener("click", () => {
+    tiltSlider.value = 0;
+    applyTilt(0);
+  });
+
+  // Sync transform to slider on init — browser may restore previous slider
+  // value from form cache on refresh, which would mismatch the CSS default.
+  applyTilt(Number(tiltSlider.value));
+
+  // Exposed so other modules (boot.js mobile sheet) can reset tilt
+  window._resetTilt = () => {
+    tiltSlider.value = 0;
+    applyTilt(0);
+  };
+
   document.getElementById("status").textContent = "Ready";
   document.getElementById("status").className = "status status--ready";
 
   window.addEventListener("resize", () => {
-    const { width: w, height: h } = container.getBoundingClientRect();
+    const { width: w, height: h } = tiltFrame.getBoundingClientRect();
     _svg.attr("width", w).attr("height", h);
     _svg.select("#ocean-bg").attr("width", w).attr("height", h);
     _svg.select("#ocean-pattern").attr("width", w).attr("height", h);
-    const t = fitTransform(w, h);
+    const { width: ww, height: wh } = container.getBoundingClientRect();
+    const t = fitTransform(ww, wh);
     _zoom.scaleExtent([t.k * 0.75, t.k * 15]);
-    applyTranslateExtent(w, h, t.k);
+    applyTranslateExtent(ww, wh, t.k);
     _svg.call(_zoom.transform, t);
   });
 }

@@ -69,9 +69,11 @@ function _positionWeatherOverlay(prov) {
   const overlay = document.getElementById("weather-overlay");
   const pos = _getProvScreenPos(prov);
   if (!pos || !overlay) return;
-  // Offset upward so emoji floats above the land
-  overlay.style.left = pos.x + "px";
-  overlay.style.top = (pos.y - 28) + "px";
+  // overlay is in #map-wrap space; pos is in SVG/frame space.
+  // frame.offsetLeft/Top give the untransformed bleed offset (negative values).
+  const frame = document.getElementById("map-tilt-frame");
+  overlay.style.left = (pos.x + frame.offsetLeft) + "px";
+  overlay.style.top = (pos.y + frame.offsetTop - 28) + "px";
 }
 
 function _isWeatherContext() {
@@ -102,7 +104,7 @@ async function fetchAndShowWeather(prov) {
   const overlay = document.getElementById("weather-overlay");
   if (!overlay) return;
   if (_weatherEmojiEnabled) {
-    _setTwemoji(overlay, "⏳");
+    _setTwemoji(overlay, "🧐");
     _positionWeatherOverlay(prov);
     overlay.classList.add("is-visible");
   }
@@ -195,7 +197,7 @@ function _renderExploreWeatherSection() {
         </div>
         <div class="weather-prov-grid">
           <div class="weather-prov-stat">
-            <span class="weather-prov-stat-label">Feels like</span>
+            <span class="weather-prov-stat-label">Feels</span>
             <span class="weather-prov-stat-val">${_lastWeatherInfo.feelsLike}°C</span>
           </div>
           <div class="weather-prov-stat">
