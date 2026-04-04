@@ -2663,6 +2663,7 @@ html:not([data-theme="dark"]) .sp-toggle-track {
   border: 1.5px solid var(--border);
   margin-bottom: 12px;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .gg-map-preview {
@@ -3066,6 +3067,82 @@ html:not([data-theme="dark"]) .sp-toggle-track {
   margin-top: 4px;
 }
 .gg-start-btn:hover { opacity: 0.88; }
+
+/* ── Mode pill row (replaced by gg-map-switcher) ── */
+.gg-mode-selected-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Easy mode label (replaces timer) ── */
+.gg-easy-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #16a34a;
+  background: #dcfce7;
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+[data-theme="dark"] .gg-easy-tag {
+  background: #14532d;
+  color: #86efac;
+}
+
+/* ── Map view switcher (Default / Satellite) ── */
+.gg-map-switcher {
+  display: flex;
+  gap: 0;
+  width: 100%;
+  background: var(--bg-sidebar);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.gg-map-sw-btn {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 8px;
+  margin: 3px;
+  transition: background 0.15s, color 0.15s;
+}
+.gg-map-sw-btn.is-active {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.gg-map-sw-btn:not(.is-active):hover { color: var(--text); }
+[data-theme="dark"] .gg-map-sw-btn.is-active {
+  background: #1e3a5f;
+  color: #93c5fd;
+}
+
+/* ── Satellite toggle button (legacy, unused) ── */
+.gg-sat-btn { display: none; }
+
+/* ── Rotation badge (kept for possible reuse) ── */
+.gg-rotation-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  background: rgba(0,0,0,0.62);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 7px;
+  border-radius: 5px;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
 
 [data-theme="dark"] .gg-summary-row.is-correct { background: #14532d; color: #bbf7d0; }
 [data-theme="dark"] .gg-summary-row.is-half    { background: #451a03; color: #fde68a; }

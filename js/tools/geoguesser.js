@@ -9,10 +9,12 @@
 
 // ── Constants ──────────────────────────────────────────────────
 const _GG_MAX_ROUNDS = 10;
-const _GG_TIMER_SECS = 30;
+const _GG_TIMER_SECS = 45;
 const _GG_TILE_LIGHT = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
 const _GG_TILE_DARK  = "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png";
 const _GG_TILE_ATT   = "&copy; OpenStreetMap &copy; CARTO";
+const _GG_TILE_SAT   = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+const _GG_TILE_SAT_ATT = "Tiles &copy; Esri";
 // Tight bounding box around the Philippine archipelago
 const _GG_PH_BOUNDS  = L.latLngBounds([4.5, 116.0], [21.5, 127.5]);
 
@@ -24,7 +26,8 @@ function _ggTileUrl() {
 function _ggSwapTiles(map) {
   if (!map) return;
   map.eachLayer(l => { if (l instanceof L.TileLayer) map.removeLayer(l); });
-  L.tileLayer(_ggTileUrl(), { maxZoom: 19, attribution: _GG_TILE_ATT }).addTo(map);
+  const sat = _ggSatellite;
+  L.tileLayer(sat ? _GG_TILE_SAT : _ggTileUrl(), { maxZoom: 19, attribution: sat ? _GG_TILE_SAT_ATT : _GG_TILE_ATT }).addTo(map);
 }
 
 // Watch for theme changes and swap tiles on any live map.
@@ -47,6 +50,9 @@ let _ggHistory       = [];
 let _ggHighlights    = [];
 let _ggLeafletPrev   = null;
 let _ggLeafletModal  = null;
+let _ggMode          = null;   // 'roam' | 'timed'
+let _ggMaxTimerSec   = _GG_TIMER_SECS;
+let _ggSatellite     = false;
 
 // ── SVG → Lat/Lng calibration ──────────────────────────────────
 // Linear approximation calibrated from known province centroids:
@@ -145,7 +151,7 @@ function _ggTickTimer() {
     timerEl.classList.toggle("is-urgent", _ggTimerSec <= 5);
   }
   if (fillEl) {
-    fillEl.style.width = `${Math.max(0, (_ggTimerSec / _GG_TIMER_SECS) * 100)}%`;
+    fillEl.style.width = `${Math.max(0, (_ggTimerSec / _ggMaxTimerSec) * 100)}%`;
     fillEl.classList.toggle("is-urgent", _ggTimerSec <= 5);
   }
   if (_ggTimerSec <= 0) { _ggStopTimer(); _ggGuess(null); }
@@ -173,7 +179,10 @@ function _ggReset() {
   _ggRoundNum   = 0;
   _ggStreak     = 0;
   _ggBestStreak = 0;
-  _ggTimerSec   = _GG_TIMER_SECS;
+  _ggTimerSec    = _GG_TIMER_SECS;
+  _ggMaxTimerSec = _GG_TIMER_SECS;
+  _ggMode        = null;
+  _ggSatellite   = false;
   _ggHistory    = [];
   _ggUsed       = [];
 }
@@ -234,7 +243,8 @@ function _ggInitPreview(loc) {
     maxBounds: _GG_PH_BOUNDS,
     maxBoundsViscosity: 1.0,
   });
-  L.tileLayer(_ggTileUrl(), { maxZoom: 19, attribution: _GG_TILE_ATT }).addTo(_ggLeafletPrev);
+  const useSat = _ggSatellite;
+  L.tileLayer(useSat ? _GG_TILE_SAT : _ggTileUrl(), { maxZoom: 19, attribution: useSat ? _GG_TILE_SAT_ATT : _GG_TILE_ATT }).addTo(_ggLeafletPrev);
   if (_ggAnswered) _ggAddPin(_ggLeafletPrev, loc);
 }
 
@@ -264,7 +274,8 @@ function _ggOpenModal(loc) {
       maxBounds: _GG_PH_BOUNDS,
       maxBoundsViscosity: 1.0,
     });
-    L.tileLayer(_ggTileUrl(), { maxZoom: 19, attribution: _GG_TILE_ATT }).addTo(_ggLeafletModal);
+    const useSat = _ggSatellite;
+    L.tileLayer(useSat ? _GG_TILE_SAT : _ggTileUrl(), { maxZoom: 19, attribution: useSat ? _GG_TILE_SAT_ATT : _GG_TILE_ATT }).addTo(_ggLeafletModal);
     if (_ggAnswered) _ggAddPin(_ggLeafletModal, loc);
   }, 50);
 
@@ -278,7 +289,7 @@ function _ggOpenModal(loc) {
 // ── Highlight helpers ──────────────────────────────────────────
 function _ggClearHighlights() {
   _ggHighlights.forEach(node => {
-    d3.select(node).classed("is-gg-correct", false).classed("is-gg-wrong", false);
+    d3.select(node).classed("is-gg-correct", false).classed("is-gg-wrong", false).classed("is-gg-half", false);
   });
   _ggHighlights = [];
   _g.select("#gg-line-layer").remove();
@@ -341,28 +352,52 @@ function showGeoGuesserTool() {
   _ggShowIntro();
 }
 
+const _GG_MODE_DESC = {
+  roam:  'No timer — take your time.',
+  timed: `${_GG_TIMER_SECS}s per round.`,
+};
+
 function _ggShowIntro() {
-  document.getElementById("info-panel").innerHTML = `
-    <button class="tool-back-btn" id="gg-intro-back">‹ Back</button>
-    <div class="gg-intro">
-      <div class="gg-intro-icon">📍</div>
-      <h2 class="gg-intro-title">Local Guesser</h2>
-      <p class="gg-intro-desc">A map view will appear — click the province on the Philippine map that you think it belongs to.</p>
-      <ul class="gg-intro-rules">
-        <li>🕐 <strong>${_GG_TIMER_SECS}s</strong> per round</li>
-        <li>🏁 <strong>${_GG_MAX_ROUNDS} rounds</strong> per game</li>
-        <li>🔍 You can zoom in and slightly out for clues</li>
-      </ul>
-      <p class="gg-intro-note">⚠️ The pin location is approximate — it's generated from a simplified SVG map, so it may not land exactly at the center of the province.</p>
-      <button class="gg-start-btn" id="gg-start-btn">Start Game</button>
-    </div>
-  `;
-  document.getElementById("gg-intro-back").addEventListener("click", () => {
-    _ggReset();
-    _activeToolId = null;
-    showToolsHome();
-  });
-  document.getElementById("gg-start-btn").addEventListener("click", _ggNewRound);
+  let _selected = 'roam';
+
+  function render() {
+    document.getElementById("info-panel").innerHTML = `
+      <button class="tool-back-btn" id="gg-intro-back">‹ Back</button>
+      <div class="gg-intro">
+        <div class="gg-intro-icon">📍</div>
+        <h2 class="gg-intro-title">Local Guesser</h2>
+        <p class="gg-intro-desc">A map view will appear — click the province on the Philippine map that you think it belongs to.</p>
+        <div class="gg-map-switcher">
+          ${['roam','timed'].map(m => `
+            <button class="gg-map-sw-btn${_selected === m ? ' is-active' : ''}" data-mode="${m}">${m.charAt(0).toUpperCase() + m.slice(1)}</button>
+          `).join('')}
+        </div>
+        <p class="gg-mode-selected-text" id="gg-mode-label">${_GG_MODE_DESC[_selected]}</p>
+        <p class="gg-intro-note">⚠️ The pin location is approximate — it's generated from a simplified SVG map, so it may not land exactly at the center of the province.</p>
+        <button class="gg-start-btn" id="gg-start-btn">Start Game</button>
+      </div>
+    `;
+
+    document.getElementById("gg-intro-back").addEventListener("click", () => {
+      _ggReset();
+      _activeToolId = null;
+      showToolsHome();
+    });
+
+    document.querySelectorAll(".gg-intro .gg-map-sw-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        _selected = btn.dataset.mode;
+        render();
+      });
+    });
+
+    document.getElementById("gg-start-btn").addEventListener("click", () => {
+      _ggMode = _selected;
+      _ggNewRound();
+    });
+  }
+
+  render();
 }
 
 function _ggNewRound() {
@@ -371,10 +406,8 @@ function _ggNewRound() {
   _ggAnswered = false;
   _ggClearHighlights();
   // Clear any province selection left from the guess click
-  if (_selectedGroup) {
-    d3.select(_selectedGroup).classed("is-selected", false);
-    _selectedGroup = null;
-  }
+  _g.selectAll(".province-group").classed("is-selected", false);
+  _selectedGroup = null;
   _ggRoundNum++;
 
   if (_ggRoundNum > _GG_MAX_ROUNDS) {
@@ -392,15 +425,23 @@ function _ggNewRound() {
 
   const loc = _ggRandomPoint(provId);
   _ggRound = { prov: provId, loc };
-  _ggTimerSec = _GG_TIMER_SECS;
+
+  if (_ggMode === 'timed') {
+    _ggTimerSec    = _GG_TIMER_SECS;
+    _ggMaxTimerSec = _GG_TIMER_SECS;
+  } else {
+    _ggTimerSec    = 0;
+    _ggMaxTimerSec = 1;
+  }
+
   _renderGeoGuesser();
-  _ggStartTimer();
+  if (_ggMode === 'timed') _ggStartTimer();
 }
 
 function _renderGeoGuesser(result) {
   _ggDestroyPreview();
 
-  const timerPct = (_ggTimerSec / _GG_TIMER_SECS) * 100;
+  const timerPct = _ggMaxTimerSec > 1 ? (_ggTimerSec / _ggMaxTimerSec) * 100 : 0;
 
   const gameBarHtml = `
     <div class="gg-game-bar">
@@ -408,11 +449,13 @@ function _renderGeoGuesser(result) {
       ${_ggStreak >= 2
         ? `<span class="gg-streak${_ggStreak >= 4 ? ' is-hot' : ''}">🔥 ${_ggStreak}</span>`
         : '<span></span>'}
-      <span class="gg-timer${!result && _ggTimerSec <= 5 ? ' is-urgent' : ''}" id="gg-timer">${result ? '\u2014' : `${_ggTimerSec}s`}</span>
+      ${_ggMode === 'timed'
+        ? `<span class="gg-timer${!result && _ggTimerSec <= 5 ? ' is-urgent' : ''}" id="gg-timer">${result ? '\u2014' : `${_ggTimerSec}s`}</span>`
+        : '<span></span>'}
     </div>
-    <div class="gg-timer-bar">
+    ${_ggMode === 'timed' ? `<div class="gg-timer-bar">
       <div class="gg-timer-fill" id="gg-timer-fill" style="width:${result ? 0 : timerPct}%"></div>
-    </div>`;
+    </div>` : ''}`;
 
   const scoreHtml = `
     <div class="gg-score-bar">
@@ -466,6 +509,10 @@ function _renderGeoGuesser(result) {
         </svg>
       </button>
     </div>
+    <div class="gg-map-switcher" id="gg-map-switcher">
+      <button class="gg-map-sw-btn${!_ggSatellite ? ' is-active' : ''}" data-sat="0">Default</button>
+      <button class="gg-map-sw-btn${_ggSatellite ? ' is-active' : ''}" data-sat="1">Satellite</button>
+    </div>
     ${resultHtml}
   `;
 
@@ -479,6 +526,13 @@ function _renderGeoGuesser(result) {
   document.getElementById("gg-expand-btn").addEventListener("click", () => _ggOpenModal(_ggRound.loc));
   document.getElementById("gg-map-preview").addEventListener("click", () => _ggOpenModal(_ggRound.loc));
   document.getElementById("gg-next-btn")?.addEventListener("click", () => { _ggDestroyModal(); _ggNewRound(); });
+  document.querySelectorAll(".gg-map-sw-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      _ggSatellite = btn.dataset.sat === "1";
+      _ggSwapTiles(_ggLeafletPrev);
+      document.querySelectorAll(".gg-map-sw-btn").forEach(b => b.classList.toggle("is-active", b.dataset.sat === (btn.dataset.sat)));
+    });
+  });
 }
 
 function _ggShowSummary() {
