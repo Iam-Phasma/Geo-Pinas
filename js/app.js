@@ -12,16 +12,10 @@ const CONVEX_SITE_URL = "https://industrious-heron-706.convex.site";
 (async function trackVisitor() {
   try {
     const el = document.getElementById("visitor-count");
-    const cached = sessionStorage.getItem("gp_count");
-    if (cached) {
-      if (el) el.textContent = Number(cached).toLocaleString();
-      return;
-    }
     const res = await fetch(`${CONVEX_SITE_URL}/track`, { method: "POST" });
     if (!res.ok) return;
     const { count } = await res.json();
     if (el) el.textContent = count.toLocaleString();
-    sessionStorage.setItem("gp_count", String(count));
   } catch {}
 })();
 
