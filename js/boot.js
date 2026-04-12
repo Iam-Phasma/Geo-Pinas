@@ -28,14 +28,12 @@
     settingsTrigger.classList.remove("is-near");
   });
 
-  // Toggle panel open/closed on gear button click
   settingsBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const open = settingsTrigger.classList.toggle("panel-open");
     settingsBtn.classList.toggle("is-active", open);
   });
 
-  // Close panel when clicking outside
   document.addEventListener("click", (e) => {
     if (!settingsTrigger.contains(e.target)) {
       settingsTrigger.classList.remove("panel-open");

@@ -48,7 +48,6 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
-// ── Flag URL helpers ──────────────────────────────────────
 // ── Flag URL helpers ──────────────────────────────────────────
 const _CRW = "https://www.crwflags.com/fotw/images/p/";
 
@@ -361,7 +360,6 @@ function initMap() {
     .attr("stroke-linecap", "round")
     .attr("stroke-linejoin", "round");
 
-  // Solid base rect
   _svg
     .append("rect")
     .attr("id", "ocean-bg")
@@ -369,7 +367,6 @@ function initMap() {
     .attr("height", height)
     .attr("fill", "#1b3a6b");
 
-  // Pattern overlay rect
   _svg
     .append("rect")
     .attr("id", "ocean-pattern")
@@ -379,7 +376,6 @@ function initMap() {
 
   _g = _svg.append("g").attr("id", "provinces-layer");
 
-  // Render province groups
   PROVINCES.forEach((prov) => {
     const grp = _g
       .append("g")
@@ -393,7 +389,6 @@ function initMap() {
     grp.append("path").attr("class", "province").attr("d", prov.d);
   });
 
-  // Events attached to province groups
   _g.selectAll(".province-group")
     .on("mousemove", onMouseMove)
     .on("mouseleave", onMouseLeave)
@@ -1008,7 +1003,6 @@ function showProvinceInfo(prov, fromExplore = false) {
     ${_exploreTab === "info" ? infoSection : weatherSection}
   `;
 
-  // Tab switcher
   document.querySelectorAll(".province-tab-bar .gg-map-sw-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const newTab = btn.dataset.tab;
@@ -1018,7 +1012,6 @@ function showProvinceInfo(prov, fromExplore = false) {
     });
   });
 
-  // Back button
   document.querySelector(".info-back").addEventListener("click", () => {
     if (_selectedGroup) {
       d3.select(_selectedGroup).classed("is-selected", false);
