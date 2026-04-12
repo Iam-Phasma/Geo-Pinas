@@ -10,22 +10,45 @@
 let _currentWeatherProv = null;
 let _lastWeatherInfo = null;
 let _weatherEmojiEnabled = true;
+let _currentLottieAnim = null;
 
-// ── Weather helpers ────────────────────────────────────────────
-const WMO_EMOJI = {
-  0: "☀️",
-  1: "🌤️", 2: "⛅", 3: "🌥️",
-  45: "🌫️", 48: "🌫️",
-  51: "🌦️", 53: "🌦️", 55: "🌦️",
-  56: "🌨️", 57: "🌨️",
-  61: "🌧️", 63: "🌧️", 65: "🌧️",
-  66: "🌨️", 67: "🌨️",
-  71: "🌨️", 73: "🌨️", 75: "🌨️",
-  77: "🌨️",
-  80: "🌦️", 81: "🌦️", 82: "⛈️",
-  85: "🌨️", 86: "🌨️",
-  95: "⛈️", 96: "⛈️", 99: "⛈️",
+// ── Meteocons icon slugs (WMO code → slug) ────────────────────
+const _MC = "https://cdn.meteocons.com/3.0.0-next.8";
+
+const WMO_ICON_DAY = {
+  0:  "clear-day",
+  1:  "mostly-clear-day",           2:  "partly-cloudy-day",        3:  "overcast-day",
+  45: "fog-day",                    48: "fog-day",
+  51: "mostly-clear-day-drizzle",   53: "partly-cloudy-day-drizzle", 55: "overcast-day-drizzle",
+  56: "overcast-day-drizzle",       57: "overcast-day-sleet",
+  61: "partly-cloudy-day-rain",     63: "rain",                      65: "extreme-rain",
+  66: "sleet",                      67: "extreme-sleet",
+  71: "partly-cloudy-day-snow",     73: "snow",                      75: "extreme-snow",
+  77: "snow",
+  80: "partly-cloudy-day-rain",     81: "rain",                      82: "extreme-rain",
+  85: "partly-cloudy-day-snow",     86: "extreme-snow",
+  95: "thunderstorms-day",          96: "thunderstorms-day-hail",    99: "thunderstorms-extreme-day",
 };
+
+const WMO_ICON_NIGHT = {
+  0:  "clear-night",
+  1:  "mostly-clear-night",           2:  "partly-cloudy-night",        3:  "overcast-night",
+  45: "fog-night",                    48: "fog-night",
+  51: "mostly-clear-night-drizzle",   53: "partly-cloudy-night-drizzle", 55: "overcast-night-drizzle",
+  56: "overcast-night-drizzle",       57: "overcast-night-sleet",
+  61: "partly-cloudy-night-rain",     63: "rain",                        65: "extreme-rain",
+  66: "sleet",                        67: "extreme-sleet",
+  71: "partly-cloudy-night-snow",     73: "snow",                        75: "extreme-snow",
+  77: "snow",
+  80: "partly-cloudy-night-rain",     81: "rain",                        82: "extreme-rain",
+  85: "partly-cloudy-night-snow",     86: "extreme-snow",
+  95: "thunderstorms-night",          96: "thunderstorms-night-hail",    99: "thunderstorms-extreme-night",
+};
+
+function _wmoIcon(code, isDay) {
+  const map = isDay ? WMO_ICON_DAY : WMO_ICON_NIGHT;
+  return map[code] ?? "not-available";
+}
 
 const WMO_DESC = {
   0: "Clear sky",
@@ -88,11 +111,8 @@ function updateWeatherEmojiPosition() {
   }
 }
 
-function _setTwemoji(overlay, emoji) {
-  overlay.innerHTML = emoji;
-  if (typeof twemoji !== "undefined") {
-    twemoji.parse(overlay, { folder: "svg", ext: ".svg" });
-  }
+function _setMeteoIcon(overlay, slug) {
+  overlay.innerHTML = `<img class="meteocon" src="${_MC}/svg/fill/${slug}.svg" alt="" aria-hidden="true">`;
 }
 
 async function fetchAndShowWeather(prov) {
@@ -104,7 +124,7 @@ async function fetchAndShowWeather(prov) {
   const overlay = document.getElementById("weather-overlay");
   if (!overlay) return;
   if (_weatherEmojiEnabled) {
-    _setTwemoji(overlay, "🧐");
+    _setMeteoIcon(overlay, "thermometer");
     _positionWeatherOverlay(prov);
     overlay.classList.add("is-visible");
   }
@@ -117,20 +137,21 @@ async function fetchAndShowWeather(prov) {
     const url =
       `https://api.open-meteo.com/v1/forecast` +
       `?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}` +
-      `&current=weather_code,temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m&forecast_days=1`;
+      `&current=weather_code,temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,is_day&forecast_days=1`;
     const res = await fetch(url);
     if (!res.ok) throw new Error("weather fetch failed");
     const data = await res.json();
     const cur = data.current ?? {};
     const code = cur.weather_code ?? 0;
-    const emoji = WMO_EMOJI[code] ?? "🌡️";
-    _setTwemoji(overlay, emoji);
+    const isDay = cur.is_day !== 0;
+    const slug = _wmoIcon(code, isDay);
+    _setMeteoIcon(overlay, slug);
     if (_weatherEmojiEnabled) _positionWeatherOverlay(prov);
 
     _lastWeatherInfo = {
       prov: prov.id,
       region: PROVINCE_REGION[prov.id] ?? "",
-      emoji,
+      slug,
       temp: cur.temperature_2m != null ? Math.round(cur.temperature_2m) : "—",
       feelsLike: cur.apparent_temperature != null ? Math.round(cur.apparent_temperature) : "—",
       humidity: cur.relative_humidity_2m != null ? cur.relative_humidity_2m : "—",
@@ -142,7 +163,7 @@ async function fetchAndShowWeather(prov) {
       _renderExploreWeatherSection();
     }
   } catch {
-    _setTwemoji(overlay, "🌡️");
+    _setMeteoIcon(overlay, "not-available");
     if (_isWeatherContext()) {
       _renderExploreWeatherSection();
     }
@@ -152,6 +173,7 @@ async function fetchAndShowWeather(prov) {
 function clearWeatherEmoji() {
   _currentWeatherProv = null;
   _lastWeatherInfo = null;
+  if (_currentLottieAnim) { _currentLottieAnim.destroy(); _currentLottieAnim = null; }
   const overlay = document.getElementById("weather-overlay");
   if (overlay) overlay.classList.remove("is-visible");
 }
@@ -189,7 +211,7 @@ function _renderExploreWeatherSection() {
           <span class="weather-prov-region">${escapeHtml(_lastWeatherInfo.region)}</span>
         </div>
         <div class="weather-prov-main">
-          <span class="weather-prov-emoji-wrap" id="weather-prov-emoji-el">${_lastWeatherInfo.emoji}</span>
+          <div class="weather-prov-icon" id="weather-lottie-el"></div>
           <div class="weather-prov-temp-block">
             <span class="weather-prov-temp">${_lastWeatherInfo.temp}°C</span>
             <span class="weather-prov-cond">${escapeHtml(_lastWeatherInfo.condition)}</span>
@@ -211,9 +233,16 @@ function _renderExploreWeatherSection() {
         </div>
       </div>
     `;
-    const emojiEl = document.getElementById("weather-prov-emoji-el");
-    if (emojiEl && typeof twemoji !== "undefined") {
-      twemoji.parse(emojiEl, { folder: "svg", ext: ".svg" });
+    const lottieEl = document.getElementById("weather-lottie-el");
+    if (lottieEl) {
+      if (_currentLottieAnim) { _currentLottieAnim.destroy(); _currentLottieAnim = null; }
+      _currentLottieAnim = lottie.loadAnimation({
+        container: lottieEl,
+        path: `${_MC}/lottie/fill/${_lastWeatherInfo.slug}.json`,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+      });
     }
     _attachEmojiToggle();
 }

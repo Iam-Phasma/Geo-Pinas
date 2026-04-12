@@ -1791,15 +1791,10 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   gap: 14px;
 }
 
-.weather-prov-emoji-wrap {
-  font-size: 2.6rem;
-  line-height: 1;
+.weather-prov-icon {
+  width: 64px;
+  height: 64px;
   flex-shrink: 0;
-}
-
-.weather-prov-emoji-wrap img.emoji {
-  width: 2.6rem;
-  height: 2.6rem;
 }
 
 .weather-prov-temp-block {
@@ -3209,7 +3204,7 @@ html:not([data-theme="dark"]) .sp-toggle-track {
   pointer-events: none;
   background: #fff;
   border-radius: 12px;
-  padding: 7px 8px;
+  padding: 2px;
   line-height: 1;
   transform: translate(-50%, calc(-100% - 9px));
   transform-origin: bottom center;
@@ -3236,10 +3231,10 @@ html:not([data-theme="dark"]) .sp-toggle-track {
   border-top: 8px solid #fff;
 }
 
-/* Twemoji img sizing inside the overlay */
-#weather-overlay img.emoji {
-  width: 2rem;
-  height: 2rem;
+/* Meteocon animated SVG sizing inside the overlay */
+#weather-overlay img.meteocon {
+  width: 3rem;
+  height: 3rem;
   display: block;
 }
 

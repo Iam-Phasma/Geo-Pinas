@@ -293,7 +293,7 @@ function showAboutPanel() {
       <div class="about-section-title">Tech Stack</div>
       <ul class="about-list">
         <li><a href="https://d3js.org/" target="_blank" rel="noopener">D3.js v7</a> — SVG rendering, zoom &amp; pan</li>
-        <li><a href="https://github.com/twitter/twemoji" target="_blank" rel="noopener">Twemoji</a> — emoji weather icons</li>
+        <li><a href="https://meteocons.com/" target="_blank" rel="noopener">Meteocons</a> — animated weather icons (MIT, CDN)</li>
         <li><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo API</a> — free weather data</li>
         <li><a href="https://en.wikipedia.org/api/rest_v1/" target="_blank" rel="noopener">Wikipedia REST API</a> — province summaries</li>
         <li><a href="https://convex.dev" target="_blank" rel="noopener">Convex</a> — serverless visitor tracking</li>
@@ -771,6 +771,7 @@ async function _fetchProvinceWiki(provName) {
     const tmp = document.createElement("div");
     tmp.innerHTML = html;
     tmp.querySelectorAll(
+      "h1, h2, h3, h4, h5, h6, " +
       "style, script, sup, figure, figcaption, svg, canvas, img, " +
       "table, .reference, .mw-editsection, .noprint, .thumb, " +
       ".gallery, .wikitable, .infobox, .navbox, .mbox, .ambox, " +
