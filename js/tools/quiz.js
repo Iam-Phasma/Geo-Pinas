@@ -17,13 +17,20 @@ function _clearQuizHighlight() {
   if (_quizHighlight) {
     d3.select(_quizHighlight).classed("is-quiz", false);
     _quizHighlight = null;
+    _refreshMapVisuals();
   }
 }
 
 function showQuizTool() {
+  _activeToolId = "quiz";
   _quizScore   = { correct: 0, total: 0 };
   _quizHistory = [];
   _quizUsed    = [];
+  if (_selectedGroup) {
+    d3.select(_selectedGroup).classed("is-selected", false);
+    _selectedGroup = null;
+    _refreshMapVisuals();
+  }
   if (typeof window._resetZoom === "function") window._resetZoom();
   _renderQuizQuestion();
 }
@@ -57,6 +64,7 @@ function _renderQuizQuestion() {
   if (grp) {
     d3.select(grp).classed("is-quiz", true).raise();
     _quizHighlight = grp;
+    _refreshMapVisuals();
   }
 
   const qNum = _quizScore.total + 1;

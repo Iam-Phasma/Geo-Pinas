@@ -153,6 +153,15 @@ function requestMapRender() {
 
 window.requestMapRender = requestMapRender;
 
+function _refreshMapVisuals() {
+  requestMapRender();
+  if (typeof updateWeatherEmojiPosition === "function") {
+    updateWeatherEmojiPosition();
+  }
+}
+
+window._refreshMapVisuals = _refreshMapVisuals;
+
 function renderMap(transform = d3.zoomTransform(_svg.node())) {
   if (!_mapCanvas || !_mapCtx || !_mapHitCanvas || !_mapHitCtx) return;
   const frame = document.getElementById("map-tilt-frame");
@@ -694,6 +703,7 @@ function initMap() {
           _g.attr("transform", `translate(${t.x},${t.y}) scale(${t.k})`);
           renderMap(t);
           updateWeatherEmojiPosition();
+          if (typeof _ggSyncLineOverlay === "function") _ggSyncLineOverlay();
         }
       });
     })
@@ -785,6 +795,7 @@ function initMap() {
       applyTranslateExtent(ww, wh, t.k);
       _svg.call(_zoom.transform, t);
       renderMap(t);
+      if (typeof _ggSyncLineOverlay === "function") _ggSyncLineOverlay();
     });
   });
 }
@@ -843,6 +854,11 @@ function onProvinceClick(event, d) {
     return;
   }
   event.stopPropagation();
+
+  // Quiz and Roulette manage province visuals themselves; ignore manual map selection.
+  if (_activeToolId === "quiz" || _activeToolId === "roulette") {
+    return;
+  }
 
   const groupEl = _provinceGroupMap.get(d.id) || null;
   const isSame = _selectedGroup === groupEl;
@@ -1039,6 +1055,7 @@ function selectProvinceById(id, fromExplore = false) {
   }
   _selectedGroup = grp;
   d3.select(grp).classed("is-selected", true).raise();
+  requestMapRender();
   showProvinceInfo(d3.select(grp).datum(), fromExplore);
 }
 
@@ -1299,6 +1316,7 @@ function showProvinceInfo(prov, fromExplore = false) {
     if (_selectedGroup) {
       d3.select(_selectedGroup).classed("is-selected", false);
       _selectedGroup = null;
+      _refreshMapVisuals();
     }
     clearWeatherEmoji();
     _lastWeatherInfo = null;

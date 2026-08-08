@@ -53,6 +53,7 @@ let _ggLeafletModal  = null;
 let _ggMode          = null;   // 'roam' | 'timed'
 let _ggMaxTimerSec   = _GG_TIMER_SECS;
 let _ggSatellite     = false;
+let _ggLinePair      = null;   // { correctId, guessId }
 
 // ── SVG → Lat/Lng calibration ──────────────────────────────────
 // Linear approximation calibrated from known province centroids:
@@ -292,7 +293,9 @@ function _ggClearHighlights() {
     d3.select(node).classed("is-gg-correct", false).classed("is-gg-wrong", false).classed("is-gg-half", false);
   });
   _ggHighlights = [];
-  _g.select("#gg-line-layer").remove();
+  _ggLinePair = null;
+  _ggRemoveLineOverlay();
+  _refreshMapVisuals();
 }
 
 function _ggProvSvgCenter(provId) {
@@ -308,36 +311,89 @@ function _ggProvSvgCenter(provId) {
 }
 
 function _ggDrawGuessingLine(correctId, guessId) {
-  _g.select("#gg-line-layer").remove();
-  if (!guessId || correctId === guessId) return;
-  const a = _ggProvSvgCenter(correctId);
-  const b = _ggProvSvgCenter(guessId);
-  if (!a || !b) return;
-
-  const layer = _g.append("g").attr("id", "gg-line-layer");
-
-  layer.append("line")
-    .attr("x1", a.x).attr("y1", a.y)
-    .attr("x2", b.x).attr("y2", b.y)
-    .attr("stroke", "#f97316")
-    .attr("stroke-width", 5)
-    .attr("stroke-dasharray", "7 5")
-    .attr("opacity", 0.9);
-
-  [a, b].forEach(p => {
-    layer.append("circle")
-      .attr("cx", p.x).attr("cy", p.y).attr("r", 3)
-      .attr("fill", "#f97316")
-      .attr("stroke", "#fff")
-      .attr("stroke-width", 1);
-  });
+  if (!guessId || correctId === guessId) {
+    _ggLinePair = null;
+    _ggRemoveLineOverlay();
+    return;
+  }
+  _ggLinePair = { correctId, guessId };
+  _ggRenderLineOverlay();
 }
+
+function _ggRemoveLineOverlay() {
+  const existing = document.getElementById("gg-line-overlay");
+  if (existing) existing.remove();
+}
+
+function _ggEnsureLineOverlay() {
+  const wrap = document.getElementById("map-wrap");
+  if (!wrap) return null;
+  let overlay = document.getElementById("gg-line-overlay");
+  if (overlay) return overlay;
+
+  overlay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  overlay.setAttribute("id", "gg-line-overlay");
+  overlay.setAttribute("width", "100%");
+  overlay.setAttribute("height", "100%");
+  overlay.setAttribute("viewBox", `0 0 ${Math.max(1, wrap.clientWidth)} ${Math.max(1, wrap.clientHeight)}`);
+  overlay.setAttribute("aria-hidden", "true");
+  overlay.style.position = "absolute";
+  overlay.style.inset = "0";
+  overlay.style.pointerEvents = "none";
+  overlay.style.zIndex = "14";
+  wrap.appendChild(overlay);
+  return overlay;
+}
+
+function _ggScreenPoint(svgPt) {
+  if (!svgPt || !_svg) return null;
+  const t = d3.zoomTransform(_svg.node());
+  const frame = document.getElementById("map-tilt-frame");
+  if (!frame) return null;
+  return {
+    x: t.applyX(svgPt.x) + frame.offsetLeft,
+    y: t.applyY(svgPt.y) + frame.offsetTop,
+  };
+}
+
+function _ggRenderLineOverlay() {
+  if (!_ggLinePair) {
+    _ggRemoveLineOverlay();
+    return;
+  }
+
+  const { correctId, guessId } = _ggLinePair;
+  const a = _ggScreenPoint(_ggProvSvgCenter(correctId));
+  const b = _ggScreenPoint(_ggProvSvgCenter(guessId));
+  if (!a || !b) {
+    _ggRemoveLineOverlay();
+    return;
+  }
+
+  const wrap = document.getElementById("map-wrap");
+  const overlay = _ggEnsureLineOverlay();
+  if (!wrap || !overlay) return;
+  overlay.setAttribute("viewBox", `0 0 ${Math.max(1, wrap.clientWidth)} ${Math.max(1, wrap.clientHeight)}`);
+
+  overlay.innerHTML = `
+    <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#f97316" stroke-width="5" stroke-dasharray="7 5" opacity="0.9"></line>
+    <circle cx="${a.x}" cy="${a.y}" r="3" fill="#f97316" stroke="#fff" stroke-width="1"></circle>
+    <circle cx="${b.x}" cy="${b.y}" r="3" fill="#f97316" stroke="#fff" stroke-width="1"></circle>
+  `;
+}
+
+function _ggSyncLineOverlay() {
+  _ggRenderLineOverlay();
+}
+
+window._ggSyncLineOverlay = _ggSyncLineOverlay;
 
 function _ggHighlight(provId, cls) {
   const node = _g.selectAll(".province-group").filter(d => d.id === provId).node();
   if (!node) return;
   d3.select(node).classed(cls, true).raise();
   _ggHighlights.push(node);
+  _refreshMapVisuals();
 }
 
 // ── Public API ─────────────────────────────────────────────────
@@ -408,6 +464,7 @@ function _ggNewRound() {
   // Clear any province selection left from the guess click
   _g.selectAll(".province-group").classed("is-selected", false);
   _selectedGroup = null;
+  _refreshMapVisuals();
   _ggRoundNum++;
 
   if (_ggRoundNum > _GG_MAX_ROUNDS) {

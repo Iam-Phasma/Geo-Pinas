@@ -113,6 +113,7 @@ function _applyTravelColors() {
     const lvl = _travelMap[d.id];
     TRAVEL_LEVELS.forEach(l => d3.select(this).classed(`is-tl-${l.id}`, lvl === l.id));
   });
+  _refreshMapVisuals();
 }
 
 function _clearTravelColors() {
@@ -121,6 +122,7 @@ function _clearTravelColors() {
     TRAVEL_LEVELS.forEach(l => d3.select(this).classed(`is-tl-${l.id}`, false));
   });
   _closeTravelPicker();
+  _refreshMapVisuals();
 }
 
 function _travelScore() {
@@ -142,6 +144,7 @@ function _renderTravelOverview() {
   if (_selectedGroup) {
     d3.select(_selectedGroup).classed("is-selected", false);
     _selectedGroup = null;
+    _refreshMapVisuals();
   }
 
   const { score, logged, total } = _travelScore();
@@ -320,6 +323,7 @@ function _renderTravelPicker(d, event) {
     if (_selectedGroup) {
       d3.select(_selectedGroup).classed("is-selected", false);
       _selectedGroup = null;
+      _refreshMapVisuals();
     }
   });
 

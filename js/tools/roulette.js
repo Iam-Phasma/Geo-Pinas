@@ -32,6 +32,7 @@ function _rouletteClearHighlight() {
       .classed("is-roulette", false)
       .classed("is-roulette-winner", false);
     _rouletteHighlight = null;
+    _refreshMapVisuals();
   }
   _rouletteWinner = null;
 }
@@ -79,6 +80,11 @@ function showRouletteTool() {
   _clearQuizHighlight();
   clearWeatherEmoji();
   _clearTravelColors();
+  if (_selectedGroup) {
+    d3.select(_selectedGroup).classed("is-selected", false);
+    _selectedGroup = null;
+    _refreshMapVisuals();
+  }
   if (typeof window._resetZoom === "function") window._resetZoom();
   setSidebarTitle("Roulette");
   _renderRouletteTool();
@@ -236,20 +242,30 @@ function _renderRouletteTool() {
 }
 
 function _rouletteSetFlash(provId, isWinner) {
+  let changed = false;
   if (_rouletteHighlight) {
     d3.select(_rouletteHighlight)
       .classed("is-roulette", false)
       .classed("is-roulette-winner", false);
     _rouletteHighlight = null;
+    changed = true;
   }
-  if (!provId) return;
+  if (!provId) {
+    if (changed) _refreshMapVisuals();
+    return;
+  }
   const grp = _g.selectAll(".province-group").filter(d => d.id === provId).node();
-  if (!grp) return;
+  if (!grp) {
+    if (changed) _refreshMapVisuals();
+    return;
+  }
   d3.select(grp)
     .classed("is-roulette", true)
     .classed("is-roulette-winner", !!isWinner)
     .raise();
   _rouletteHighlight = grp;
+  changed = true;
+  if (changed) _refreshMapVisuals();
   const label = document.getElementById("rl-spin-prov");
   if (label) label.textContent = provId;
 }
