@@ -525,8 +525,7 @@ function initMap() {
     applyTilt(0);
   };
 
-  document.getElementById("status").textContent = "Ready";
-  document.getElementById("status").className = "status status--ready";
+
 
   window.addEventListener("resize", () => {
     const { width: w, height: h } = tiltFrame.getBoundingClientRect();
