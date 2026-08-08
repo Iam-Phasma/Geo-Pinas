@@ -9,15 +9,27 @@
 
 const CONVEX_SITE_URL = "https://industrious-heron-706.convex.site";
 
-(async function trackVisitor() {
-  try {
-    const el = document.getElementById("visitor-count");
-    const res = await fetch(`${CONVEX_SITE_URL}/track`, { method: "POST" });
-    if (!res.ok) return;
-    const { count } = await res.json();
-    if (el) el.textContent = count.toLocaleString();
-  } catch {}
-})();
+function scheduleVisitorTrack() {
+  const run = () => {
+    (async function trackVisitor() {
+      try {
+        const el = document.getElementById("visitor-count");
+        const res = await fetch(`${CONVEX_SITE_URL}/track`, { method: "POST" });
+        if (!res.ok) return;
+        const { count } = await res.json();
+        if (el) el.textContent = count.toLocaleString();
+      } catch {}
+    })();
+  };
+
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(run, { timeout: 1000 });
+  } else {
+    window.setTimeout(run, 300);
+  }
+}
+
+scheduleVisitorTrack();
 
 
 // ── State ──────────────────────────────────────────────────────
@@ -26,7 +38,11 @@ let _wasDragging = false;
 let _zoom = null;
 let _svg = null;
 let _g = null;
-let _activeToolId = null;let _exploreTab = "info"; // "info" | "weather"
+let _activeToolId = null;
+let _exploreTab = "info"; // "info" | "weather"
+let _pendingZoomTransform = null;
+let _zoomFrame = null;
+let _resizeFrame = null;
 // ── Helpers ────────────────────────────────────────────────────
 function fitTransform(w, h) {
   const scale = Math.min(w / MAP_W, h / MAP_H) * 0.92;
@@ -437,8 +453,18 @@ function initMap() {
         tooltip.classList.remove("is-visible");
         if (_activeToolId === "travel") _closeTravelPicker();
       }
-      _g.attr("transform", event.transform);
-      updateWeatherEmojiPosition();
+
+      _pendingZoomTransform = event.transform;
+      if (_zoomFrame) return;
+
+      _zoomFrame = window.requestAnimationFrame(() => {
+        _zoomFrame = null;
+        if (_pendingZoomTransform) {
+          _g.attr("transform", _pendingZoomTransform);
+          updateWeatherEmojiPosition();
+          _pendingZoomTransform = null;
+        }
+      });
     })
     .on("end", () => {
       container.classList.remove("is-dragging");
@@ -479,7 +505,10 @@ function initMap() {
   });
 
   function zoomBy(factor) {
-    _svg.transition().duration(280).call(_zoom.scaleBy, factor);
+    _svg.transition()
+      .duration(180)
+      .ease(d3.easeCubicOut)
+      .call(_zoom.scaleBy, factor);
   }
 
   function resetZoom() {
@@ -487,7 +516,10 @@ function initMap() {
     const t = fitTransform(w, h);
     _zoom.scaleExtent([t.k * 0.75, t.k * 15]);
     applyTranslateExtent(w, h, t.k);
-    _svg.transition().duration(380).call(_zoom.transform, t);
+    _svg.transition()
+      .duration(240)
+      .ease(d3.easeCubicOut)
+      .call(_zoom.transform, t);
   }
   window._resetZoom = resetZoom;
 
@@ -528,15 +560,20 @@ function initMap() {
 
 
   window.addEventListener("resize", () => {
-    const { width: w, height: h } = tiltFrame.getBoundingClientRect();
-    _svg.attr("width", w).attr("height", h);
-    _svg.select("#ocean-bg").attr("width", w).attr("height", h);
-    _svg.select("#ocean-pattern").attr("width", w).attr("height", h);
-    const { width: ww, height: wh } = container.getBoundingClientRect();
-    const t = fitTransform(ww, wh);
-    _zoom.scaleExtent([t.k * 0.75, t.k * 15]);
-    applyTranslateExtent(ww, wh, t.k);
-    _svg.call(_zoom.transform, t);
+    if (_resizeFrame) return;
+
+    _resizeFrame = window.requestAnimationFrame(() => {
+      _resizeFrame = null;
+      const { width: w, height: h } = tiltFrame.getBoundingClientRect();
+      _svg.attr("width", w).attr("height", h);
+      _svg.select("#ocean-bg").attr("width", w).attr("height", h);
+      _svg.select("#ocean-pattern").attr("width", w).attr("height", h);
+      const { width: ww, height: wh } = container.getBoundingClientRect();
+      const t = fitTransform(ww, wh);
+      _zoom.scaleExtent([t.k * 0.75, t.k * 15]);
+      applyTranslateExtent(ww, wh, t.k);
+      _svg.call(_zoom.transform, t);
+    });
   });
 }
 

@@ -15,16 +15,27 @@
   const settingsBtn = document.getElementById("settings-btn");
   const mapWrap = document.getElementById("map-wrap");
 
+  let settingsHoverFrame = null;
+
   // Show gear button when cursor is within ~90px of top-right corner
   mapWrap.addEventListener("mousemove", (e) => {
-    const rect = mapWrap.getBoundingClientRect();
-    const dx = rect.right - e.clientX;
-    const dy = e.clientY - rect.top;
-    const near = Math.sqrt(dx * dx + dy * dy) < 90;
-    settingsTrigger.classList.toggle("is-near", near);
+    if (settingsHoverFrame) return;
+
+    settingsHoverFrame = window.requestAnimationFrame(() => {
+      settingsHoverFrame = null;
+      const rect = mapWrap.getBoundingClientRect();
+      const dx = rect.right - e.clientX;
+      const dy = e.clientY - rect.top;
+      const near = Math.sqrt(dx * dx + dy * dy) < 90;
+      settingsTrigger.classList.toggle("is-near", near);
+    });
   });
 
   mapWrap.addEventListener("mouseleave", () => {
+    if (settingsHoverFrame) {
+      window.cancelAnimationFrame(settingsHoverFrame);
+      settingsHoverFrame = null;
+    }
     settingsTrigger.classList.remove("is-near");
   });
 
@@ -209,6 +220,15 @@
   const sidebar = document.getElementById("sidebar");
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const mobileBackdrop = document.getElementById("mobile-backdrop");
+  let sidebarResizeFrame = null;
+
+  function requestSidebarResize() {
+    if (sidebarResizeFrame) return;
+    sidebarResizeFrame = window.requestAnimationFrame(() => {
+      sidebarResizeFrame = null;
+      window.dispatchEvent(new Event("resize"));
+    });
+  }
 
   function isMobile() { return window.innerWidth <= 640; }
 
@@ -239,15 +259,25 @@
     sidebarToggle.setAttribute("title", "Collapse");
   }
 
+  function setSidebarToggleState(collapsed) {
+    const expanded = !collapsed;
+    sidebarToggle.textContent = expanded ? "‹" : "›";
+    sidebarToggle.setAttribute("aria-label", expanded ? "Collapse sidebar" : "Expand sidebar");
+    sidebarToggle.setAttribute("title", expanded ? "Collapse" : "Expand");
+  }
+
   sidebarToggle.addEventListener("click", () => {
-    if (isMobile()) { closeMobileSheet(); return; }
+    if (isMobile()) {
+      if (sidebar.classList.contains("is-mobile-open")) {
+        closeMobileSheet();
+      } else {
+        openMobileSheet();
+      }
+      return;
+    }
     const collapsed = sidebar.classList.toggle("is-collapsed");
-    sidebarToggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
-    sidebar.addEventListener(
-      "transitionend",
-      () => window.dispatchEvent(new Event("resize")),
-      { once: true },
-    );
+    setSidebarToggleState(collapsed);
+    requestSidebarResize();
   });
 
   document.getElementById("mobile-fab").addEventListener("click", openMobileSheet);
@@ -258,9 +288,9 @@
     if (!isMobile()) {
       sidebar.classList.remove("is-mobile-open");
       mobileBackdrop.classList.remove("is-visible");
-      sidebarToggle.textContent = "‹";
-      sidebarToggle.setAttribute("aria-label", "Collapse sidebar");
-      sidebarToggle.setAttribute("title", "Collapse");
+      if (!sidebar.classList.contains("is-collapsed")) {
+        setSidebarToggleState(false);
+      }
     }
   });
 })();

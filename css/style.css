@@ -132,7 +132,8 @@
 
 [data-theme="dark"] #sidebar-toggle:hover {
   background: var(--accent-light);
-  color: var(--accent-dark);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 [data-theme="dark"] .sidebar-header {
@@ -503,9 +504,9 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   padding: 0;
   overflow: hidden;
   gap: 0;
-  transition:
-    width 0.25s ease,
-    padding 0.25s ease;
+  will-change: auto;
+  transform: none;
+  backface-visibility: visible;
 }
 
 .sidebar-inner {
@@ -524,16 +525,14 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
 }
 
 #sidebar.is-collapsed {
-  width: 36px;
+  width: 0;
+  min-width: 0;
+  border-left: none;
   overflow: hidden;
+  background: transparent;
 }
 
 #sidebar.is-collapsed .sidebar-inner {
-  padding: 12px 0;
-}
-
-#sidebar.is-collapsed #info-panel,
-#sidebar.is-collapsed .sidebar-title {
   display: none;
 }
 
@@ -556,32 +555,35 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
 }
 
 #sidebar-toggle {
-  background: none;
+  background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  width: 24px;
-  height: 24px;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: var(--text-muted);
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1;
   flex-shrink: 0;
-  transition:
-    background 0.15s,
-    color 0.15s,
-    transform 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 #sidebar-toggle:hover {
   background: var(--accent-light);
-  color: var(--accent-dark);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 #sidebar.is-collapsed #sidebar-toggle {
   transform: rotate(180deg);
+}
+
+#settings-trigger .overlay-toggle {
+  margin-top: 2px;
+  pointer-events: auto;
 }
 
 .sidebar-title {
@@ -3930,7 +3932,7 @@ html:not([data-theme="dark"]) .sp-toggle-track {
     border-top: 1px solid var(--border);
     border-radius: 16px 16px 0 0;
     transform: translateY(100%);
-    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: none;
     z-index: 200;
     box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.18);
   }
