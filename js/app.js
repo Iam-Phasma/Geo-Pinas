@@ -521,17 +521,6 @@ function showAboutPanel(direction = "left", animatePanel = false) {
         <li>3D tilt &amp; perspective view</li>
       </ul>
 
-      <div class="about-section-title">Tech Stack</div>
-      <ul class="about-list">
-        <li><a href="https://d3js.org/" target="_blank" rel="noopener">D3.js v7</a> — SVG rendering, zoom &amp; pan</li>
-        <li><a href="https://meteocons.com/" target="_blank" rel="noopener">Meteocons</a> — animated weather icons (MIT, CDN)</li>
-        <li><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo API</a> — free weather data</li>
-        <li><a href="https://en.wikipedia.org/api/rest_v1/" target="_blank" rel="noopener">Wikipedia REST API</a> — province summaries</li>
-        <li><a href="https://convex.dev" target="_blank" rel="noopener">Convex</a> — serverless visitor tracking</li>
-        <li>Canvas API — postcard snapshot with 2× supersampling</li>
-        <li>Vanilla JS + SVG — no framework, no build step</li>
-      </ul>
-
       <div class="about-section-title">Credits</div>
       <p class="about-credit">Travel Level concept inspired by <a href="https://my-philippines-travel-level.com/" target="_blank" rel="noopener">My Philippines Travel Level</a>.</p>
       <p class="about-credit">Province map shapes adapted from <a href="https://github.com/OSSPhilippines/philippines-travel-level-map" target="_blank" rel="noopener">OSSPhilippines / philippines-travel-level-map</a> (GPL-3.0).</p>
