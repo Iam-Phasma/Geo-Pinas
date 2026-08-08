@@ -27,8 +27,6 @@
 }
 
 /* ── Dark theme (applied to #app, excludes map canvas) ─── */
-[data-theme="dark"] #header,
-[data-theme="dark"] #footer,
 [data-theme="dark"] #sidebar,
 [data-theme="dark"] .idle-search,
 [data-theme="dark"] .idle-dropdown-btn,
@@ -184,69 +182,24 @@ body {
   background: var(--bg);
 }
 
-/* ── Header ────────────────────────────────────────────── */
-#header {
+/* ── App icon ─────────────────────────────────────────── */
+.app-icon {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 19;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  height: 56px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-header);
-  flex-shrink: 0;
-  gap: 12px;
+  justify-content: center;
+  pointer-events: none;
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.header-icon {
+.app-icon img {
   width: 28px;
   height: 28px;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-
-.logo {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: -0.02em;
-}
-
-.tagline {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  font-weight: 400;
-}
-
-.header-right {
-  flex-shrink: 0;
-}
-
-.status {
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 3px 10px;
-  border-radius: 999px;
-}
-
-.status--loading {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status--ready {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.status--error {
-  background: #fee2e2;
-  color: #991b1b;
+  opacity: 0.95;
 }
 
 /* ── Main layout ───────────────────────────────────────── */
@@ -2883,28 +2836,20 @@ html.no-borders .province-group.is-tl-passed   .province { stroke: #d97706; }
   color: #e2e8f0;
 }
 
-/* ── Footer ────────────────────────────────────────────── */
-#footer {
+/* ── Sidebar footer ───────────────────────────────────── */
+.sidebar-footer {
+  margin-top: auto;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 24px;
-  height: 38px;
+  gap: 8px;
+  padding: 12px 18px 18px;
   border-top: 1px solid var(--border);
-  background: var(--bg-header);
-  font-size: 0.72rem;
   color: var(--text-faint);
-  flex-shrink: 0;
-  gap: 12px;
+  font-size: 0.74rem;
 }
 
-#footer a {
-  color: var(--text-muted);
-  text-decoration: none;
-}
-
-#footer a:hover {
-  color: var(--accent);
+.sidebar-footer-icon {
+  font-size: 0.95rem;
 }
 
 /* ── Scrollbar (WebKit) ───────────────────────────── */

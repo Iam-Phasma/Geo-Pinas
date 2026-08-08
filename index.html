@@ -70,15 +70,6 @@
   <body>
     <div id="app">
       <div id="mobile-backdrop" aria-hidden="true"></div>
-      <header id="header">
-        <div class="header-left">
-          <img src="favicon.svg" alt="Terralyft icon" class="header-icon" aria-hidden="true" />
-          <span class="logo">Terralyft</span>
-          <span class="tagline">Interactive Philippine Province Map</span>
-        </div>
-        <div class="header-right">
-        </div>
-      </header>
 
       <main id="main">
         <div id="map-wrap">
@@ -200,14 +191,15 @@
               <div class="sidebar-title" id="sidebar-title">Tools</div>
             </div>
             <div id="info-panel"></div>
+            <div class="sidebar-footer" id="visitor-counter" title="Total site visitors" aria-live="polite">
+              <span class="sidebar-footer-icon">👀</span>
+              <span id="visitor-count">—</span>
+              <span>visitors</span>
+            </div>
           </div>
         </aside>
       </main>
 
-      <footer id="footer">
-        <span>Data: PSGC 2023 · PSA Philippines</span>
-        <span id="visitor-counter" title="Total site visitors" aria-live="polite">👀 <span id="visitor-count">—</span> visitors</span>
-      </footer>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js" defer></script>
