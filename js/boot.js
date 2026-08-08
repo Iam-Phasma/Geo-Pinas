@@ -71,7 +71,7 @@
     localStorage.setItem("terralyft-sea-texture", String(isEnabled));
   }
 
-  applySeaTextureState(_initSeaTex !== "false");
+  applySeaTextureState(_initSeaTex === "true");
   seaToggle.addEventListener("click", () => {
     const on = seaToggle.getAttribute("aria-checked") === "true";
     applySeaTextureState(!on);
