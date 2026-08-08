@@ -75,7 +75,7 @@ function _rlLightUpdate() {
   });
 }
 
-function showRouletteTool() {
+function showRouletteTool(animatePanel = false) {
   _activeToolId = "roulette";
   _clearQuizHighlight();
   clearWeatherEmoji();
@@ -87,10 +87,10 @@ function showRouletteTool() {
   }
   if (typeof window._resetZoom === "function") window._resetZoom();
   setSidebarTitle("Roulette");
-  _renderRouletteTool();
+  _renderRouletteTool(animatePanel);
 }
 
-function _renderRouletteTool() {
+function _renderRouletteTool(animatePanel = false) {
   const pool = _rouletteGetPool();
   const spinning = _rouletteSpinning;
 
@@ -141,7 +141,7 @@ function _renderRouletteTool() {
     </div>
   `;
 
-  document.getElementById("info-panel").innerHTML = `
+  _setInfoPanelHtml(`
     <button class="tool-back-btn" id="roulette-back">‹ Back</button>
     <div class="rl-tool-body">
       ${topHtml}
@@ -157,12 +157,12 @@ function _renderRouletteTool() {
         <div class="rl-groups">${groupsHtml}</div>
       </div>
     </div>
-  `;
+  `, "left", animatePanel);
 
   document.getElementById("roulette-back").addEventListener("click", () => {
     _rouletteClearHighlight();
     _activeToolId = null;
-    showToolsHome();
+    showToolsHome("right", true);
   });
 
   // Collapse/expand toggle

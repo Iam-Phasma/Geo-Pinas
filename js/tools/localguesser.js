@@ -397,7 +397,7 @@ function _ggHighlight(provId, cls) {
 }
 
 // ── Public API ─────────────────────────────────────────────────
-function showGeoGuesserTool() {
+function showGeoGuesserTool(animatePanel = false) {
   _activeToolId = "geoguesser";
   _clearQuizHighlight();
   clearWeatherEmoji();
@@ -405,7 +405,7 @@ function showGeoGuesserTool() {
   _rouletteClearHighlight();
   setSidebarTitle("Local Guesser");
   _ggReset();
-  _ggShowIntro();
+  _ggShowIntro(animatePanel);
 }
 
 const _GG_MODE_DESC = {
@@ -413,11 +413,11 @@ const _GG_MODE_DESC = {
   timed: `${_GG_TIMER_SECS}s per round.`,
 };
 
-function _ggShowIntro() {
+function _ggShowIntro(animatePanel = false) {
   let _selected = 'roam';
 
-  function render() {
-    document.getElementById("info-panel").innerHTML = `
+  function render(animate = false) {
+    _setInfoPanelHtml(`
       <button class="tool-back-btn" id="gg-intro-back">‹ Back</button>
       <div class="gg-intro">
         <div class="gg-intro-icon">📍</div>
@@ -432,18 +432,18 @@ function _ggShowIntro() {
         <p class="gg-intro-note">⚠️ The pin location is approximate — it's generated from a simplified SVG map, so it may not land exactly at the center of the province.</p>
         <button class="gg-start-btn" id="gg-start-btn">Start Game</button>
       </div>
-    `;
+    `, "left", animate);
 
     document.getElementById("gg-intro-back").addEventListener("click", () => {
       _ggReset();
       _activeToolId = null;
-      showToolsHome();
+      showToolsHome("right", true);
     });
 
     document.querySelectorAll(".gg-intro .gg-map-sw-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         _selected = btn.dataset.mode;
-        render();
+        render(false);
       });
     });
 
@@ -453,7 +453,7 @@ function _ggShowIntro() {
     });
   }
 
-  render();
+  render(animatePanel);
 }
 
 function _ggNewRound() {
@@ -554,7 +554,7 @@ function _renderGeoGuesser(result) {
     resultHtml = `<p class="gg-hint">Click a province on the map to guess.</p>`;
   }
 
-  document.getElementById("info-panel").innerHTML = `
+  _setInfoPanelHtml(`
     <button class="tool-back-btn" id="gg-back">\u2039 Back</button>
     ${gameBarHtml}
     ${scoreHtml}
@@ -571,14 +571,14 @@ function _renderGeoGuesser(result) {
       <button class="gg-map-sw-btn${_ggSatellite ? ' is-active' : ''}" data-sat="1">Satellite</button>
     </div>
     ${resultHtml}
-  `;
+  `, "left", false);
 
   setTimeout(() => _ggInitPreview(_ggRound.loc), 0);
 
   document.getElementById("gg-back").addEventListener("click", () => {
     _ggReset();
     _activeToolId = null;
-    showToolsHome();
+    showToolsHome("right", true);
   });
   document.getElementById("gg-expand-btn").addEventListener("click", () => _ggOpenModal(_ggRound.loc));
   document.getElementById("gg-map-preview").addEventListener("click", () => _ggOpenModal(_ggRound.loc));
@@ -615,7 +615,7 @@ function _ggShowSummary() {
       ${h.dist != null ? `<span class="gg-summary-dist">\u2248 ${Math.round(h.dist).toLocaleString()} km</span>` : ''}
     </div>`).join('');
 
-  document.getElementById("info-panel").innerHTML = `
+  _setInfoPanelHtml(`
     <button class="tool-back-btn" id="gg-back">\u2039 Back</button>
     <div class="gg-summary">
       <div class="gg-summary-grade">${grade}</div>
@@ -625,12 +625,12 @@ function _ggShowSummary() {
       <div class="gg-summary-list">${rows}</div>
       <button class="gg-play-again-btn" id="gg-play-again">Play Again</button>
     </div>
-  `;
+  `, "left", false);
 
   document.getElementById("gg-back").addEventListener("click", () => {
     _ggReset();
     _activeToolId = null;
-    showToolsHome();
+    showToolsHome("right", true);
   });
   document.getElementById("gg-play-again").addEventListener("click", () => {
     _ggReset();

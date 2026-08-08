@@ -131,16 +131,16 @@ function _travelScore() {
   return { score: Math.round(logged / all.length * 1000) / 10, logged, total: all.length };
 }
 
-function showTravelTool() {
+function showTravelTool(animatePanel = false) {
   _activeToolId = "travel";
   _clearQuizHighlight();
   clearWeatherEmoji();
   _applyTravelColors();
   setSidebarTitle("Travel Level");
-  _renderTravelOverview();
+  _renderTravelOverview(animatePanel);
 }
 
-function _renderTravelOverview() {
+function _renderTravelOverview(animatePanel = false) {
   if (_selectedGroup) {
     d3.select(_selectedGroup).classed("is-selected", false);
     _selectedGroup = null;
@@ -171,7 +171,7 @@ function _renderTravelOverview() {
     `;
   }).join("");
 
-  document.getElementById("info-panel").innerHTML = `
+  _setInfoPanelHtml(`
     <div class="tl-top-row">
       <button class="tool-back-btn" id="tl-back">‹ Back</button>
       <button class="tl-snap-btn" id="tl-snap-btn" title="Snap"${score === 0 ? " disabled" : ""}>📸 Snap</button>
@@ -197,12 +197,12 @@ function _renderTravelOverview() {
         </button>
       </div>
     </div>
-  `;
+  `, "left", animatePanel);
 
   document.getElementById("tl-back").addEventListener("click", () => {
     _activeToolId = null;
     _clearTravelColors();
-    showToolsHome();
+    showToolsHome("right", true);
   });
 
   document.getElementById("tl-snap-btn").addEventListener("click", () => {

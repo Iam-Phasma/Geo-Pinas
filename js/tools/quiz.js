@@ -21,7 +21,7 @@ function _clearQuizHighlight() {
   }
 }
 
-function showQuizTool() {
+function showQuizTool(animatePanel = false) {
   _activeToolId = "quiz";
   _quizScore   = { correct: 0, total: 0 };
   _quizHistory = [];
@@ -32,10 +32,10 @@ function showQuizTool() {
     _refreshMapVisuals();
   }
   if (typeof window._resetZoom === "function") window._resetZoom();
-  _renderQuizQuestion();
+  _renderQuizQuestion(animatePanel);
 }
 
-function _renderQuizQuestion() {
+function _renderQuizQuestion(animatePanel = false) {
   setSidebarTitle("Province Quiz");
 
   if (_quizScore.total >= _QUIZ_MAX) {
@@ -69,7 +69,7 @@ function _renderQuizQuestion() {
 
   const qNum = _quizScore.total + 1;
 
-  document.getElementById("info-panel").innerHTML = `
+  _setInfoPanelHtml(`
     <button class="tool-back-btn" id="quiz-back">‹ Back</button>
     <div class="quiz-score-bar">
       <span class="quiz-score-label">Question <strong>${qNum}</strong><span style="opacity:.5"> / ${_QUIZ_MAX}</span></span>
@@ -87,11 +87,11 @@ function _renderQuizQuestion() {
         </button>
       `).join("")}
     </div>
-  `;
+  `, "left", animatePanel);
 
   document.getElementById("quiz-back").addEventListener("click", () => {
     _clearQuizHighlight();
-    showToolsHome();
+    showToolsHome("right", true);
   });
 
   document.querySelectorAll(".quiz-choice").forEach((btn) => {
@@ -114,7 +114,7 @@ function _renderQuizQuestion() {
   });
 }
 
-function _renderQuizSummary() {
+function _renderQuizSummary(animatePanel = false) {
   _clearQuizHighlight();
   setSidebarTitle("Province Quiz");
 
@@ -134,7 +134,7 @@ function _renderQuizSummary() {
       <span class="quiz-summary-prov">${escapeHtml(h.prov)}</span>
     </div>`).join('');
 
-  document.getElementById("info-panel").innerHTML = `
+  _setInfoPanelHtml(`
     <button class="tool-back-btn" id="quiz-back">‹ Back</button>
     <div class="quiz-summary">
       <div class="quiz-summary-grade">${grade}</div>
@@ -143,10 +143,10 @@ function _renderQuizSummary() {
       <div class="quiz-summary-list">${rows}</div>
       <button class="quiz-play-again-btn" id="quiz-play-again">Play Again</button>
     </div>
-  `;
+  `, "left", animatePanel);
 
   document.getElementById("quiz-back").addEventListener("click", () => {
-    showToolsHome();
+    showToolsHome("right", true);
   });
   document.getElementById("quiz-play-again").addEventListener("click", () => {
     showQuizTool();

@@ -154,6 +154,27 @@ function requestMapRender() {
 
 window.requestMapRender = requestMapRender;
 
+function _setInfoPanelHtml(html, direction = "left", animate = false) {
+  const panel = document.getElementById("info-panel");
+  if (!panel) return;
+
+  panel.classList.remove("panel-slide-in-left", "panel-slide-in-right");
+  panel.innerHTML = html;
+
+  if (!animate) return;
+
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  const cls = direction === "right" ? "panel-slide-in-right" : "panel-slide-in-left";
+  // Force reflow so consecutive same-direction transitions still replay.
+  void panel.offsetWidth;
+  panel.classList.add(cls);
+}
+
+window._setInfoPanelHtml = _setInfoPanelHtml;
+
 function _refreshMapVisuals() {
   requestMapRender();
   if (typeof updateWeatherEmojiPosition === "function") {
@@ -421,7 +442,7 @@ const TOOLS = [
   },
 ];
 
-function showToolsHome() {
+function showToolsHome(direction = "left", animatePanel = false) {
   _activeToolId = null;
   _exploreTab = "info";
   clearWeatherEmoji();
@@ -430,7 +451,7 @@ function showToolsHome() {
   _rouletteClearHighlight();
   _ggClearHighlights();
   setSidebarTitle("Tools");
-  document.getElementById("info-panel").innerHTML = `
+  _setInfoPanelHtml(`
     <div class="tools-list">
       ${TOOLS.map((t) => `
         <button class="tool-card" data-tool="${t.id}">
@@ -446,14 +467,14 @@ function showToolsHome() {
       `).join("")}
     </div>
     <button class="about-btn" id="about-btn">About Terralyft</button>
-  `;
+  `, direction, animatePanel);
   document.querySelectorAll(".tool-card").forEach((card) => {
     card.addEventListener("click", () => {
-      if (card.dataset.tool === "explore") showIdlePanel();
-      else if (card.dataset.tool === "quiz") showQuizTool();
-      else if (card.dataset.tool === "travel") showTravelTool();
-      else if (card.dataset.tool === "roulette") showRouletteTool();
-      else if (card.dataset.tool === "geoguesser") showGeoGuesserTool();
+      if (card.dataset.tool === "explore") showIdlePanel("left", true);
+      else if (card.dataset.tool === "quiz") showQuizTool(true);
+      else if (card.dataset.tool === "travel") showTravelTool(true);
+      else if (card.dataset.tool === "roulette") showRouletteTool(true);
+      else if (card.dataset.tool === "geoguesser") showGeoGuesserTool(true);
     });
   });
 
@@ -461,9 +482,9 @@ function showToolsHome() {
 }
 
 // ── About panel ────────────────────────────────────────────────
-function showAboutPanel() {
+function showAboutPanel(direction = "left", animatePanel = false) {
   setSidebarTitle("About");
-  document.getElementById("info-panel").innerHTML = `
+  _setInfoPanelHtml(`
     <button class="tool-back-btn" id="about-back">‹ Back</button>
     <div class="about-panel">
       <div class="about-logo-row">
@@ -512,8 +533,8 @@ function showAboutPanel() {
         View on GitHub ↗
       </a>
     </div>
-  `;
-  document.getElementById("about-back").addEventListener("click", showToolsHome);
+  `, direction, animatePanel);
+  document.getElementById("about-back").addEventListener("click", () => showToolsHome("right", true));
 }
 
 // ── Map init ───────────────────────────────────────────────────
@@ -889,7 +910,7 @@ function onProvinceClick(event, d) {
   }
 
   if (_activeToolId === "explore") {
-    showProvinceInfo(d, true, false);
+    showProvinceInfo(d, true, false, "left", false);
   } else if (_activeToolId === "travel") {
     _renderTravelPicker(d, event);
   } else if (_activeToolId === "roulette") {
@@ -902,7 +923,7 @@ function onProvinceClick(event, d) {
 }
 
 // ── Sidebar ────────────────────────────────────────────────────
-function showIdlePanel() {
+function showIdlePanel(direction = "left", animatePanel = false) {
   _activeToolId = "explore";
   clearWeatherEmoji();
   _lastWeatherInfo = null;
@@ -916,7 +937,7 @@ function showIdlePanel() {
   const sortedRegions = Object.keys(regionMap).sort();
   const allProvs = Object.keys(PROVINCE_REGION).sort();
 
-  document.getElementById("info-panel").innerHTML = `
+  _setInfoPanelHtml(`
     <button class="tool-back-btn" id="explore-back">‹ Back</button>
     <div class="idle-sticky">
       <div class="idle-search-wrap">
@@ -943,7 +964,7 @@ function showIdlePanel() {
       <span class="idle-prov-count" id="idle-prov-count">${allProvs.length} provinces</span>
     </div>
     <ul class="idle-prov-list" id="idle-prov-list"></ul>
-  `;
+  `, direction, animatePanel);
 
   let activeRegion = _exploreListState.region || "";
 
@@ -969,7 +990,7 @@ function showIdlePanel() {
 
   renderProvList(activeRegion, _exploreListState.query || "");
 
-  document.getElementById("explore-back").addEventListener("click", showToolsHome);
+  document.getElementById("explore-back").addEventListener("click", () => showToolsHome("right", true));
 
   // ── Region dropdown ──────────────────────────────────────
   const dropBtn = document.getElementById("idle-dropdown-btn");
@@ -1076,7 +1097,7 @@ function selectProvinceById(id, fromExplore = false) {
   _selectedGroup = grp;
   d3.select(grp).classed("is-selected", true).raise();
   requestMapRender();
-  showProvinceInfo(d3.select(grp).datum(), fromExplore, true);
+  showProvinceInfo(d3.select(grp).datum(), fromExplore, true, "left", true);
 }
 
 async function _fetchProvinceWiki(provName) {
@@ -1278,7 +1299,7 @@ function _showProvMapModal(provName) {
   });
 }
 
-function showProvinceInfo(prov, fromExplore = false, preserveExploreListState = true) {
+function showProvinceInfo(prov, fromExplore = false, preserveExploreListState = true, panelDirection = "left", animatePanel = false) {
   if (_exploreTab === "info") {
     clearWeatherEmoji();
     _lastWeatherInfo = null;
@@ -1317,22 +1338,22 @@ function showProvinceInfo(prov, fromExplore = false, preserveExploreListState = 
 
   const weatherSection = `<div id="explore-weather-section" class="explore-weather-section"></div>`;
 
-  document.getElementById("info-panel").innerHTML = `
-    <button class="info-back" aria-label="Back">‹ Back</button>
+  _setInfoPanelHtml(`
+    <button class="tool-back-btn" id="province-info-back" aria-label="Back">‹ Back</button>
     ${tabBar}
     ${_exploreTab === "info" ? infoSection : weatherSection}
-  `;
+  `, panelDirection, animatePanel);
 
   document.querySelectorAll(".province-tab-bar .gg-map-sw-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const newTab = btn.dataset.tab;
       if (newTab === _exploreTab) return;
       _exploreTab = newTab;
-      showProvinceInfo(prov, fromExplore, preserveExploreListState);
+      showProvinceInfo(prov, fromExplore, preserveExploreListState, newTab === "info" ? "right" : "left", false);
     });
   });
 
-  document.querySelector(".info-back").addEventListener("click", () => {
+  document.getElementById("province-info-back").addEventListener("click", () => {
     if (_selectedGroup) {
       d3.select(_selectedGroup).classed("is-selected", false);
       _selectedGroup = null;
@@ -1345,9 +1366,9 @@ function showProvinceInfo(prov, fromExplore = false, preserveExploreListState = 
       if (!preserveExploreListState) {
         _exploreListState = { region: "", query: "" };
       }
-      showIdlePanel();
+      showIdlePanel("right", true);
     }
-    else showToolsHome();
+    else showToolsHome("right", true);
   });
 
   if (_exploreTab === "info") {
