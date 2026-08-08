@@ -79,6 +79,7 @@ function showRouletteTool() {
   _clearQuizHighlight();
   clearWeatherEmoji();
   _clearTravelColors();
+  if (typeof window._resetZoom === "function") window._resetZoom();
   setSidebarTitle("Roulette");
   _renderRouletteTool();
 }

@@ -52,23 +52,6 @@
     }
   });
 
-  // ── Dark mode toggle ──────────────────────────────────────────
-  const darkToggle = document.getElementById("darkmode-toggle");
-  const _savedTheme = localStorage.getItem("terralyft-theme");
-  const _prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const _initDark = _savedTheme ? _savedTheme === "dark" : _prefersDark;
-  if (_initDark) {
-    document.documentElement.setAttribute("data-theme", "dark");
-    darkToggle.setAttribute("aria-checked", "true");
-  }
-  darkToggle.addEventListener("click", () => {
-    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    const next = isDark ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
-    darkToggle.setAttribute("aria-checked", String(!isDark));
-    localStorage.setItem("terralyft-theme", next);
-  });
-
   // ── Sea texture toggle ────────────────────────────────────────
   const seaToggle = document.getElementById("sea-texture-toggle");
   const _initSeaTex = localStorage.getItem("terralyft-sea-texture");
@@ -216,9 +199,8 @@
     localStorage.setItem("terralyft-border-color", color);
   });
 
-  // ── Sidebar collapse / mobile bottom sheet ───────────────────
+  // ── Sidebar mobile bottom sheet ─────────────────────────────
   const sidebar = document.getElementById("sidebar");
-  const sidebarToggle = document.getElementById("sidebar-toggle");
   const mobileBackdrop = document.getElementById("mobile-backdrop");
   let sidebarResizeFrame = null;
 
@@ -242,9 +224,6 @@
     sidebar.classList.remove("is-collapsed");
     sidebar.classList.add("is-mobile-open");
     mobileBackdrop.classList.add("is-visible");
-    sidebarToggle.textContent = "×";
-    sidebarToggle.setAttribute("aria-label", "Close panel");
-    sidebarToggle.setAttribute("title", "Close");
   }
   window._openMobileSheet = openMobileSheet;
 
@@ -254,31 +233,7 @@
     document.getElementById("tilt-controls").style.pointerEvents = "";
     sidebar.classList.remove("is-mobile-open");
     mobileBackdrop.classList.remove("is-visible");
-    sidebarToggle.textContent = "‹";
-    sidebarToggle.setAttribute("aria-label", "Collapse sidebar");
-    sidebarToggle.setAttribute("title", "Collapse");
   }
-
-  function setSidebarToggleState(collapsed) {
-    const expanded = !collapsed;
-    sidebarToggle.textContent = expanded ? "‹" : "›";
-    sidebarToggle.setAttribute("aria-label", expanded ? "Collapse sidebar" : "Expand sidebar");
-    sidebarToggle.setAttribute("title", expanded ? "Collapse" : "Expand");
-  }
-
-  sidebarToggle.addEventListener("click", () => {
-    if (isMobile()) {
-      if (sidebar.classList.contains("is-mobile-open")) {
-        closeMobileSheet();
-      } else {
-        openMobileSheet();
-      }
-      return;
-    }
-    const collapsed = sidebar.classList.toggle("is-collapsed");
-    setSidebarToggleState(collapsed);
-    requestSidebarResize();
-  });
 
   document.getElementById("mobile-fab").addEventListener("click", openMobileSheet);
   mobileBackdrop.addEventListener("click", closeMobileSheet);
@@ -288,9 +243,6 @@
     if (!isMobile()) {
       sidebar.classList.remove("is-mobile-open");
       mobileBackdrop.classList.remove("is-visible");
-      if (!sidebar.classList.contains("is-collapsed")) {
-        setSidebarToggleState(false);
-      }
     }
   });
 })();

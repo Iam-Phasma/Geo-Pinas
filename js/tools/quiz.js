@@ -24,6 +24,7 @@ function showQuizTool() {
   _quizScore   = { correct: 0, total: 0 };
   _quizHistory = [];
   _quizUsed    = [];
+  if (typeof window._resetZoom === "function") window._resetZoom();
   _renderQuizQuestion();
 }
 
