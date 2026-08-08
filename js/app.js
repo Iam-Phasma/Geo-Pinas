@@ -175,6 +175,17 @@ function _setInfoPanelHtml(html, direction = "left", animate = false) {
 
 window._setInfoPanelHtml = _setInfoPanelHtml;
 
+function _syncSwitcherPill(switcherEl) {
+  if (!switcherEl) return;
+  const btns = Array.from(switcherEl.querySelectorAll(".gg-map-sw-btn"));
+  if (!btns.length) return;
+  const activeIdx = Math.max(0, btns.findIndex((btn) => btn.classList.contains("is-active")));
+  switcherEl.style.setProperty("--gg-pill-count", String(btns.length));
+  switcherEl.style.setProperty("--gg-pill-index", String(activeIdx));
+}
+
+window._syncSwitcherPill = _syncSwitcherPill;
+
 function _refreshMapVisuals() {
   requestMapRender();
   if (typeof updateWeatherEmojiPosition === "function") {
@@ -1227,9 +1238,9 @@ function _showProvMapModal(provName) {
   overlay.innerHTML = `
     <div class="gg-modal-inner">
       <button class="gg-modal-close" id="prov-map-close" aria-label="Close">✕</button>
-      <div class="prov-map-tile-toggle" id="prov-map-toggle">
-        <button class="prov-map-tile-btn is-active" data-mode="map">Map</button>
-        <button class="prov-map-tile-btn" data-mode="sat">Satellite</button>
+      <div class="prov-map-tile-toggle gg-map-switcher" id="prov-map-toggle">
+        <button class="prov-map-tile-btn gg-map-sw-btn is-active" data-mode="map">Map</button>
+        <button class="prov-map-tile-btn gg-map-sw-btn" data-mode="sat">Satellite</button>
       </div>
       <div id="prov-map-leaflet"></div>
     </div>
@@ -1275,10 +1286,14 @@ function _showProvMapModal(provName) {
       labelsLayer.addTo(provMap); // keep labels on top
     };
 
+    const tileToggle = document.getElementById("prov-map-toggle");
+    _syncSwitcherPill(tileToggle);
+
     overlay.querySelectorAll(".prov-map-tile-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         isSat = btn.dataset.mode === "sat";
         overlay.querySelectorAll(".prov-map-tile-btn").forEach(b => b.classList.toggle("is-active", b === btn));
+        _syncSwitcherPill(tileToggle);
         swapBase();
       });
     });
@@ -1338,18 +1353,69 @@ function showProvinceInfo(prov, fromExplore = false, preserveExploreListState = 
 
   const weatherSection = `<div id="explore-weather-section" class="explore-weather-section"></div>`;
 
+  const tabContentHost = `<div id="province-tab-content"></div>`;
+
   _setInfoPanelHtml(`
     <button class="tool-back-btn" id="province-info-back" aria-label="Back">‹ Back</button>
     ${tabBar}
-    ${_exploreTab === "info" ? infoSection : weatherSection}
+    ${tabContentHost}
   `, panelDirection, animatePanel);
+
+  const tabBarEl = document.querySelector(".province-tab-bar");
+  _syncSwitcherPill(tabBarEl);
+
+  function renderProvinceTabContent() {
+    const host = document.getElementById("province-tab-content");
+    if (!host) return;
+
+    if (_exploreTab === "info") {
+      clearWeatherEmoji();
+      _lastWeatherInfo = null;
+      host.innerHTML = infoSection;
+
+      _fetchProvinceWiki(prov.id);
+      if (!initialSrc) return;
+
+      const flagImg = document.getElementById("info-flag-img");
+      const flagCard = document.getElementById("info-flag-card");
+      if (!flagImg || !flagCard) return;
+
+      const revealFlag = () => flagCard.classList.remove("flag-loading");
+      if (flagImg.complete && flagImg.naturalWidth > 0) {
+        revealFlag();
+      } else {
+        flagImg.addEventListener("load", revealFlag, { once: true });
+      }
+      flagImg.addEventListener("error", () => {
+        if (provFlagSrc && regFlagSrc) {
+          flagImg.onerror = () => { flagCard.style.display = "none"; };
+          flagImg.src = regFlagSrc;
+        } else {
+          flagCard.style.display = "none";
+        }
+      }, { once: true });
+      return;
+    }
+
+    _lastWeatherInfo = null;
+    _currentWeatherProv = null;
+    host.innerHTML = weatherSection;
+    _renderExploreWeatherSection();
+    fetchAndShowWeather(prov);
+  }
 
   document.querySelectorAll(".province-tab-bar .gg-map-sw-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const newTab = btn.dataset.tab;
       if (newTab === _exploreTab) return;
+
+      document.querySelectorAll(".province-tab-bar .gg-map-sw-btn").forEach((b) => {
+        b.classList.toggle("is-active", b === btn);
+      });
+      _syncSwitcherPill(tabBarEl);
+
       _exploreTab = newTab;
-      showProvinceInfo(prov, fromExplore, preserveExploreListState, newTab === "info" ? "right" : "left", false);
+      renderProvinceTabContent();
     });
   });
 
@@ -1371,30 +1437,5 @@ function showProvinceInfo(prov, fromExplore = false, preserveExploreListState = 
     else showToolsHome("right", true);
   });
 
-  if (_exploreTab === "info") {
-    _fetchProvinceWiki(prov.id);
-    if (!initialSrc) return;
-    const flagImg = document.getElementById("info-flag-img");
-    const flagCard = document.getElementById("info-flag-card");
-    const revealFlag = () => flagCard.classList.remove("flag-loading");
-    if (flagImg.complete && flagImg.naturalWidth > 0) {
-      revealFlag();
-    } else {
-      flagImg.addEventListener("load", revealFlag, { once: true });
-    }
-    flagImg.addEventListener("error", () => {
-      if (provFlagSrc && regFlagSrc) {
-        flagImg.removeEventListener("error", arguments.callee);
-        flagImg.onerror = () => { flagCard.style.display = "none"; };
-        flagImg.src = regFlagSrc;
-      } else {
-        flagCard.style.display = "none";
-      }
-    });
-  } else if (_exploreTab === "weather") {
-    _lastWeatherInfo = null;
-    _currentWeatherProv = null;
-    _renderExploreWeatherSection();
-    fetchAndShowWeather(prov);
-  }
+  renderProvinceTabContent();
 }

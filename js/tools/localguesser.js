@@ -415,45 +415,48 @@ const _GG_MODE_DESC = {
 
 function _ggShowIntro(animatePanel = false) {
   let _selected = 'roam';
-
-  function render(animate = false) {
-    _setInfoPanelHtml(`
-      <button class="tool-back-btn" id="gg-intro-back">‹ Back</button>
-      <div class="gg-intro">
-        <div class="gg-intro-icon">📍</div>
-        <h2 class="gg-intro-title">Local Guesser</h2>
-        <p class="gg-intro-desc">A map view will appear — click the province on the Philippine map that you think it belongs to.</p>
-        <div class="gg-map-switcher">
-          ${['roam','timed'].map(m => `
-            <button class="gg-map-sw-btn${_selected === m ? ' is-active' : ''}" data-mode="${m}">${m.charAt(0).toUpperCase() + m.slice(1)}</button>
-          `).join('')}
-        </div>
-        <p class="gg-mode-selected-text" id="gg-mode-label">${_GG_MODE_DESC[_selected]}</p>
-        <p class="gg-intro-note">⚠️ The pin location is approximate — it's generated from a simplified SVG map, so it may not land exactly at the center of the province.</p>
-        <button class="gg-start-btn" id="gg-start-btn">Start Game</button>
+  _setInfoPanelHtml(`
+    <button class="tool-back-btn" id="gg-intro-back">‹ Back</button>
+    <div class="gg-intro">
+      <div class="gg-intro-icon">📍</div>
+      <h2 class="gg-intro-title">Local Guesser</h2>
+      <p class="gg-intro-desc">A map view will appear — click the province on the Philippine map that you think it belongs to.</p>
+      <div class="gg-map-switcher" id="gg-intro-mode-switcher">
+        ${['roam','timed'].map(m => `
+          <button class="gg-map-sw-btn${_selected === m ? ' is-active' : ''}" data-mode="${m}">${m.charAt(0).toUpperCase() + m.slice(1)}</button>
+        `).join('')}
       </div>
-    `, "left", animate);
+      <p class="gg-mode-selected-text" id="gg-mode-label">${_GG_MODE_DESC[_selected]}</p>
+      <p class="gg-intro-note">⚠️ The pin location is approximate — it's generated from a simplified SVG map, so it may not land exactly at the center of the province.</p>
+      <button class="gg-start-btn" id="gg-start-btn">Start Game</button>
+    </div>
+  `, "left", animatePanel);
 
-    document.getElementById("gg-intro-back").addEventListener("click", () => {
-      _ggReset();
-      _activeToolId = null;
-      showToolsHome("right", true);
-    });
+  const modeSwitcher = document.getElementById("gg-intro-mode-switcher");
+  _syncSwitcherPill(modeSwitcher);
 
-    document.querySelectorAll(".gg-intro .gg-map-sw-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        _selected = btn.dataset.mode;
-        render(false);
+  document.getElementById("gg-intro-back").addEventListener("click", () => {
+    _ggReset();
+    _activeToolId = null;
+    showToolsHome("right", true);
+  });
+
+  document.querySelectorAll("#gg-intro-mode-switcher .gg-map-sw-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      _selected = btn.dataset.mode;
+      document.querySelectorAll("#gg-intro-mode-switcher .gg-map-sw-btn").forEach((b) => {
+        b.classList.toggle("is-active", b === btn);
       });
+      _syncSwitcherPill(modeSwitcher);
+      const label = document.getElementById("gg-mode-label");
+      if (label) label.textContent = _GG_MODE_DESC[_selected];
     });
+  });
 
-    document.getElementById("gg-start-btn").addEventListener("click", () => {
-      _ggMode = _selected;
-      _ggNewRound();
-    });
-  }
-
-  render(animatePanel);
+  document.getElementById("gg-start-btn").addEventListener("click", () => {
+    _ggMode = _selected;
+    _ggNewRound();
+  });
 }
 
 function _ggNewRound() {
@@ -583,11 +586,14 @@ function _renderGeoGuesser(result) {
   document.getElementById("gg-expand-btn").addEventListener("click", () => _ggOpenModal(_ggRound.loc));
   document.getElementById("gg-map-preview").addEventListener("click", () => _ggOpenModal(_ggRound.loc));
   document.getElementById("gg-next-btn")?.addEventListener("click", () => { _ggDestroyModal(); _ggNewRound(); });
+  const tileSwitcher = document.getElementById("gg-map-switcher");
+  _syncSwitcherPill(tileSwitcher);
   document.querySelectorAll(".gg-map-sw-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       _ggSatellite = btn.dataset.sat === "1";
       _ggSwapTiles(_ggLeafletPrev);
       document.querySelectorAll(".gg-map-sw-btn").forEach(b => b.classList.toggle("is-active", b.dataset.sat === (btn.dataset.sat)));
+      _syncSwitcherPill(tileSwitcher);
     });
   });
 }

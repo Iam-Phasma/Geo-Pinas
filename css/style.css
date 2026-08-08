@@ -3759,36 +3759,59 @@ html.no-sea-texture #ocean-pattern {
 
 /* ── Map view switcher (Default / Satellite) ── */
 .gg-map-switcher {
+  --gg-pill-count: 2;
+  --gg-pill-index: 0;
   display: flex;
   gap: 0;
   width: 100%;
+  position: relative;
+  padding: 3px;
   background: var(--bg-sidebar);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  overflow: hidden;
+  overflow: clip;
   margin-bottom: 12px;
 }
+
+.gg-map-switcher::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / var(--gg-pill-count));
+  transform: translateX(calc(var(--gg-pill-index) * 100%));
+  background: var(--accent-light);
+  border-radius: 8px;
+  pointer-events: none;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), background 150ms ease;
+}
+
+[data-theme="dark"] .gg-map-switcher::before {
+  background: #1e3a5f;
+}
+
 .gg-map-sw-btn {
   flex: 1;
   padding: 8px 0;
   border: none;
   background: transparent;
+  position: relative;
+  z-index: 1;
   font-family: var(--font);
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
   border-radius: 8px;
-  margin: 3px;
-  transition: background 0.15s, color 0.15s;
+  margin: 0;
+  transition: color 0.15s;
 }
 .gg-map-sw-btn.is-active {
-  background: var(--accent-light);
   color: var(--accent);
 }
 .gg-map-sw-btn:not(.is-active):hover { color: var(--text); }
 [data-theme="dark"] .gg-map-sw-btn.is-active {
-  background: #1e3a5f;
   color: #93c5fd;
 }
 
@@ -3807,8 +3830,16 @@ html.no-sea-texture #ocean-pattern {
   background: var(--bg-sidebar, #fff);
   border: 1.5px solid var(--border, #e2e8f0);
   border-radius: 10px;
-  overflow: hidden;
+  overflow: clip;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  margin-bottom: 0;
+}
+
+.prov-map-tile-toggle.gg-map-switcher {
+  padding: 3px;
+  width: auto;
+  min-width: 220px;
+  max-width: calc(100% - 24px);
 }
 
 .prov-map-tile-btn {
@@ -3820,14 +3851,13 @@ html.no-sea-texture #ocean-pattern {
   background: transparent;
   color: var(--text-muted, #64748b);
   border-radius: 8px;
-  margin: 3px;
+  margin: 0;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: color 0.15s;
   white-space: nowrap;
 }
 
 .prov-map-tile-btn.is-active {
-  background: var(--accent-light, #dbeafe);
   color: var(--accent, #2563eb);
 }
 
@@ -3845,7 +3875,6 @@ html.no-sea-texture #ocean-pattern {
 }
 
 [data-theme="dark"] .prov-map-tile-btn.is-active {
-  background: #1e3a5f;
   color: #93c5fd;
 }
 
