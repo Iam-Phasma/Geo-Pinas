@@ -43,11 +43,29 @@ let _exploreTab = "info"; // "info" | "weather"
 let _pendingZoomTransform = null;
 let _zoomFrame = null;
 let _resizeFrame = null;
+let _mapRenderFrame = null;
 let _seaTextureOpacityBeforeInteraction = null;
+let _mapCanvas = null;
+let _mapHitCanvas = null;
+let _mapCtx = null;
+let _mapHitCtx = null;
+let _provinceColorMap = new Map();
+let _provinceGroupMap = new Map();
+const DRAG_CLICK_THRESHOLD_PX = 6;
+let _dragStartClientX = null;
+let _dragStartClientY = null;
+let _zoomStartTransform = null;
+let _dragGestureActive = false;
 
 function _setSeaTextureVisibilityDuringInteraction(isInteracting) {
   const pattern = document.getElementById("ocean-pattern");
   if (!pattern) return;
+  if (document.documentElement.classList.contains("no-sea-texture")) {
+    pattern.style.opacity = "0";
+    pattern.setAttribute("opacity", "0");
+    _seaTextureOpacityBeforeInteraction = null;
+    return;
+  }
 
   if (isInteracting) {
     const current = pattern.style.opacity || "1";
@@ -56,10 +74,27 @@ function _setSeaTextureVisibilityDuringInteraction(isInteracting) {
       pattern.style.opacity = "0";
     }
   } else {
-    const restore = _seaTextureOpacityBeforeInteraction ?? "1";
-    pattern.style.opacity = restore;
+    if (_seaTextureOpacityBeforeInteraction != null) {
+      pattern.style.opacity = _seaTextureOpacityBeforeInteraction;
+    }
     _seaTextureOpacityBeforeInteraction = null;
   }
+}
+
+function _eventClientPoint(sourceEvent) {
+  if (!sourceEvent) return null;
+  if (Number.isFinite(sourceEvent.clientX) && Number.isFinite(sourceEvent.clientY)) {
+    return { x: sourceEvent.clientX, y: sourceEvent.clientY };
+  }
+  const t = sourceEvent.touches && sourceEvent.touches[0]
+    ? sourceEvent.touches[0]
+    : sourceEvent.changedTouches && sourceEvent.changedTouches[0]
+      ? sourceEvent.changedTouches[0]
+      : null;
+  if (t && Number.isFinite(t.clientX) && Number.isFinite(t.clientY)) {
+    return { x: t.clientX, y: t.clientY };
+  }
+  return null;
 }
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -81,6 +116,125 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function _getCssColor(varName, fallback) {
+  const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return val || fallback;
+}
+
+function _getProvinceFill(groupEl) {
+  const classList = groupEl.classList;
+  if (classList.contains("is-selected")) return _getCssColor("--province-selected", "#ecd344");
+  if (classList.contains("is-quiz")) return "#f59e0b";
+  if (classList.contains("is-roulette-winner")) return "#ef4444";
+  if (classList.contains("is-roulette")) return "#3b82f6";
+  if (classList.contains("is-tl-lived")) return "#7c3aed";
+  if (classList.contains("is-tl-stayed")) return "#2563eb";
+  if (classList.contains("is-tl-visited")) return "#0891b2";
+  if (classList.contains("is-tl-alighted")) return "#16a34a";
+  if (classList.contains("is-tl-passed")) return "#d97706";
+  return _getCssColor("--province-fill", "#166e3e");
+}
+
+function _getProvinceStroke(groupEl) {
+  return document.documentElement.classList.contains("no-borders")
+    ? _getProvinceFill(groupEl)
+    : _getCssColor("--province-border", "#95ffc1");
+}
+
+function requestMapRender() {
+  if (_mapRenderFrame) return;
+  _mapRenderFrame = window.requestAnimationFrame(() => {
+    _mapRenderFrame = null;
+    renderMap();
+  });
+}
+
+window.requestMapRender = requestMapRender;
+
+function renderMap(transform = d3.zoomTransform(_svg.node())) {
+  if (!_mapCanvas || !_mapCtx || !_mapHitCanvas || !_mapHitCtx) return;
+  const frame = document.getElementById("map-tilt-frame");
+  const rect = frame.getBoundingClientRect();
+  const width = rect.width;
+  const height = rect.height;
+  const dpr = window.devicePixelRatio || 1;
+
+  if (_mapCanvas.width !== Math.round(width * dpr) || _mapCanvas.height !== Math.round(height * dpr)) {
+    _mapCanvas.width = Math.round(width * dpr);
+    _mapCanvas.height = Math.round(height * dpr);
+    _mapHitCanvas.width = Math.round(width * dpr);
+    _mapHitCanvas.height = Math.round(height * dpr);
+    _mapCanvas.style.width = `${width}px`;
+    _mapCanvas.style.height = `${height}px`;
+    _mapHitCanvas.style.width = `${width}px`;
+    _mapHitCanvas.style.height = `${height}px`;
+  }
+
+  _mapCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  _mapCtx.clearRect(0, 0, width, height);
+  _mapHitCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  _mapHitCtx.clearRect(0, 0, width, height);
+
+  _mapCtx.save();
+  _mapHitCtx.save();
+  _mapCtx.translate(transform.x, transform.y);
+  _mapCtx.scale(transform.k, transform.k);
+  _mapHitCtx.translate(transform.x, transform.y);
+  _mapHitCtx.scale(transform.k, transform.k);
+
+  _provinceColorMap.clear();
+  const groups = _g.selectAll(".province-group").nodes();
+  groups.forEach((groupEl, index) => {
+    const datum = d3.select(groupEl).datum();
+    if (!datum) return;
+    const pathEl = groupEl.querySelector(".province");
+    if (!pathEl) return;
+    const color = _getProvinceFill(groupEl);
+    const stroke = _getProvinceStroke(groupEl);
+    const tx = parseFloat(groupEl.getAttribute("transform")?.match(/translate\(([-\d.]+),\s*([-\d.]+)/)?.[1] || 0);
+    const ty = parseFloat(groupEl.getAttribute("transform")?.match(/translate\(([-\d.]+),\s*([-\d.]+)/)?.[2] || 0);
+    const hitColor = `#${(index + 1).toString(16).padStart(6, "0")}`;
+    _provinceColorMap.set(hitColor, datum);
+
+    const path2d = new Path2D(pathEl.getAttribute("d") || "");
+
+    _mapCtx.save();
+    _mapCtx.translate(tx, ty);
+    _mapCtx.fillStyle = color;
+    _mapCtx.strokeStyle = stroke;
+    _mapCtx.lineWidth = 1.1;
+    _mapCtx.lineJoin = "round";
+    _mapCtx.lineCap = "round";
+    _mapCtx.fill(path2d);
+    _mapCtx.stroke(path2d);
+    _mapCtx.restore();
+
+    _mapHitCtx.save();
+    _mapHitCtx.translate(tx, ty);
+    _mapHitCtx.fillStyle = hitColor;
+    _mapHitCtx.fill(path2d);
+    _mapHitCtx.restore();
+  });
+
+  _mapCtx.restore();
+  _mapHitCtx.restore();
+}
+
+function _getProvinceAtPoint(clientX, clientY) {
+  if (!_mapHitCanvas || !_mapHitCtx) return null;
+  const rect = _mapCanvas.getBoundingClientRect();
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  if (x < 0 || y < 0 || x > rect.width || y > rect.height) return null;
+  const scaleX = _mapHitCanvas.width / rect.width;
+  const scaleY = _mapHitCanvas.height / rect.height;
+  const px = Math.min(Math.max(Math.round(x * scaleX), 0), _mapHitCanvas.width - 1);
+  const py = Math.min(Math.max(Math.round(y * scaleY), 0), _mapHitCanvas.height - 1);
+  const data = _mapHitCtx.getImageData(px, py, 1, 1).data;
+  const hitColor = `#${[data[0], data[1], data[2]].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+  return _provinceColorMap.get(hitColor) || null;
 }
 
 // ── Flag URL helpers ──────────────────────────────────────────
@@ -409,6 +563,17 @@ function initMap() {
     .attr("height", height)
     .attr("fill", "url(#ocean-wave)");
 
+  _mapCanvas = document.createElement("canvas");
+  _mapCanvas.id = "map-canvas";
+  _mapCanvas.setAttribute("aria-hidden", "true");
+  _mapHitCanvas = document.createElement("canvas");
+  _mapHitCanvas.id = "map-hit-canvas";
+  _mapHitCanvas.setAttribute("aria-hidden", "true");
+  document.getElementById("map-tilt-frame").appendChild(_mapCanvas);
+  document.getElementById("map-tilt-frame").appendChild(_mapHitCanvas);
+  _mapCtx = _mapCanvas.getContext("2d");
+  _mapHitCtx = _mapHitCanvas.getContext("2d", { willReadFrequently: true });
+
   _g = _svg.append("g").attr("id", "provinces-layer");
 
   PROVINCES.forEach((prov) => {
@@ -422,21 +587,30 @@ function initMap() {
       .attr("aria-label", prov.id);
 
     grp.append("path").attr("class", "province").attr("d", prov.d);
+    _provinceGroupMap.set(prov.id, grp.node());
   });
 
   _g.selectAll(".province-group")
     .on("mousemove", function (event, d) {
       if (_zoomFrame) return;
-      onMouseMove.call(this, event, d);
+      onMouseMove(event, d);
     })
     .on("mouseleave", onMouseLeave)
-    .on("click", onProvinceClick)
+    .on("click", function (event, d) {
+      event.stopPropagation();
+      onProvinceClick.call(this, event, d);
+    })
     .on("keydown", function (event, d) {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         onProvinceClick.call(this, event, d);
       }
     });
+
+  _svg.on("click.ocean", (event) => {
+    if (event.target.closest(".province-group")) return;
+    handleOceanClick();
+  });
 
   // ── D3 Zoom & Pan ─────────────────────────────────────────
   const initT = fitTransform(wrapW, wrapH);
@@ -459,9 +633,18 @@ function initMap() {
 
   _zoom = d3
     .zoom()
+    .clickDistance(DRAG_CLICK_THRESHOLD_PX)
     .scaleExtent([initT.k * 0.75, initT.k * 15])
-    .on("start", () => {
+    .on("start", (event) => {
       _wasDragging = false;
+      _zoomStartTransform = d3.zoomTransform(_svg.node());
+      _dragGestureActive = !!event.sourceEvent &&
+        (event.sourceEvent.type === "mousedown" ||
+          event.sourceEvent.type === "pointerdown" ||
+          event.sourceEvent.type === "touchstart");
+      const startPoint = _eventClientPoint(event.sourceEvent);
+      _dragStartClientX = startPoint ? startPoint.x : null;
+      _dragStartClientY = startPoint ? startPoint.y : null;
       container.classList.add("is-dragging");
       _setSeaTextureVisibilityDuringInteraction(true);
     })
@@ -472,9 +655,30 @@ function initMap() {
           event.sourceEvent.type === "pointermove" ||
           event.sourceEvent.type === "touchmove")
       ) {
-        _wasDragging = true;
-        tooltip.classList.remove("is-visible");
-        if (_activeToolId === "travel") _closeTravelPicker();
+        if (_zoomStartTransform) {
+          const dx = event.transform.x - _zoomStartTransform.x;
+          const dy = event.transform.y - _zoomStartTransform.y;
+          if ((dx * dx + dy * dy) >= DRAG_CLICK_THRESHOLD_PX * DRAG_CLICK_THRESHOLD_PX) {
+            _wasDragging = true;
+          }
+        } else {
+          const p = _eventClientPoint(event.sourceEvent);
+          if (p) {
+            if (_dragStartClientX == null || _dragStartClientY == null) {
+              _dragStartClientX = p.x;
+              _dragStartClientY = p.y;
+            }
+            const dx = p.x - _dragStartClientX;
+            const dy = p.y - _dragStartClientY;
+            if ((dx * dx + dy * dy) >= DRAG_CLICK_THRESHOLD_PX * DRAG_CLICK_THRESHOLD_PX) {
+              _wasDragging = true;
+            }
+          }
+        }
+        if (_wasDragging) {
+          tooltip.classList.remove("is-visible");
+          if (_activeToolId === "travel") _closeTravelPicker();
+        }
       }
 
       _pendingZoomTransform = event.transform;
@@ -486,13 +690,21 @@ function initMap() {
         _zoomFrame = null;
         if (_pendingZoomTransform) {
           const t = _pendingZoomTransform;
-          _g.attr("transform", `translate(${t.x},${t.y}) scale(${t.k})`);
-          updateWeatherEmojiPosition();
           _pendingZoomTransform = null;
+          _g.attr("transform", `translate(${t.x},${t.y}) scale(${t.k})`);
+          renderMap(t);
+          updateWeatherEmojiPosition();
         }
       });
     })
-    .on("end", () => {
+    .on("end", (event) => {
+      if (_dragGestureActive && !_wasDragging && _zoomStartTransform) {
+        _svg.call(_zoom.transform, _zoomStartTransform);
+      }
+      _dragStartClientX = null;
+      _dragStartClientY = null;
+      _zoomStartTransform = null;
+      _dragGestureActive = false;
       container.classList.remove("is-dragging");
       _setSeaTextureVisibilityDuringInteraction(false);
     });
@@ -500,36 +712,8 @@ function initMap() {
   _svg.call(_zoom).on("dblclick.zoom", null);
   applyTranslateExtent(wrapW, wrapH, initT.k);
   _svg.call(_zoom.transform, initT);
+  renderMap(initT);
   _svg.on("dblclick", resetZoom);
-
-  // Clicking the ocean (not a province) deselects any selected province
-  _svg.on("click.deselect", () => {
-    if (_wasDragging) return;
-    // Always close the travel picker on any ocean click
-    if (_activeToolId === "travel") {
-      _closeTravelPicker();
-    }
-    if (_selectedGroup) {
-      d3.select(_selectedGroup).classed("is-selected", false);
-      _selectedGroup = null;
-      if (_activeToolId === "explore") {
-        clearWeatherEmoji();
-        _lastWeatherInfo = null;
-        showIdlePanel();
-      } else if (_activeToolId === "travel") {
-        // already handled above
-      } else if (_activeToolId === "roulette") {
-        // keep roulette panel
-      } else if (_activeToolId === "geoguesser") {
-        // keep geoguesser panel
-      } else {
-        showToolsHome();
-      }
-    } else if (_activeToolId === "explore") {
-      // No province selected — if still showing a province panel, go back to list
-      showIdlePanel();
-    }
-  });
 
   function zoomBy(factor) {
     _svg.transition()
@@ -600,6 +784,7 @@ function initMap() {
       _zoom.scaleExtent([t.k * 0.75, t.k * 15]);
       applyTranslateExtent(ww, wh, t.k);
       _svg.call(_zoom.transform, t);
+      renderMap(t);
     });
   });
 }
@@ -624,6 +809,34 @@ function onMouseLeave() {
   tooltip.classList.remove("is-visible");
 }
 
+function handleOceanClick() {
+  if (_wasDragging) {
+    _wasDragging = false;
+    return;
+  }
+  if (_activeToolId === "travel") {
+    _closeTravelPicker();
+  }
+  if (_selectedGroup) {
+    d3.select(_selectedGroup).classed("is-selected", false);
+    _selectedGroup = null;
+    requestMapRender();
+    if (_activeToolId === "explore") {
+      clearWeatherEmoji();
+      _lastWeatherInfo = null;
+      showIdlePanel();
+    } else if (_activeToolId === "roulette") {
+      // keep roulette panel
+    } else if (_activeToolId === "geoguesser") {
+      // keep geoguesser panel
+    } else {
+      showToolsHome();
+    }
+  } else if (_activeToolId === "explore") {
+    showIdlePanel();
+  }
+}
+
 function onProvinceClick(event, d) {
   if (_wasDragging) {
     _wasDragging = false;
@@ -631,11 +844,16 @@ function onProvinceClick(event, d) {
   }
   event.stopPropagation();
 
-  const isSame = _selectedGroup === this;
+  const groupEl = _provinceGroupMap.get(d.id) || null;
+  const isSame = _selectedGroup === groupEl;
   if (_selectedGroup) {
     d3.select(_selectedGroup).classed("is-selected", false);
     _selectedGroup = null;
   }
+  if (!groupEl) return;
+  d3.select(groupEl).classed("is-selected", !isSame);
+  _selectedGroup = isSame ? null : groupEl;
+  requestMapRender();
   if (isSame) {
     if (_activeToolId === "explore") {
       clearWeatherEmoji();
@@ -652,9 +870,6 @@ function onProvinceClick(event, d) {
     }
     return;
   }
-
-  _selectedGroup = this;
-  d3.select(this).classed("is-selected", true).raise();
 
   if (_activeToolId === "explore") {
     showProvinceInfo(d, true);

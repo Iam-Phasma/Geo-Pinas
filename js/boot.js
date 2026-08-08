@@ -55,22 +55,27 @@
   // ── Sea texture toggle ────────────────────────────────────────
   const seaToggle = document.getElementById("sea-texture-toggle");
   const _initSeaTex = localStorage.getItem("terralyft-sea-texture");
-  if (_initSeaTex === "false") {
-    seaToggle.setAttribute("aria-checked", "false");
-    // ocean-pattern not in DOM yet; patched after initMap via MutationObserver below
+  function applySeaTextureState(isEnabled) {
+    seaToggle.setAttribute("aria-checked", String(isEnabled));
+    if (isEnabled) {
+      document.documentElement.classList.remove("no-sea-texture");
+    } else {
+      document.documentElement.classList.add("no-sea-texture");
+    }
+    const pattern = document.getElementById("ocean-pattern");
+    if (pattern) {
+      const nextOpacity = isEnabled ? "1" : "0";
+      pattern.style.opacity = nextOpacity;
+      pattern.setAttribute("opacity", nextOpacity);
+    }
+    localStorage.setItem("terralyft-sea-texture", String(isEnabled));
   }
+
+  applySeaTextureState(_initSeaTex !== "false");
   seaToggle.addEventListener("click", () => {
     const on = seaToggle.getAttribute("aria-checked") === "true";
-    seaToggle.setAttribute("aria-checked", String(!on));
-    const pattern = document.getElementById("ocean-pattern");
-    if (pattern) pattern.style.opacity = on ? "0" : "1";
-    localStorage.setItem("terralyft-sea-texture", String(!on));
+    applySeaTextureState(!on);
   });
-  // Apply saved sea-texture after initMap (ocean-pattern now exists)
-  if (_initSeaTex === "false") {
-    const pattern = document.getElementById("ocean-pattern");
-    if (pattern) pattern.style.opacity = "0";
-  }
 
   // ── Borders toggle ────────────────────────────────────────────
   const bordersToggle = document.getElementById("borders-toggle");
@@ -84,6 +89,7 @@
     bordersToggle.setAttribute("aria-checked", String(!on));
     document.documentElement.classList.toggle("no-borders", on);
     localStorage.setItem("terralyft-borders", String(!on));
+    if (typeof window.requestMapRender === "function") window.requestMapRender();
   });
 
   // ── Sea color slider ──────────────────────────────────────────
@@ -164,6 +170,7 @@
     const hover = val < 5 ? "rgb(200,200,200)" : `rgb(${hr},${hg},${hb})`;
     document.documentElement.style.setProperty("--province-fill", fill);
     document.documentElement.style.setProperty("--province-hover", hover);
+    if (typeof window.requestMapRender === "function") window.requestMapRender();
   }
 
   const landColorSlider = document.getElementById("land-color-slider");
@@ -197,6 +204,7 @@
     document.querySelectorAll(".sp-swatch").forEach(s => s.setAttribute("aria-pressed", "false"));
     btn.setAttribute("aria-pressed", "true");
     localStorage.setItem("terralyft-border-color", color);
+    if (typeof window.requestMapRender === "function") window.requestMapRender();
   });
 
   // ── Sidebar mobile bottom sheet ─────────────────────────────
