@@ -11,6 +11,7 @@ let _currentWeatherProv = null;
 let _lastWeatherInfo = null;
 let _weatherEmojiEnabled = true;
 let _currentLottieAnim = null;
+let _weatherOverlayFrame = null;
 
 // ── Meteocons icon slugs (WMO code → slug) ────────────────────
 const _MC = "https://cdn.meteocons.com/3.0.0-next.8";
@@ -95,20 +96,31 @@ function _positionWeatherOverlay(prov) {
   // overlay is in #map-wrap space; pos is in SVG/frame space.
   // frame.offsetLeft/Top give the untransformed bleed offset (negative values).
   const frame = document.getElementById("map-tilt-frame");
-  overlay.style.left = (pos.x + frame.offsetLeft) + "px";
-  overlay.style.top = (pos.y + frame.offsetTop - 28) + "px";
+  const nextLeft = Math.round(pos.x + frame.offsetLeft);
+  const nextTop = Math.round(pos.y + frame.offsetTop - 28);
+  if (overlay.style.left === `${nextLeft}px` && overlay.style.top === `${nextTop}px`) return;
+  overlay.style.left = `${nextLeft}px`;
+  overlay.style.top = `${nextTop}px`;
 }
 
 function _isWeatherContext() {
   return _exploreTab === "weather";
 }
 
-function updateWeatherEmojiPosition() {
+function _scheduleWeatherOverlayUpdate() {
   if (!_currentWeatherProv || !_isWeatherContext() || !_weatherEmojiEnabled) return;
-  const overlay = document.getElementById("weather-overlay");
-  if (overlay && overlay.classList.contains("is-visible")) {
-    _positionWeatherOverlay(_currentWeatherProv);
-  }
+  if (_weatherOverlayFrame) return;
+  _weatherOverlayFrame = window.requestAnimationFrame(() => {
+    _weatherOverlayFrame = null;
+    const overlay = document.getElementById("weather-overlay");
+    if (overlay && overlay.classList.contains("is-visible")) {
+      _positionWeatherOverlay(_currentWeatherProv);
+    }
+  });
+}
+
+function updateWeatherEmojiPosition() {
+  _scheduleWeatherOverlayUpdate();
 }
 
 function _setMeteoIcon(overlay, slug) {
@@ -127,6 +139,7 @@ async function fetchAndShowWeather(prov) {
     _setMeteoIcon(overlay, "thermometer");
     _positionWeatherOverlay(prov);
     overlay.classList.add("is-visible");
+    _scheduleWeatherOverlayUpdate();
   }
 
   if (_isWeatherContext()) {
@@ -146,7 +159,10 @@ async function fetchAndShowWeather(prov) {
     const isDay = cur.is_day !== 0;
     const slug = _wmoIcon(code, isDay);
     _setMeteoIcon(overlay, slug);
-    if (_weatherEmojiEnabled) _positionWeatherOverlay(prov);
+    if (_weatherEmojiEnabled) {
+      _positionWeatherOverlay(prov);
+      _scheduleWeatherOverlayUpdate();
+    }
 
     _lastWeatherInfo = {
       prov: prov.id,

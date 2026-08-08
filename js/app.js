@@ -43,6 +43,25 @@ let _exploreTab = "info"; // "info" | "weather"
 let _pendingZoomTransform = null;
 let _zoomFrame = null;
 let _resizeFrame = null;
+let _seaTextureOpacityBeforeInteraction = null;
+
+function _setSeaTextureVisibilityDuringInteraction(isInteracting) {
+  const pattern = document.getElementById("ocean-pattern");
+  if (!pattern) return;
+
+  if (isInteracting) {
+    const current = pattern.style.opacity || "1";
+    if (current !== "0") {
+      _seaTextureOpacityBeforeInteraction = current;
+      pattern.style.opacity = "0";
+    }
+  } else {
+    const restore = _seaTextureOpacityBeforeInteraction ?? "1";
+    pattern.style.opacity = restore;
+    _seaTextureOpacityBeforeInteraction = null;
+  }
+}
+
 // ── Helpers ────────────────────────────────────────────────────
 function fitTransform(w, h) {
   const scale = Math.min(w / MAP_W, h / MAP_H) * 0.92;
@@ -406,7 +425,10 @@ function initMap() {
   });
 
   _g.selectAll(".province-group")
-    .on("mousemove", onMouseMove)
+    .on("mousemove", function (event, d) {
+      if (_zoomFrame) return;
+      onMouseMove.call(this, event, d);
+    })
     .on("mouseleave", onMouseLeave)
     .on("click", onProvinceClick)
     .on("keydown", function (event, d) {
@@ -441,6 +463,7 @@ function initMap() {
     .on("start", () => {
       _wasDragging = false;
       container.classList.add("is-dragging");
+      _setSeaTextureVisibilityDuringInteraction(true);
     })
     .on("zoom", (event) => {
       if (
@@ -457,10 +480,13 @@ function initMap() {
       _pendingZoomTransform = event.transform;
       if (_zoomFrame) return;
 
+      tooltip.classList.remove("is-visible");
+
       _zoomFrame = window.requestAnimationFrame(() => {
         _zoomFrame = null;
         if (_pendingZoomTransform) {
-          _g.attr("transform", _pendingZoomTransform);
+          const t = _pendingZoomTransform;
+          _g.attr("transform", `translate(${t.x},${t.y}) scale(${t.k})`);
           updateWeatherEmojiPosition();
           _pendingZoomTransform = null;
         }
@@ -468,6 +494,7 @@ function initMap() {
     })
     .on("end", () => {
       container.classList.remove("is-dragging");
+      _setSeaTextureVisibilityDuringInteraction(false);
     });
 
   _svg.call(_zoom).on("dblclick.zoom", null);
@@ -582,11 +609,15 @@ const tooltip = document.getElementById("tooltip");
 
 function onMouseMove(event, d) {
   tooltip.textContent = d.id;
-  tooltip.classList.add("is-visible");
   const wrap = document.getElementById("map-wrap");
   const rect = wrap.getBoundingClientRect();
-  tooltip.style.left = `${event.clientX - rect.left}px`;
-  tooltip.style.top = `${event.clientY - rect.top}px`;
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  tooltip.style.left = `${x}px`;
+  tooltip.style.top = `${y}px`;
+  if (!tooltip.classList.contains("is-visible")) {
+    tooltip.classList.add("is-visible");
+  }
 }
 
 function onMouseLeave() {

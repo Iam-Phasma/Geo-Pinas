@@ -250,6 +250,16 @@ body {
   height: 100%;
 }
 
+#provinces-layer,
+.province-group,
+.province {
+  will-change: transform;
+}
+
+#weather-overlay {
+  will-change: transform, left, top;
+}
+
 /* ── Tilt controls ──────────────────────────────────────── */
 #tilt-controls {
   position: absolute;
@@ -344,8 +354,11 @@ body {
 .province {
   fill: var(--province-fill);
   stroke: var(--province-border);
-  stroke-width: 1;
+  stroke-width: 1.1px;
   vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  shape-rendering: geometricPrecision;
   transition: fill 0.12s ease;
   outline: none;
 }
