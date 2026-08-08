@@ -40,6 +40,7 @@ let _svg = null;
 let _g = null;
 let _activeToolId = null;
 let _exploreTab = "info"; // "info" | "weather"
+let _exploreListState = { region: "", query: "" };
 let _pendingZoomTransform = null;
 let _zoomFrame = null;
 let _resizeFrame = null;
@@ -888,7 +889,7 @@ function onProvinceClick(event, d) {
   }
 
   if (_activeToolId === "explore") {
-    showProvinceInfo(d, true);
+    showProvinceInfo(d, true, false);
   } else if (_activeToolId === "travel") {
     _renderTravelPicker(d, event);
   } else if (_activeToolId === "roulette") {
@@ -929,11 +930,11 @@ function showIdlePanel() {
       <div class="idle-filter-wrap">
         <button class="idle-dropdown-btn" id="idle-dropdown-btn" aria-haspopup="listbox" aria-expanded="false">
           <span class="idle-dropdown-prefix">Region</span>
-          <span class="idle-dropdown-value" id="idle-dropdown-label">All</span>
+            <span class="idle-dropdown-value" id="idle-dropdown-label">${_exploreListState.region ? escapeHtml(_exploreListState.region.replace(/^Region\s*/i, "").trim() || _exploreListState.region) : "All"}</span>
           <span class="idle-dropdown-chevron">›</span>
         </button>
         <ul class="idle-dropdown-list" id="idle-dropdown-list" role="listbox" hidden>
-          <li><button class="idle-dropdown-option is-active" data-region="">All Regions</button></li>
+            <li><button class="idle-dropdown-option${_exploreListState.region ? "" : " is-active"}" data-region="">All Regions</button></li>
           ${sortedRegions.map((r) => `<li><button class="idle-dropdown-option" data-region="${escapeHtml(r)}">${escapeHtml(r)}</button></li>`).join("")}
         </ul>
       </div>
@@ -944,12 +945,14 @@ function showIdlePanel() {
     <ul class="idle-prov-list" id="idle-prov-list"></ul>
   `;
 
-  let activeRegion = "";
+  let activeRegion = _exploreListState.region || "";
 
-  function renderProvList(filter = "") {
+  function renderProvList(filter = "", query = "") {
     const list = document.getElementById("idle-prov-list");
     const countEl = document.getElementById("idle-prov-count");
-    const provs = filter ? (regionMap[filter] || []).slice().sort() : allProvs;
+    const base = filter ? (regionMap[filter] || []).slice().sort() : allProvs;
+    const q = query.trim().toLowerCase();
+    const provs = q ? base.filter((p) => p.toLowerCase().includes(q)) : base;
     if (countEl) countEl.textContent = `${provs.length} province${provs.length !== 1 ? "s" : ""}`;
     list.innerHTML = provs
       .map(
@@ -964,7 +967,7 @@ function showIdlePanel() {
     });
   }
 
-  renderProvList();
+  renderProvList(activeRegion, _exploreListState.query || "");
 
   document.getElementById("explore-back").addEventListener("click", showToolsHome);
 
@@ -972,6 +975,16 @@ function showIdlePanel() {
   const dropBtn = document.getElementById("idle-dropdown-btn");
   const dropList = document.getElementById("idle-dropdown-list");
   const dropLabel = document.getElementById("idle-dropdown-label");
+  const searchInput = document.getElementById("idle-search");
+  const suggBox = document.getElementById("idle-suggestions");
+
+  searchInput.value = _exploreListState.query || "";
+
+  dropList
+    .querySelectorAll(".idle-dropdown-option")
+    .forEach((o) =>
+      o.classList.toggle("is-active", o.dataset.region === activeRegion),
+    );
 
   function closeDropdown() {
     dropList.hidden = true;
@@ -994,6 +1007,7 @@ function showIdlePanel() {
   dropList.querySelectorAll(".idle-dropdown-option").forEach((opt) => {
     opt.addEventListener("click", () => {
       activeRegion = opt.dataset.region;
+      _exploreListState.region = activeRegion;
       dropLabel.textContent = activeRegion ? activeRegion.replace(/^Region\s*/i, "").trim() || activeRegion : "All";
       dropList
         .querySelectorAll(".idle-dropdown-option")
@@ -1001,22 +1015,21 @@ function showIdlePanel() {
           o.classList.toggle("is-active", o.dataset.region === activeRegion),
         );
       closeDropdown();
-      renderProvList(activeRegion);
-      document.getElementById("idle-search").value = "";
-      document.getElementById("idle-suggestions").hidden = true;
+      _exploreListState.query = searchInput.value;
+      renderProvList(activeRegion, searchInput.value);
+      suggBox.hidden = true;
     });
   });
 
   document.addEventListener("click", closeDropdown, { once: false });
 
-  // ── Search / autocomplete ────────────────────────────────
-  const searchInput = document.getElementById("idle-search");
-  const suggBox = document.getElementById("idle-suggestions");
-
   searchInput.addEventListener("input", () => {
     const q = searchInput.value.trim().toLowerCase();
+    _exploreListState.query = searchInput.value;
+    renderProvList(activeRegion, searchInput.value);
     if (!q) { suggBox.hidden = true; return; }
-    const matches = allProvs.filter((p) => p.toLowerCase().includes(q)).slice(0, 8);
+    const pool = activeRegion ? (regionMap[activeRegion] || []) : allProvs;
+    const matches = pool.filter((p) => p.toLowerCase().includes(q)).slice(0, 8);
     if (!matches.length) { suggBox.hidden = true; return; }
     suggBox.innerHTML = matches
       .map(
@@ -1028,14 +1041,21 @@ function showIdlePanel() {
     suggBox.querySelectorAll(".idle-sugg-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         searchInput.value = "";
+        _exploreListState.query = "";
         suggBox.hidden = true;
+        renderProvList(activeRegion, "");
         selectProvinceById(btn.dataset.province, true);
       });
     });
   });
 
   searchInput.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { searchInput.value = ""; suggBox.hidden = true; }
+    if (e.key === "Escape") {
+      searchInput.value = "";
+      _exploreListState.query = "";
+      suggBox.hidden = true;
+      renderProvList(activeRegion, "");
+    }
   });
 
   document.addEventListener("click", (e) => {
@@ -1056,7 +1076,7 @@ function selectProvinceById(id, fromExplore = false) {
   _selectedGroup = grp;
   d3.select(grp).classed("is-selected", true).raise();
   requestMapRender();
-  showProvinceInfo(d3.select(grp).datum(), fromExplore);
+  showProvinceInfo(d3.select(grp).datum(), fromExplore, true);
 }
 
 async function _fetchProvinceWiki(provName) {
@@ -1258,7 +1278,7 @@ function _showProvMapModal(provName) {
   });
 }
 
-function showProvinceInfo(prov, fromExplore = false) {
+function showProvinceInfo(prov, fromExplore = false, preserveExploreListState = true) {
   if (_exploreTab === "info") {
     clearWeatherEmoji();
     _lastWeatherInfo = null;
@@ -1308,7 +1328,7 @@ function showProvinceInfo(prov, fromExplore = false) {
       const newTab = btn.dataset.tab;
       if (newTab === _exploreTab) return;
       _exploreTab = newTab;
-      showProvinceInfo(prov, fromExplore);
+      showProvinceInfo(prov, fromExplore, preserveExploreListState);
     });
   });
 
@@ -1321,7 +1341,12 @@ function showProvinceInfo(prov, fromExplore = false) {
     clearWeatherEmoji();
     _lastWeatherInfo = null;
     _exploreTab = "info";
-    if (fromExplore) showIdlePanel();
+    if (fromExplore) {
+      if (!preserveExploreListState) {
+        _exploreListState = { region: "", query: "" };
+      }
+      showIdlePanel();
+    }
     else showToolsHome();
   });
 
