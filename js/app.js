@@ -34,6 +34,7 @@ scheduleVisitorTrack();
 
 // ── State ──────────────────────────────────────────────────────
 let _selectedGroup = null;
+let _hoveredGroup = null;
 let _wasDragging = false;
 let _zoom = null;
 let _svg = null;
@@ -127,6 +128,7 @@ function _getCssColor(varName, fallback) {
 function _getProvinceFill(groupEl) {
   const classList = groupEl.classList;
   if (classList.contains("is-selected")) return _getCssColor("--province-selected", "#ecd344");
+  if (classList.contains("is-hovered")) return _getCssColor("--province-hover", "#8b8c8d");
   if (classList.contains("is-quiz")) return "#f59e0b";
   if (classList.contains("is-roulette-winner")) return "#ef4444";
   if (classList.contains("is-roulette")) return "#3b82f6";
@@ -142,6 +144,13 @@ function _getProvinceStroke(groupEl) {
   return document.documentElement.classList.contains("no-borders")
     ? _getProvinceFill(groupEl)
     : _getCssColor("--province-border", "#95ffc1");
+}
+
+function clearHoveredProvince() {
+  if (!_hoveredGroup) return;
+  d3.select(_hoveredGroup).classed("is-hovered", false);
+  _hoveredGroup = null;
+  requestMapRender();
 }
 
 function requestMapRender() {
@@ -826,6 +835,14 @@ function initMap() {
 const tooltip = document.getElementById("tooltip");
 
 function onMouseMove(event, d) {
+  const groupEl = _provinceGroupMap.get(d.id) || null;
+  if (groupEl && _hoveredGroup !== groupEl) {
+    if (_hoveredGroup) d3.select(_hoveredGroup).classed("is-hovered", false);
+    d3.select(groupEl).classed("is-hovered", true);
+    _hoveredGroup = groupEl;
+    requestMapRender();
+  }
+
   tooltip.textContent = d.id;
   const wrap = document.getElementById("map-wrap");
   const rect = wrap.getBoundingClientRect();
@@ -839,6 +856,11 @@ function onMouseMove(event, d) {
 }
 
 function onMouseLeave() {
+  if (_hoveredGroup) {
+    d3.select(_hoveredGroup).classed("is-hovered", false);
+    _hoveredGroup = null;
+    requestMapRender();
+  }
   tooltip.classList.remove("is-visible");
 }
 

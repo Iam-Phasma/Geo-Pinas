@@ -17,7 +17,7 @@
 
   --ocean: rgb(182,225,243);
   --province-fill: #166e3e;
-  --province-hover: #0d4d20;
+  --province-hover: #8b8c8d;
   --province-selected: #ecd344;
   --province-border: #95ffc1;
 
@@ -405,14 +405,16 @@ body {
 }
 
 .province-group:hover .province,
-.province-group:focus-visible .province {
+.province-group:focus-visible .province,
+.province-group.is-hovered .province {
   fill: var(--province-hover);
 }
 
 /* Hide borders: stroke matches fill so edges disappear */
 html.no-borders .province { stroke: var(--province-fill); }
 html.no-borders .province-group:hover .province,
-html.no-borders .province-group:focus-visible .province { stroke: var(--province-hover); }
+html.no-borders .province-group:focus-visible .province,
+html.no-borders .province-group.is-hovered .province { stroke: var(--province-hover); }
 html.no-borders .province-group.is-selected .province { stroke: var(--province-selected); }
 html.no-borders .province-group.is-tl-lived    .province { stroke: #7c3aed; }
 html.no-borders .province-group.is-tl-stayed   .province { stroke: #2563eb; }
