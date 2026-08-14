@@ -22,7 +22,7 @@ Open: https://iam-phasma.github.io/Geo-Pinas/
 ## Tech Stack
 
 - [D3.js v7](https://d3js.org/) — SVG rendering, zoom/pan
-- [Twemoji](https://github.com/twitter/twemoji) — emoji weather icons
+- [Meteocons](https://meteocons.com/icons) — weather icons by Bas Milius
 - [Open-Meteo API](https://open-meteo.com/) — free weather data (no API key required)
 - [Wikipedia REST API](https://en.wikipedia.org/api/rest_v1/) — province summaries
 - [Convex](https://convex.dev) — serverless backend for visitor tracking
@@ -37,6 +37,9 @@ Built heavily with GitHub Copilot (powered by Claude); any embarrassing or rando
 
 **Travel Level concept** inspired by  
 **[My Philippines Travel Level](https://my-philippines-travel-level.com/)** — the original tool for tracking which Philippine provinces you've visited.
+
+**Weather icons** sourced from  
+**[Meteocons](https://meteocons.com/icons)** by **[Bas Milius](https://bas.dev/)** — used with attribution.
 
 **Province map shapes** adapted from  
 **[OSSPhilippines / philippines-travel-level-map](https://github.com/OSSPhilippines/philippines-travel-level-map)**  

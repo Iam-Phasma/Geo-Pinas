@@ -31,7 +31,6 @@ function scheduleVisitorTrack() {
 
 scheduleVisitorTrack();
 
-
 // ── State ──────────────────────────────────────────────────────
 let _selectedGroup = null;
 let _hoveredGroup = null;
@@ -85,14 +84,18 @@ function _setSeaTextureVisibilityDuringInteraction(isInteracting) {
 
 function _eventClientPoint(sourceEvent) {
   if (!sourceEvent) return null;
-  if (Number.isFinite(sourceEvent.clientX) && Number.isFinite(sourceEvent.clientY)) {
+  if (
+    Number.isFinite(sourceEvent.clientX) &&
+    Number.isFinite(sourceEvent.clientY)
+  ) {
     return { x: sourceEvent.clientX, y: sourceEvent.clientY };
   }
-  const t = sourceEvent.touches && sourceEvent.touches[0]
-    ? sourceEvent.touches[0]
-    : sourceEvent.changedTouches && sourceEvent.changedTouches[0]
-      ? sourceEvent.changedTouches[0]
-      : null;
+  const t =
+    sourceEvent.touches && sourceEvent.touches[0]
+      ? sourceEvent.touches[0]
+      : sourceEvent.changedTouches && sourceEvent.changedTouches[0]
+        ? sourceEvent.changedTouches[0]
+        : null;
   if (t && Number.isFinite(t.clientX) && Number.isFinite(t.clientY)) {
     return { x: t.clientX, y: t.clientY };
   }
@@ -105,7 +108,7 @@ function fitTransform(w, h) {
   // Offset so the map centers in the *visible* viewport (= #map-wrap) rather than
   // the full SVG canvas. The bleed is CSS left:-22%, top:-30% on #map-tilt-frame.
   const ox = w * 0.22;
-  const oy = h * 0.40;
+  const oy = h * 0.4;
   return d3.zoomIdentity
     .translate(ox + (w - MAP_W * scale) / 2, oy + (h - MAP_H * scale) / 2)
     .scale(scale);
@@ -121,14 +124,18 @@ function escapeHtml(str) {
 }
 
 function _getCssColor(varName, fallback) {
-  const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  const val = getComputedStyle(document.documentElement)
+    .getPropertyValue(varName)
+    .trim();
   return val || fallback;
 }
 
 function _getProvinceFill(groupEl) {
   const classList = groupEl.classList;
-  if (classList.contains("is-selected")) return _getCssColor("--province-selected", "#ecd344");
-  if (classList.contains("is-hovered")) return _getCssColor("--province-hover", "#8b8c8d");
+  if (classList.contains("is-selected"))
+    return _getCssColor("--province-selected", "#ecd344");
+  if (classList.contains("is-hovered"))
+    return _getCssColor("--province-hover", "#8b8c8d");
   if (classList.contains("is-quiz")) return "#f59e0b";
   if (classList.contains("is-roulette-winner")) return "#ef4444";
   if (classList.contains("is-roulette")) return "#3b82f6";
@@ -172,11 +179,15 @@ function _setInfoPanelHtml(html, direction = "left", animate = false) {
 
   if (!animate) return;
 
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
     return;
   }
 
-  const cls = direction === "right" ? "panel-slide-in-right" : "panel-slide-in-left";
+  const cls =
+    direction === "right" ? "panel-slide-in-right" : "panel-slide-in-left";
   // Force reflow so consecutive same-direction transitions still replay.
   void panel.offsetWidth;
   panel.classList.add(cls);
@@ -188,7 +199,10 @@ function _syncSwitcherPill(switcherEl) {
   if (!switcherEl) return;
   const btns = Array.from(switcherEl.querySelectorAll(".gg-map-sw-btn"));
   if (!btns.length) return;
-  const activeIdx = Math.max(0, btns.findIndex((btn) => btn.classList.contains("is-active")));
+  const activeIdx = Math.max(
+    0,
+    btns.findIndex((btn) => btn.classList.contains("is-active")),
+  );
   switcherEl.style.setProperty("--gg-pill-count", String(btns.length));
   switcherEl.style.setProperty("--gg-pill-index", String(activeIdx));
 }
@@ -212,7 +226,10 @@ function renderMap(transform = d3.zoomTransform(_svg.node())) {
   const height = rect.height;
   const dpr = window.devicePixelRatio || 1;
 
-  if (_mapCanvas.width !== Math.round(width * dpr) || _mapCanvas.height !== Math.round(height * dpr)) {
+  if (
+    _mapCanvas.width !== Math.round(width * dpr) ||
+    _mapCanvas.height !== Math.round(height * dpr)
+  ) {
     _mapCanvas.width = Math.round(width * dpr);
     _mapCanvas.height = Math.round(height * dpr);
     _mapHitCanvas.width = Math.round(width * dpr);
@@ -244,8 +261,16 @@ function renderMap(transform = d3.zoomTransform(_svg.node())) {
     if (!pathEl) return;
     const color = _getProvinceFill(groupEl);
     const stroke = _getProvinceStroke(groupEl);
-    const tx = parseFloat(groupEl.getAttribute("transform")?.match(/translate\(([-\d.]+),\s*([-\d.]+)/)?.[1] || 0);
-    const ty = parseFloat(groupEl.getAttribute("transform")?.match(/translate\(([-\d.]+),\s*([-\d.]+)/)?.[2] || 0);
+    const tx = parseFloat(
+      groupEl
+        .getAttribute("transform")
+        ?.match(/translate\(([-\d.]+),\s*([-\d.]+)/)?.[1] || 0,
+    );
+    const ty = parseFloat(
+      groupEl
+        .getAttribute("transform")
+        ?.match(/translate\(([-\d.]+),\s*([-\d.]+)/)?.[2] || 0,
+    );
     const hitColor = `#${(index + 1).toString(16).padStart(6, "0")}`;
     _provinceColorMap.set(hitColor, datum);
 
@@ -281,8 +306,14 @@ function _getProvinceAtPoint(clientX, clientY) {
   if (x < 0 || y < 0 || x > rect.width || y > rect.height) return null;
   const scaleX = _mapHitCanvas.width / rect.width;
   const scaleY = _mapHitCanvas.height / rect.height;
-  const px = Math.min(Math.max(Math.round(x * scaleX), 0), _mapHitCanvas.width - 1);
-  const py = Math.min(Math.max(Math.round(y * scaleY), 0), _mapHitCanvas.height - 1);
+  const px = Math.min(
+    Math.max(Math.round(x * scaleX), 0),
+    _mapHitCanvas.width - 1,
+  );
+  const py = Math.min(
+    Math.max(Math.round(y * scaleY), 0),
+    _mapHitCanvas.height - 1,
+  );
   const data = _mapHitCtx.getImageData(px, py, 1, 1).data;
   const hitColor = `#${[data[0], data[1], data[2]].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
   return _provinceColorMap.get(hitColor) || null;
@@ -471,9 +502,11 @@ function showToolsHome(direction = "left", animatePanel = false) {
   _rouletteClearHighlight();
   _ggClearHighlights();
   setSidebarTitle("Tools");
-  _setInfoPanelHtml(`
+  _setInfoPanelHtml(
+    `
     <div class="tools-list">
-      ${TOOLS.map((t) => `
+      ${TOOLS.map(
+        (t) => `
         <button class="tool-card" data-tool="${t.id}">
           <span class="tool-icon" style="background:${t.color}">
             <span class="tool-emoji">${t.icon}</span>
@@ -484,10 +517,14 @@ function showToolsHome(direction = "left", animatePanel = false) {
           </span>
           <span class="tool-chevron">›</span>
         </button>
-      `).join("")}
+      `,
+      ).join("")}
     </div>
     <button class="about-btn" id="about-btn">About Terralyft</button>
-  `, direction, animatePanel);
+  `,
+    direction,
+    animatePanel,
+  );
   document.querySelectorAll(".tool-card").forEach((card) => {
     card.addEventListener("click", () => {
       if (card.dataset.tool === "explore") showIdlePanel("left", true);
@@ -498,13 +535,16 @@ function showToolsHome(direction = "left", animatePanel = false) {
     });
   });
 
-  document.getElementById("about-btn").addEventListener("click", showAboutPanel);
+  document
+    .getElementById("about-btn")
+    .addEventListener("click", showAboutPanel);
 }
 
 // ── About panel ────────────────────────────────────────────────
 function showAboutPanel(direction = "left", animatePanel = false) {
   setSidebarTitle("About");
-  _setInfoPanelHtml(`
+  _setInfoPanelHtml(
+    `
     <button class="tool-back-btn" id="about-back">‹ Back</button>
     <div class="about-panel">
       <div class="about-logo-row">
@@ -520,7 +560,7 @@ function showAboutPanel(direction = "left", animatePanel = false) {
       <ul class="about-list">
         <li>All 81 provinces + NCR across Luzon, Visayas, Mindanao</li>
         <li><strong>Explore</strong> — browse provinces by region, Wikipedia summaries &amp; flags</li>
-        <li><strong>Weather</strong> — live conditions per province via Open-Meteo</li>
+        <li><strong>Weather</strong> — live conditions per province via Open-Meteo with Meteocons icons</li>
         <li><strong>Travel Level</strong> — track &amp; score your provincial visits</li>
         <li><strong>Travel Snapshot</strong> — downloadable postcard PNG of your travel map</li>
         <li><strong>Province Quiz</strong> — test your Philippine geography knowledge</li>
@@ -531,6 +571,7 @@ function showAboutPanel(direction = "left", animatePanel = false) {
       </ul>
 
       <div class="about-section-title">Credits</div>
+      <p class="about-credit">Weather icons from <a href="https://meteocons.com/icons" target="_blank" rel="noopener">Meteocons</a> by <a href="https://bas.dev/" target="_blank" rel="noopener">Bas Milius</a>.</p>
       <p class="about-credit">Travel Level concept inspired by <a href="https://my-philippines-travel-level.com/" target="_blank" rel="noopener">My Philippines Travel Level</a>.</p>
       <p class="about-credit">Province map shapes adapted from <a href="https://github.com/OSSPhilippines/philippines-travel-level-map" target="_blank" rel="noopener">OSSPhilippines / philippines-travel-level-map</a> (GPL-3.0).</p>
       <p class="about-credit">Built with <a href="https://github.com/features/copilot" target="_blank" rel="noopener">GitHub Copilot</a> (Claude). Any random features are strictly the author's own doing.</p>
@@ -542,8 +583,13 @@ function showAboutPanel(direction = "left", animatePanel = false) {
         View on GitHub ↗
       </a>
     </div>
-  `, direction, animatePanel);
-  document.getElementById("about-back").addEventListener("click", () => showToolsHome("right", true));
+  `,
+    direction,
+    animatePanel,
+  );
+  document
+    .getElementById("about-back")
+    .addEventListener("click", () => showToolsHome("right", true));
 }
 
 // ── Map init ───────────────────────────────────────────────────
@@ -572,11 +618,7 @@ function initMap() {
     .attr("patternUnits", "userSpaceOnUse");
 
   // Base fill for the tile (transparent — lets ocean-bg show through)
-  pat
-    .append("rect")
-    .attr("width", 32)
-    .attr("height", 16)
-    .attr("fill", "none");
+  pat.append("rect").attr("width", 32).attr("height", 16).attr("fill", "none");
 
   // Chevron path: /\/\ drawn as a stroke
   pat
@@ -678,7 +720,8 @@ function initMap() {
     .on("start", (event) => {
       _wasDragging = false;
       _zoomStartTransform = d3.zoomTransform(_svg.node());
-      _dragGestureActive = !!event.sourceEvent &&
+      _dragGestureActive =
+        !!event.sourceEvent &&
         (event.sourceEvent.type === "mousedown" ||
           event.sourceEvent.type === "pointerdown" ||
           event.sourceEvent.type === "touchstart");
@@ -698,7 +741,10 @@ function initMap() {
         if (_zoomStartTransform) {
           const dx = event.transform.x - _zoomStartTransform.x;
           const dy = event.transform.y - _zoomStartTransform.y;
-          if ((dx * dx + dy * dy) >= DRAG_CLICK_THRESHOLD_PX * DRAG_CLICK_THRESHOLD_PX) {
+          if (
+            dx * dx + dy * dy >=
+            DRAG_CLICK_THRESHOLD_PX * DRAG_CLICK_THRESHOLD_PX
+          ) {
             _wasDragging = true;
           }
         } else {
@@ -710,7 +756,10 @@ function initMap() {
             }
             const dx = p.x - _dragStartClientX;
             const dy = p.y - _dragStartClientY;
-            if ((dx * dx + dy * dy) >= DRAG_CLICK_THRESHOLD_PX * DRAG_CLICK_THRESHOLD_PX) {
+            if (
+              dx * dx + dy * dy >=
+              DRAG_CLICK_THRESHOLD_PX * DRAG_CLICK_THRESHOLD_PX
+            ) {
               _wasDragging = true;
             }
           }
@@ -757,7 +806,8 @@ function initMap() {
   _svg.on("dblclick", resetZoom);
 
   function zoomBy(factor) {
-    _svg.transition()
+    _svg
+      .transition()
       .duration(180)
       .ease(d3.easeCubicOut)
       .call(_zoom.scaleBy, factor);
@@ -768,7 +818,8 @@ function initMap() {
     const t = fitTransform(w, h);
     _zoom.scaleExtent([t.k * 0.75, t.k * 15]);
     applyTranslateExtent(w, h, t.k);
-    _svg.transition()
+    _svg
+      .transition()
       .duration(240)
       .ease(d3.easeCubicOut)
       .call(_zoom.transform, t);
@@ -792,7 +843,9 @@ function initMap() {
     tiltFrame.style.transform = `rotateX(${deg}deg)`;
   }
 
-  tiltSlider.addEventListener("input", () => applyTilt(Number(tiltSlider.value)));
+  tiltSlider.addEventListener("input", () =>
+    applyTilt(Number(tiltSlider.value)),
+  );
 
   tiltResetBtn.addEventListener("click", () => {
     tiltSlider.value = 0;
@@ -808,8 +861,6 @@ function initMap() {
     tiltSlider.value = 0;
     applyTilt(0);
   };
-
-
 
   window.addEventListener("resize", () => {
     if (_resizeFrame) return;
@@ -959,7 +1010,8 @@ function showIdlePanel(direction = "left", animatePanel = false) {
   const sortedRegions = Object.keys(regionMap).sort();
   const allProvs = Object.keys(PROVINCE_REGION).sort();
 
-  _setInfoPanelHtml(`
+  _setInfoPanelHtml(
+    `
     <button class="tool-back-btn" id="explore-back">‹ Back</button>
     <div class="idle-sticky">
       <div class="idle-search-wrap">
@@ -986,7 +1038,10 @@ function showIdlePanel(direction = "left", animatePanel = false) {
       <span class="idle-prov-count" id="idle-prov-count">${allProvs.length} provinces</span>
     </div>
     <ul class="idle-prov-list" id="idle-prov-list"></ul>
-  `, direction, animatePanel);
+  `,
+    direction,
+    animatePanel,
+  );
 
   let activeRegion = _exploreListState.region || "";
 
@@ -996,7 +1051,8 @@ function showIdlePanel(direction = "left", animatePanel = false) {
     const base = filter ? (regionMap[filter] || []).slice().sort() : allProvs;
     const q = query.trim().toLowerCase();
     const provs = q ? base.filter((p) => p.toLowerCase().includes(q)) : base;
-    if (countEl) countEl.textContent = `${provs.length} province${provs.length !== 1 ? "s" : ""}`;
+    if (countEl)
+      countEl.textContent = `${provs.length} province${provs.length !== 1 ? "s" : ""}`;
     list.innerHTML = provs
       .map(
         (p) =>
@@ -1012,7 +1068,9 @@ function showIdlePanel(direction = "left", animatePanel = false) {
 
   renderProvList(activeRegion, _exploreListState.query || "");
 
-  document.getElementById("explore-back").addEventListener("click", () => showToolsHome("right", true));
+  document
+    .getElementById("explore-back")
+    .addEventListener("click", () => showToolsHome("right", true));
 
   // ── Region dropdown ──────────────────────────────────────
   const dropBtn = document.getElementById("idle-dropdown-btn");
@@ -1051,7 +1109,9 @@ function showIdlePanel(direction = "left", animatePanel = false) {
     opt.addEventListener("click", () => {
       activeRegion = opt.dataset.region;
       _exploreListState.region = activeRegion;
-      dropLabel.textContent = activeRegion ? activeRegion.replace(/^Region\s*/i, "").trim() || activeRegion : "All";
+      dropLabel.textContent = activeRegion
+        ? activeRegion.replace(/^Region\s*/i, "").trim() || activeRegion
+        : "All";
       dropList
         .querySelectorAll(".idle-dropdown-option")
         .forEach((o) =>
@@ -1070,10 +1130,16 @@ function showIdlePanel(direction = "left", animatePanel = false) {
     const q = searchInput.value.trim().toLowerCase();
     _exploreListState.query = searchInput.value;
     renderProvList(activeRegion, searchInput.value);
-    if (!q) { suggBox.hidden = true; return; }
-    const pool = activeRegion ? (regionMap[activeRegion] || []) : allProvs;
+    if (!q) {
+      suggBox.hidden = true;
+      return;
+    }
+    const pool = activeRegion ? regionMap[activeRegion] || [] : allProvs;
     const matches = pool.filter((p) => p.toLowerCase().includes(q)).slice(0, 8);
-    if (!matches.length) { suggBox.hidden = true; return; }
+    if (!matches.length) {
+      suggBox.hidden = true;
+      return;
+    }
     suggBox.innerHTML = matches
       .map(
         (p) =>
@@ -1106,7 +1172,6 @@ function showIdlePanel(direction = "left", animatePanel = false) {
   });
 }
 
-
 function selectProvinceById(id, fromExplore = false) {
   const grp = _g
     .selectAll(".province-group")
@@ -1126,28 +1191,38 @@ async function _fetchProvinceWiki(provName) {
   const section = document.getElementById("explore-wiki-section");
   if (!section) return;
 
-  const attempts = [`${provName}, Philippines`, provName, `${provName} (province)`];
+  const attempts = [
+    `${provName}, Philippines`,
+    provName,
+    `${provName} (province)`,
+  ];
 
   // Strip HTML tags (including <style>/<script> text) to plain text
   const stripHtml = (html) => {
     const tmp = document.createElement("div");
     tmp.innerHTML = html;
-    tmp.querySelectorAll(
-      "h1, h2, h3, h4, h5, h6, " +
-      "style, script, sup, figure, figcaption, svg, canvas, img, " +
-      "table, .reference, .mw-editsection, .noprint, .thumb, " +
-      ".gallery, .wikitable, .infobox, .navbox, .mbox, .ambox, " +
-      ".mw-empty-elt, .sistersitebox, .hatnote, .toc"
-    ).forEach(el => el.remove());
+    tmp
+      .querySelectorAll(
+        "h1, h2, h3, h4, h5, h6, " +
+          "style, script, sup, figure, figcaption, svg, canvas, img, " +
+          "table, .reference, .mw-editsection, .noprint, .thumb, " +
+          ".gallery, .wikitable, .infobox, .navbox, .mbox, .ambox, " +
+          ".mw-empty-elt, .sistersitebox, .hatnote, .toc",
+      )
+      .forEach((el) => el.remove());
     return (tmp.textContent || tmp.innerText || "").replace(/\s+/g, " ").trim();
   };
 
   // First N sentences of plain text
   const firstSentences = (text, n = 3) =>
-    text.split(/(?<=[.!?])\s+/).slice(0, n).join(" ");
+    text
+      .split(/(?<=[.!?])\s+/)
+      .slice(0, n)
+      .join(" ");
 
   // ── 1. Fetch summary (proven reliable for lead text) ─────────
-  let sumData = null, canonicalTitle = null;
+  let sumData = null,
+    canonicalTitle = null;
   for (const title of attempts) {
     try {
       const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
@@ -1157,25 +1232,42 @@ async function _fetchProvinceWiki(provName) {
       // Use the normalised title returned by Wikipedia (handles redirects)
       canonicalTitle = sumData.titles?.normalized || sumData.title || title;
       break;
-    } catch { /* try next */ }
+    } catch {
+      /* try next */
+    }
   }
 
-  if (!sumData) { section.innerHTML = ""; return; }
+  if (!sumData) {
+    section.innerHTML = "";
+    return;
+  }
 
-  const leadText   = firstSentences(sumData.extract?.replace(/\n/g, " ") || "", 3);
+  const leadText = firstSentences(
+    sumData.extract?.replace(/\n/g, " ") || "",
+    3,
+  );
   const description = sumData.description || "";
-  const wikiUrl    = sumData.content_urls?.desktop?.page
-                     || `https://en.wikipedia.org/wiki/${encodeURIComponent(canonicalTitle)}`;
+  const wikiUrl =
+    sumData.content_urls?.desktop?.page ||
+    `https://en.wikipedia.org/wiki/${encodeURIComponent(canonicalTitle)}`;
 
   // ── 2. Fetch section list via action API (reliable) ──────────
   let wikiSections = [];
   try {
     const apiUrl = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(canonicalTitle)}&prop=sections&format=json&origin=*`;
-    const res  = await fetch(apiUrl);
+    const res = await fetch(apiUrl);
     const json = await res.json();
-    const ALLOWED_SECTIONS = /etymology|history|geography|demograph|economy|economic|biodiversity|wildlife|flora|fauna|attraction|tourism|tourist|culture|cultural|arts|heritage|government|politics|infrastructure|transport|climate|environment|natural/i;
-    wikiSections = (json.parse?.sections || []).filter(s => s.toclevel === 1 && s.line && ALLOWED_SECTIONS.test(stripHtml(s.line).trim()));
-  } catch { /* no chips, render without them */ }
+    const ALLOWED_SECTIONS =
+      /etymology|history|geography|demograph|economy|economic|biodiversity|wildlife|flora|fauna|attraction|tourism|tourist|culture|cultural|arts|heritage|government|politics|infrastructure|transport|climate|environment|natural/i;
+    wikiSections = (json.parse?.sections || []).filter(
+      (s) =>
+        s.toclevel === 1 &&
+        s.line &&
+        ALLOWED_SECTIONS.test(stripHtml(s.line).trim()),
+    );
+  } catch {
+    /* no chips, render without them */
+  }
 
   // ── 3. Render ─────────────────────────────────────────────────
   function renderSection(text, activeIdx, loading = false) {
@@ -1185,32 +1277,39 @@ async function _fetchProvinceWiki(provName) {
 
     const chips = [
       `<button class="exp-wiki-chip${activeIdx === -1 ? " is-active" : ""}" data-sec="-1">Overview</button>`,
-      ...wikiSections.map((s, i) =>
-        `<button class="exp-wiki-chip${activeIdx === i ? " is-active" : ""}" data-sec="${i}">${escapeHtml(stripHtml(s.line))}</button>`)
+      ...wikiSections.map(
+        (s, i) =>
+          `<button class="exp-wiki-chip${activeIdx === i ? " is-active" : ""}" data-sec="${i}">${escapeHtml(stripHtml(s.line))}</button>`,
+      ),
     ].join("");
 
     section.innerHTML = `
       ${wikiSections.length ? `<div class="exp-wiki-chips">${chips}</div>` : ""}
       ${description && activeIdx === -1 ? `<div class="exp-wiki-desc">${escapeHtml(description)}</div>` : ""}
       <p class="exp-wiki-extract">${loading ? "" : escapeHtml(text)}</p>
-      ${loading ? `
+      ${
+        loading
+          ? `
         <div class="exp-wiki-skeleton"></div>
         <div class="exp-wiki-skeleton" style="width:90%"></div>
         <div class="exp-wiki-skeleton" style="width:75%"></div>
         <div class="exp-wiki-skeleton" style="width:85%"></div>
-      ` : ""}
+      `
+          : ""
+      }
       <a class="exp-wiki-link" href="${escapeHtml(wikiUrl)}"
          target="_blank" rel="noopener noreferrer">Read more on Wikipedia ↗</a>
       <button class="exp-map-link" id="exp-map-btn">View on Maps ↗</button>
     `;
 
     const mapBtn = section.querySelector("#exp-map-btn");
-    if (mapBtn) mapBtn.addEventListener("click", () => _showProvMapModal(provName));
+    if (mapBtn)
+      mapBtn.addEventListener("click", () => _showProvMapModal(provName));
 
     const newChips = section.querySelector(".exp-wiki-chips");
     if (newChips && chipsScroll) newChips.scrollLeft = chipsScroll;
 
-    section.querySelectorAll(".exp-wiki-chip").forEach(btn => {
+    section.querySelectorAll(".exp-wiki-chip").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const i = parseInt(btn.dataset.sec, 10);
         if (i === -1) {
@@ -1220,9 +1319,12 @@ async function _fetchProvinceWiki(provName) {
           try {
             const s = wikiSections[i];
             const apiUrl = `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(canonicalTitle)}&prop=text&section=${s.index}&format=json&origin=*`;
-            const res  = await fetch(apiUrl);
+            const res = await fetch(apiUrl);
             const json = await res.json();
-            const sectionText = firstSentences(stripHtml(json.parse?.text?.["*"] || ""), 4);
+            const sectionText = firstSentences(
+              stripHtml(json.parse?.text?.["*"] || ""),
+              4,
+            );
             renderSection(sectionText || "No content available.", i);
           } catch {
             renderSection("Could not load section.", i);
@@ -1239,12 +1341,13 @@ function _showProvMapModal(provName) {
   const existing = document.getElementById("prov-map-overlay");
   if (existing) existing.remove();
 
-  const loc = typeof _ggProvCentroid === "function" ? _ggProvCentroid(provName) : null;
+  const loc =
+    typeof _ggProvCentroid === "function" ? _ggProvCentroid(provName) : null;
   const center = loc ? [loc.lat, loc.lng] : [12.8797, 121.774];
-  const zoom   = 9;
+  const zoom = 9;
 
   const overlay = document.createElement("div");
-  overlay.id        = "prov-map-overlay";
+  overlay.id = "prov-map-overlay";
   overlay.className = "gg-modal-overlay";
   overlay.innerHTML = `
     <div class="gg-modal-inner">
@@ -1259,19 +1362,29 @@ function _showProvMapModal(provName) {
   document.body.appendChild(overlay);
 
   let provMap = null;
-  let isSat   = false;
+  let isSat = false;
 
-  const OV_LABELS_URL = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png";
-  const OV_ATT        = "&copy; OpenStreetMap &copy; CARTO";
+  const OV_LABELS_URL =
+    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png";
+  const OV_ATT = "&copy; OpenStreetMap &copy; CARTO";
 
   setTimeout(() => {
     const mapEl = document.getElementById("prov-map-leaflet");
     if (!mapEl || !window.L) return;
 
-    const tileUrl = typeof _ggTileUrl === "function" ? _ggTileUrl() : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
+    const tileUrl =
+      typeof _ggTileUrl === "function"
+        ? _ggTileUrl()
+        : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
     const tileAtt = "&copy; OpenStreetMap &copy; CARTO";
-    const satUrl  = typeof _GG_TILE_SAT !== "undefined" ? _GG_TILE_SAT : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-    const satAtt  = typeof _GG_TILE_SAT_ATT !== "undefined" ? _GG_TILE_SAT_ATT : "Tiles &copy; Esri";
+    const satUrl =
+      typeof _GG_TILE_SAT !== "undefined"
+        ? _GG_TILE_SAT
+        : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    const satAtt =
+      typeof _GG_TILE_SAT_ATT !== "undefined"
+        ? _GG_TILE_SAT_ATT
+        : "Tiles &copy; Esri";
 
     provMap = L.map(mapEl, {
       center,
@@ -1279,19 +1392,32 @@ function _showProvMapModal(provName) {
       zoomControl: true,
       scrollWheelZoom: true,
       attributionControl: true,
-      maxBounds: typeof _GG_PH_BOUNDS !== "undefined" ? _GG_PH_BOUNDS : undefined,
+      maxBounds:
+        typeof _GG_PH_BOUNDS !== "undefined" ? _GG_PH_BOUNDS : undefined,
       maxBoundsViscosity: 1.0,
     });
-    const baseLayer = L.tileLayer(tileUrl, { maxZoom: 19, attribution: tileAtt });
+    const baseLayer = L.tileLayer(tileUrl, {
+      maxZoom: 19,
+      attribution: tileAtt,
+    });
     baseLayer.options._isBase = true;
     baseLayer.addTo(provMap);
 
-    const labelsLayer = L.tileLayer(OV_LABELS_URL, { maxZoom: 19, attribution: OV_ATT, pane: "overlayPane" });
+    const labelsLayer = L.tileLayer(OV_LABELS_URL, {
+      maxZoom: 19,
+      attribution: OV_ATT,
+      pane: "overlayPane",
+    });
     labelsLayer.addTo(provMap);
 
     const swapBase = () => {
-      provMap.eachLayer(l => { if (l.options && l.options._isBase) provMap.removeLayer(l); });
-      const bl = L.tileLayer(isSat ? satUrl : tileUrl, { maxZoom: 19, attribution: isSat ? satAtt : tileAtt });
+      provMap.eachLayer((l) => {
+        if (l.options && l.options._isBase) provMap.removeLayer(l);
+      });
+      const bl = L.tileLayer(isSat ? satUrl : tileUrl, {
+        maxZoom: 19,
+        attribution: isSat ? satAtt : tileAtt,
+      });
       bl.options._isBase = true;
       bl.addTo(provMap);
       labelsLayer.addTo(provMap); // keep labels on top
@@ -1300,10 +1426,12 @@ function _showProvMapModal(provName) {
     const tileToggle = document.getElementById("prov-map-toggle");
     _syncSwitcherPill(tileToggle);
 
-    overlay.querySelectorAll(".prov-map-tile-btn").forEach(btn => {
+    overlay.querySelectorAll(".prov-map-tile-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         isSat = btn.dataset.mode === "sat";
-        overlay.querySelectorAll(".prov-map-tile-btn").forEach(b => b.classList.toggle("is-active", b === btn));
+        overlay
+          .querySelectorAll(".prov-map-tile-btn")
+          .forEach((b) => b.classList.toggle("is-active", b === btn));
         _syncSwitcherPill(tileToggle);
         swapBase();
       });
@@ -1312,20 +1440,39 @@ function _showProvMapModal(provName) {
 
   const close = () => {
     overlay.classList.add("is-closing");
-    overlay.addEventListener("animationend", () => {
-      if (provMap) { try { provMap.remove(); } catch {} }
-      overlay.remove();
-    }, { once: true });
+    overlay.addEventListener(
+      "animationend",
+      () => {
+        if (provMap) {
+          try {
+            provMap.remove();
+          } catch {}
+        }
+        overlay.remove();
+      },
+      { once: true },
+    );
   };
 
   document.getElementById("prov-map-close").addEventListener("click", close);
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) close();
+  });
   document.addEventListener("keydown", function onEsc(e) {
-    if (e.key === "Escape") { close(); document.removeEventListener("keydown", onEsc); }
+    if (e.key === "Escape") {
+      close();
+      document.removeEventListener("keydown", onEsc);
+    }
   });
 }
 
-function showProvinceInfo(prov, fromExplore = false, preserveExploreListState = true, panelDirection = "left", animatePanel = false) {
+function showProvinceInfo(
+  prov,
+  fromExplore = false,
+  preserveExploreListState = true,
+  panelDirection = "left",
+  animatePanel = false,
+) {
   if (_exploreTab === "info") {
     clearWeatherEmoji();
     _lastWeatherInfo = null;
@@ -1366,11 +1513,15 @@ function showProvinceInfo(prov, fromExplore = false, preserveExploreListState = 
 
   const tabContentHost = `<div id="province-tab-content"></div>`;
 
-  _setInfoPanelHtml(`
+  _setInfoPanelHtml(
+    `
     <button class="tool-back-btn" id="province-info-back" aria-label="Back">‹ Back</button>
     ${tabBar}
     ${tabContentHost}
-  `, panelDirection, animatePanel);
+  `,
+    panelDirection,
+    animatePanel,
+  );
 
   const tabBarEl = document.querySelector(".province-tab-bar");
   _syncSwitcherPill(tabBarEl);
@@ -1397,14 +1548,20 @@ function showProvinceInfo(prov, fromExplore = false, preserveExploreListState = 
       } else {
         flagImg.addEventListener("load", revealFlag, { once: true });
       }
-      flagImg.addEventListener("error", () => {
-        if (provFlagSrc && regFlagSrc) {
-          flagImg.onerror = () => { flagCard.style.display = "none"; };
-          flagImg.src = regFlagSrc;
-        } else {
-          flagCard.style.display = "none";
-        }
-      }, { once: true });
+      flagImg.addEventListener(
+        "error",
+        () => {
+          if (provFlagSrc && regFlagSrc) {
+            flagImg.onerror = () => {
+              flagCard.style.display = "none";
+            };
+            flagImg.src = regFlagSrc;
+          } else {
+            flagCard.style.display = "none";
+          }
+        },
+        { once: true },
+      );
       return;
     }
 
@@ -1415,38 +1572,43 @@ function showProvinceInfo(prov, fromExplore = false, preserveExploreListState = 
     fetchAndShowWeather(prov);
   }
 
-  document.querySelectorAll(".province-tab-bar .gg-map-sw-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const newTab = btn.dataset.tab;
-      if (newTab === _exploreTab) return;
+  document
+    .querySelectorAll(".province-tab-bar .gg-map-sw-btn")
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const newTab = btn.dataset.tab;
+        if (newTab === _exploreTab) return;
 
-      document.querySelectorAll(".province-tab-bar .gg-map-sw-btn").forEach((b) => {
-        b.classList.toggle("is-active", b === btn);
+        document
+          .querySelectorAll(".province-tab-bar .gg-map-sw-btn")
+          .forEach((b) => {
+            b.classList.toggle("is-active", b === btn);
+          });
+        _syncSwitcherPill(tabBarEl);
+
+        _exploreTab = newTab;
+        renderProvinceTabContent();
       });
-      _syncSwitcherPill(tabBarEl);
-
-      _exploreTab = newTab;
-      renderProvinceTabContent();
     });
-  });
 
-  document.getElementById("province-info-back").addEventListener("click", () => {
-    if (_selectedGroup) {
-      d3.select(_selectedGroup).classed("is-selected", false);
-      _selectedGroup = null;
-      _refreshMapVisuals();
-    }
-    clearWeatherEmoji();
-    _lastWeatherInfo = null;
-    _exploreTab = "info";
-    if (fromExplore) {
-      if (!preserveExploreListState) {
-        _exploreListState = { region: "", query: "" };
+  document
+    .getElementById("province-info-back")
+    .addEventListener("click", () => {
+      if (_selectedGroup) {
+        d3.select(_selectedGroup).classed("is-selected", false);
+        _selectedGroup = null;
+        _refreshMapVisuals();
       }
-      showIdlePanel("right", true);
-    }
-    else showToolsHome("right", true);
-  });
+      clearWeatherEmoji();
+      _lastWeatherInfo = null;
+      _exploreTab = "info";
+      if (fromExplore) {
+        if (!preserveExploreListState) {
+          _exploreListState = { region: "", query: "" };
+        }
+        showIdlePanel("right", true);
+      } else showToolsHome("right", true);
+    });
 
   renderProvinceTabContent();
 }
