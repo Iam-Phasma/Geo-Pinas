@@ -245,6 +245,27 @@ function _ggDestroyPreview() {
   }
 }
 
+function _ggSetSidebarSwitcherVisible(visible) {
+  const switcher = document.getElementById("gg-map-switcher");
+  if (!switcher) return;
+  switcher.style.display = visible ? "" : "none";
+}
+
+function _ggSyncTileSwitcher(switcherEl) {
+  if (!switcherEl) return;
+  const targetSat = _ggSatellite ? "1" : "0";
+  switcherEl.querySelectorAll(".gg-map-sw-btn").forEach((btn) => {
+    const isActive = btn.dataset.sat === targetSat;
+    btn.classList.toggle("is-active", isActive);
+  });
+  _syncSwitcherPill(switcherEl);
+}
+
+function _ggSyncAllTileSwitchers() {
+  _ggSyncTileSwitcher(document.getElementById("gg-map-switcher"));
+  _ggSyncTileSwitcher(document.getElementById("gg-map-toggle-modal"));
+}
+
 function _ggDestroyModal() {
   const existing = document.getElementById("gg-modal-overlay");
   if (!existing) return;
@@ -259,6 +280,7 @@ function _ggDestroyModal() {
         _ggLeafletModal = null;
       }
       existing.remove();
+      _ggSetSidebarSwitcherVisible(true);
     },
     { once: true },
   );
@@ -348,12 +370,17 @@ function _ggInitPreview(loc) {
 
 function _ggOpenModal(loc) {
   _ggDestroyModal();
+  _ggSetSidebarSwitcherVisible(false);
   const overlay = document.createElement("div");
   overlay.id = "gg-modal-overlay";
   overlay.className = "gg-modal-overlay";
   overlay.innerHTML = `
     <div class="gg-modal-inner">
       <button class="gg-modal-close" id="gg-modal-close" aria-label="Close">\u2715</button>
+      <div class="gg-modal-map-switcher gg-map-switcher" id="gg-map-toggle-modal">
+        <button class="gg-map-sw-btn${!_ggSatellite ? " is-active" : ""}" data-sat="0">Map</button>
+        <button class="gg-map-sw-btn${_ggSatellite ? " is-active" : ""}" data-sat="1">Satellite</button>
+      </div>
       <div id="gg-map-modal"></div>
     </div>
   `;
@@ -382,6 +409,19 @@ function _ggOpenModal(loc) {
     }).addTo(_ggLeafletModal);
     _ggAttachResetButton(_ggLeafletModal, loc);
     if (_ggAnswered) _ggAddPin(_ggLeafletModal, loc);
+
+    const modalToggle = document.getElementById("gg-map-toggle-modal");
+    if (modalToggle) {
+      _ggSyncTileSwitcher(modalToggle);
+      modalToggle.querySelectorAll(".gg-map-sw-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          _ggSatellite = btn.dataset.sat === "1";
+          _ggSwapTiles(_ggLeafletPrev);
+          _ggSwapTiles(_ggLeafletModal);
+          _ggSyncAllTileSwitchers();
+        });
+      });
+    }
   }, 50);
 
   document
@@ -723,7 +763,7 @@ function _renderGeoGuesser(result) {
       </button>
     </div>
     <div class="gg-map-switcher" id="gg-map-switcher">
-      <button class="gg-map-sw-btn${!_ggSatellite ? " is-active" : ""}" data-sat="0">Default</button>
+      <button class="gg-map-sw-btn${!_ggSatellite ? " is-active" : ""}" data-sat="0">Map</button>
       <button class="gg-map-sw-btn${_ggSatellite ? " is-active" : ""}" data-sat="1">Satellite</button>
     </div>
     ${resultHtml}
@@ -750,17 +790,13 @@ function _renderGeoGuesser(result) {
     _ggNewRound();
   });
   const tileSwitcher = document.getElementById("gg-map-switcher");
-  _syncSwitcherPill(tileSwitcher);
-  document.querySelectorAll(".gg-map-sw-btn").forEach((btn) => {
+  _ggSyncTileSwitcher(tileSwitcher);
+  tileSwitcher?.querySelectorAll(".gg-map-sw-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       _ggSatellite = btn.dataset.sat === "1";
       _ggSwapTiles(_ggLeafletPrev);
-      document
-        .querySelectorAll(".gg-map-sw-btn")
-        .forEach((b) =>
-          b.classList.toggle("is-active", b.dataset.sat === btn.dataset.sat),
-        );
-      _syncSwitcherPill(tileSwitcher);
+      _ggSwapTiles(_ggLeafletModal);
+      _ggSyncAllTileSwitchers();
     });
   });
 }
