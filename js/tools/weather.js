@@ -17,33 +17,65 @@ let _weatherOverlayFrame = null;
 const _MC = "https://cdn.meteocons.com/3.0.0-next.8";
 
 const WMO_ICON_DAY = {
-  0:  "clear-day",
-  1:  "mostly-clear-day",           2:  "partly-cloudy-day",        3:  "overcast-day",
-  45: "fog-day",                    48: "fog-day",
-  51: "mostly-clear-day-drizzle",   53: "partly-cloudy-day-drizzle", 55: "overcast-day-drizzle",
-  56: "overcast-day-drizzle",       57: "overcast-day-sleet",
-  61: "partly-cloudy-day-rain",     63: "rain",                      65: "extreme-rain",
-  66: "sleet",                      67: "extreme-sleet",
-  71: "partly-cloudy-day-snow",     73: "snow",                      75: "extreme-snow",
+  0: "clear-day",
+  1: "mostly-clear-day",
+  2: "partly-cloudy-day",
+  3: "overcast-day",
+  45: "fog-day",
+  48: "fog-day",
+  51: "mostly-clear-day-drizzle",
+  53: "partly-cloudy-day-drizzle",
+  55: "overcast-day-drizzle",
+  56: "overcast-day-drizzle",
+  57: "overcast-day-sleet",
+  61: "partly-cloudy-day-rain",
+  63: "rain",
+  65: "extreme-rain",
+  66: "sleet",
+  67: "extreme-sleet",
+  71: "partly-cloudy-day-snow",
+  73: "snow",
+  75: "extreme-snow",
   77: "snow",
-  80: "partly-cloudy-day-rain",     81: "rain",                      82: "extreme-rain",
-  85: "partly-cloudy-day-snow",     86: "extreme-snow",
-  95: "thunderstorms-day",          96: "thunderstorms-day-hail",    99: "thunderstorms-extreme-day",
+  80: "partly-cloudy-day-rain",
+  81: "rain",
+  82: "extreme-rain",
+  85: "partly-cloudy-day-snow",
+  86: "extreme-snow",
+  95: "thunderstorms-day",
+  96: "thunderstorms-day-hail",
+  99: "thunderstorms-extreme-day",
 };
 
 const WMO_ICON_NIGHT = {
-  0:  "clear-night",
-  1:  "mostly-clear-night",           2:  "partly-cloudy-night",        3:  "overcast-night",
-  45: "fog-night",                    48: "fog-night",
-  51: "mostly-clear-night-drizzle",   53: "partly-cloudy-night-drizzle", 55: "overcast-night-drizzle",
-  56: "overcast-night-drizzle",       57: "overcast-night-sleet",
-  61: "partly-cloudy-night-rain",     63: "rain",                        65: "extreme-rain",
-  66: "sleet",                        67: "extreme-sleet",
-  71: "partly-cloudy-night-snow",     73: "snow",                        75: "extreme-snow",
+  0: "clear-night",
+  1: "mostly-clear-night",
+  2: "partly-cloudy-night",
+  3: "overcast-night",
+  45: "fog-night",
+  48: "fog-night",
+  51: "mostly-clear-night-drizzle",
+  53: "partly-cloudy-night-drizzle",
+  55: "overcast-night-drizzle",
+  56: "overcast-night-drizzle",
+  57: "overcast-night-sleet",
+  61: "partly-cloudy-night-rain",
+  63: "rain",
+  65: "extreme-rain",
+  66: "sleet",
+  67: "extreme-sleet",
+  71: "partly-cloudy-night-snow",
+  73: "snow",
+  75: "extreme-snow",
   77: "snow",
-  80: "partly-cloudy-night-rain",     81: "rain",                        82: "extreme-rain",
-  85: "partly-cloudy-night-snow",     86: "extreme-snow",
-  95: "thunderstorms-night",          96: "thunderstorms-night-hail",    99: "thunderstorms-extreme-night",
+  80: "partly-cloudy-night-rain",
+  81: "rain",
+  82: "extreme-rain",
+  85: "partly-cloudy-night-snow",
+  86: "extreme-snow",
+  95: "thunderstorms-night",
+  96: "thunderstorms-night-hail",
+  99: "thunderstorms-extreme-night",
 };
 
 function _wmoIcon(code, isDay) {
@@ -53,17 +85,33 @@ function _wmoIcon(code, isDay) {
 
 const WMO_DESC = {
   0: "Clear sky",
-  1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
-  45: "Foggy", 48: "Icy fog",
-  51: "Light drizzle", 53: "Moderate drizzle", 55: "Dense drizzle",
-  56: "Freezing drizzle", 57: "Heavy freezing drizzle",
-  61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain",
-  66: "Freezing rain", 67: "Heavy freezing rain",
-  71: "Slight snow", 73: "Moderate snow", 75: "Heavy snow",
+  1: "Mainly clear",
+  2: "Partly cloudy",
+  3: "Overcast",
+  45: "Foggy",
+  48: "Icy fog",
+  51: "Light drizzle",
+  53: "Moderate drizzle",
+  55: "Dense drizzle",
+  56: "Freezing drizzle",
+  57: "Heavy freezing drizzle",
+  61: "Slight rain",
+  63: "Moderate rain",
+  65: "Heavy rain",
+  66: "Freezing rain",
+  67: "Heavy freezing rain",
+  71: "Slight snow",
+  73: "Moderate snow",
+  75: "Heavy snow",
   77: "Snow grains",
-  80: "Slight showers", 81: "Moderate showers", 82: "Violent showers",
-  85: "Slight snow showers", 86: "Heavy snow showers",
-  95: "Thunderstorm", 96: "Thunderstorm w/ hail", 99: "Severe thunderstorm",
+  80: "Slight showers",
+  81: "Moderate showers",
+  82: "Violent showers",
+  85: "Slight snow showers",
+  86: "Heavy snow showers",
+  95: "Thunderstorm",
+  96: "Thunderstorm w/ hail",
+  99: "Severe thunderstorm",
 };
 
 // Convert SVG data-space coordinates to approximate lat/lng
@@ -71,7 +119,7 @@ const WMO_DESC = {
 //   Batanes (435,37.5)→20.5°N 121.9°E, Tawi-Tawi (292.5,1170)→5.1°N 119.7°E
 function _svgToLatLng(svgX, svgY) {
   const lat = 20.5 - (svgY - 37.5) * 0.01358;
-  const lon = 118.7 + (svgX - 195) * 0.01350;
+  const lon = 118.7 + (svgX - 195) * 0.0135;
   return { lat, lon };
 }
 
@@ -98,7 +146,11 @@ function _positionWeatherOverlay(prov) {
   const frame = document.getElementById("map-tilt-frame");
   const nextLeft = Math.round(pos.x + frame.offsetLeft);
   const nextTop = Math.round(pos.y + frame.offsetTop - 28);
-  if (overlay.style.left === `${nextLeft}px` && overlay.style.top === `${nextTop}px`) return;
+  if (
+    overlay.style.left === `${nextLeft}px` &&
+    overlay.style.top === `${nextTop}px`
+  )
+    return;
   overlay.style.left = `${nextLeft}px`;
   overlay.style.top = `${nextTop}px`;
 }
@@ -108,7 +160,8 @@ function _isWeatherContext() {
 }
 
 function _scheduleWeatherOverlayUpdate() {
-  if (!_currentWeatherProv || !_isWeatherContext() || !_weatherEmojiEnabled) return;
+  if (!_currentWeatherProv || !_isWeatherContext() || !_weatherEmojiEnabled)
+    return;
   if (_weatherOverlayFrame) return;
   _weatherOverlayFrame = window.requestAnimationFrame(() => {
     _weatherOverlayFrame = null;
@@ -136,7 +189,7 @@ async function fetchAndShowWeather(prov) {
   const overlay = document.getElementById("weather-overlay");
   if (!overlay) return;
   if (_weatherEmojiEnabled) {
-    _setMeteoIcon(overlay, "thermometer");
+    _setMeteoIcon(overlay, "thermometer-alert");
     _positionWeatherOverlay(prov);
     overlay.classList.add("is-visible");
     _scheduleWeatherOverlayUpdate();
@@ -169,8 +222,12 @@ async function fetchAndShowWeather(prov) {
       region: PROVINCE_REGION[prov.id] ?? "",
       slug,
       temp: cur.temperature_2m != null ? Math.round(cur.temperature_2m) : "—",
-      feelsLike: cur.apparent_temperature != null ? Math.round(cur.apparent_temperature) : "—",
-      humidity: cur.relative_humidity_2m != null ? cur.relative_humidity_2m : "—",
+      feelsLike:
+        cur.apparent_temperature != null
+          ? Math.round(cur.apparent_temperature)
+          : "—",
+      humidity:
+        cur.relative_humidity_2m != null ? cur.relative_humidity_2m : "—",
       wind: cur.wind_speed_10m != null ? Math.round(cur.wind_speed_10m) : "—",
       condition: WMO_DESC[code] ?? "Unknown",
     };
@@ -189,11 +246,13 @@ async function fetchAndShowWeather(prov) {
 function clearWeatherEmoji() {
   _currentWeatherProv = null;
   _lastWeatherInfo = null;
-  if (_currentLottieAnim) { _currentLottieAnim.destroy(); _currentLottieAnim = null; }
+  if (_currentLottieAnim) {
+    _currentLottieAnim.destroy();
+    _currentLottieAnim = null;
+  }
   const overlay = document.getElementById("weather-overlay");
   if (overlay) overlay.classList.remove("is-visible");
 }
-
 
 // ── Weather section renderer (embedded in Explore) ────────────
 function _renderExploreWeatherSection() {
@@ -214,13 +273,16 @@ function _renderExploreWeatherSection() {
 
   // Loading state
   if (!_lastWeatherInfo) {
-    section.innerHTML = toggleRow + `<p class="weather-tool-hint">Loading weather…</p>`;
+    section.innerHTML =
+      toggleRow + `<p class="weather-tool-hint">Loading weather…</p>`;
     _attachEmojiToggle();
     return;
   }
 
   // Province weather card
-  section.innerHTML = toggleRow + `
+  section.innerHTML =
+    toggleRow +
+    `
       <div class="weather-prov-card">
         <div class="weather-prov-header">
           <span class="weather-prov-name">${escapeHtml(_lastWeatherInfo.prov)}</span>
@@ -249,18 +311,21 @@ function _renderExploreWeatherSection() {
         </div>
       </div>
     `;
-    const lottieEl = document.getElementById("weather-lottie-el");
-    if (lottieEl) {
-      if (_currentLottieAnim) { _currentLottieAnim.destroy(); _currentLottieAnim = null; }
-      _currentLottieAnim = lottie.loadAnimation({
-        container: lottieEl,
-        path: `${_MC}/lottie/fill/${_lastWeatherInfo.slug}.json`,
-        renderer: "svg",
-        loop: true,
-        autoplay: true,
-      });
+  const lottieEl = document.getElementById("weather-lottie-el");
+  if (lottieEl) {
+    if (_currentLottieAnim) {
+      _currentLottieAnim.destroy();
+      _currentLottieAnim = null;
     }
-    _attachEmojiToggle();
+    _currentLottieAnim = lottie.loadAnimation({
+      container: lottieEl,
+      path: `${_MC}/lottie/fill/${_lastWeatherInfo.slug}.json`,
+      renderer: "svg",
+      loop: true,
+      autoplay: true,
+    });
+  }
+  _attachEmojiToggle();
 }
 
 function _attachEmojiToggle() {
@@ -278,4 +343,3 @@ function _attachEmojiToggle() {
     }
   });
 }
-
