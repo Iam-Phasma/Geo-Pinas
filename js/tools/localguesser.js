@@ -10,50 +10,62 @@
 // ── Constants ──────────────────────────────────────────────────
 const _GG_MAX_ROUNDS = 10;
 const _GG_TIMER_SECS = 45;
-const _GG_TILE_LIGHT = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
-const _GG_TILE_DARK  = "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png";
-const _GG_TILE_ATT   = "&copy; OpenStreetMap &copy; CARTO";
-const _GG_TILE_SAT   = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+const _GG_TILE_LIGHT =
+  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
+const _GG_TILE_DARK =
+  "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png";
+const _GG_TILE_ATT = "&copy; OpenStreetMap &copy; CARTO";
+const _GG_TILE_SAT =
+  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const _GG_TILE_SAT_ATT = "Tiles &copy; Esri";
 // Tight bounding box around the Philippine archipelago
-const _GG_PH_BOUNDS  = L.latLngBounds([4.5, 116.0], [21.5, 127.5]);
+const _GG_PH_BOUNDS = L.latLngBounds([4.5, 116.0], [21.5, 127.5]);
 
 function _ggTileUrl() {
   return document.documentElement.getAttribute("data-theme") === "dark"
-    ? _GG_TILE_DARK : _GG_TILE_LIGHT;
+    ? _GG_TILE_DARK
+    : _GG_TILE_LIGHT;
 }
 
 function _ggSwapTiles(map) {
   if (!map) return;
-  map.eachLayer(l => { if (l instanceof L.TileLayer) map.removeLayer(l); });
+  map.eachLayer((l) => {
+    if (l instanceof L.TileLayer) map.removeLayer(l);
+  });
   const sat = _ggSatellite;
-  L.tileLayer(sat ? _GG_TILE_SAT : _ggTileUrl(), { maxZoom: 19, attribution: sat ? _GG_TILE_SAT_ATT : _GG_TILE_ATT }).addTo(map);
+  L.tileLayer(sat ? _GG_TILE_SAT : _ggTileUrl(), {
+    maxZoom: 19,
+    attribution: sat ? _GG_TILE_SAT_ATT : _GG_TILE_ATT,
+  }).addTo(map);
 }
 
 // Watch for theme changes and swap tiles on any live map.
 new MutationObserver(() => {
   _ggSwapTiles(_ggLeafletPrev);
   _ggSwapTiles(_ggLeafletModal);
-}).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+}).observe(document.documentElement, {
+  attributes: true,
+  attributeFilter: ["data-theme"],
+});
 
 // ── State ──────────────────────────────────────────────────────
-let _ggRound         = null;
-let _ggAnswered      = false;
-let _ggScore         = { correct: 0, total: 0 };
-const _GG_HALF_DIST  = 100; // km threshold for half-point
-let _ggRoundNum      = 0;
-let _ggStreak        = 0;
-let _ggBestStreak    = 0;
-let _ggTimerSec      = _GG_TIMER_SECS;
+let _ggRound = null;
+let _ggAnswered = false;
+let _ggScore = { correct: 0, total: 0 };
+const _GG_HALF_DIST = 100; // km threshold for half-point
+let _ggRoundNum = 0;
+let _ggStreak = 0;
+let _ggBestStreak = 0;
+let _ggTimerSec = _GG_TIMER_SECS;
 let _ggTimerInterval = null;
-let _ggHistory       = [];
-let _ggHighlights    = [];
-let _ggLeafletPrev   = null;
-let _ggLeafletModal  = null;
-let _ggMode          = null;   // 'roam' | 'timed'
-let _ggMaxTimerSec   = _GG_TIMER_SECS;
-let _ggSatellite     = false;
-let _ggLinePair      = null;   // { correctId, guessId }
+let _ggHistory = [];
+let _ggHighlights = [];
+let _ggLeafletPrev = null;
+let _ggLeafletModal = null;
+let _ggMode = null; // 'roam' | 'timed'
+let _ggMaxTimerSec = _GG_TIMER_SECS;
+let _ggSatellite = false;
+let _ggLinePair = null; // { correctId, guessId }
 
 // ── SVG → Lat/Lng calibration ──────────────────────────────────
 // Linear approximation calibrated from known province centroids:
@@ -68,21 +80,26 @@ function _ggSvgToLatLng(svgX, svgY) {
 }
 
 function _ggZoomFromArea(area) {
-  if (area <    200) return 15;
-  if (area <    800) return 14;
-  if (area <   3000) return 13;
-  if (area <  10000) return 12;
-  if (area <  40000) return 11;
+  if (area < 200) return 15;
+  if (area < 800) return 14;
+  if (area < 3000) return 13;
+  if (area < 10000) return 12;
+  if (area < 40000) return 11;
   return 10;
 }
 
 // Generate a random on-land point inside provId's SVG shape,
 // then convert to lat/lng + estimate zoom.
 function _ggRandomPoint(provId) {
-  const grp = _g.selectAll(".province-group").filter(d => d.id === provId).node();
+  const grp = _g
+    .selectAll(".province-group")
+    .filter((d) => d.id === provId)
+    .node();
   if (!grp) return { lat: 12, lng: 122, z: 13 };
 
-  const m = (grp.getAttribute("transform") || "").match(/translate\(\s*([-\d.]+)[,\s]+([-\d.]+)/);
+  const m = (grp.getAttribute("transform") || "").match(
+    /translate\(\s*([-\d.]+)[,\s]+([-\d.]+)/,
+  );
   const tx = m ? +m[1] : 0;
   const ty = m ? +m[2] : 0;
 
@@ -92,8 +109,8 @@ function _ggRandomPoint(provId) {
   }
 
   const bbox = pathEl.getBBox();
-  const z    = _ggZoomFromArea(bbox.width * bbox.height);
-  const pt   = _svg.node().createSVGPoint();
+  const z = _ggZoomFromArea(bbox.width * bbox.height);
+  const pt = _svg.node().createSVGPoint();
 
   for (let i = 0; i < 80; i++) {
     const lx = bbox.x + Math.random() * bbox.width;
@@ -106,30 +123,46 @@ function _ggRandomPoint(provId) {
   }
 
   // Fallback: centre of bbox
-  return { ..._ggSvgToLatLng(tx + bbox.x + bbox.width / 2, ty + bbox.y + bbox.height / 2), z };
+  return {
+    ..._ggSvgToLatLng(
+      tx + bbox.x + bbox.width / 2,
+      ty + bbox.y + bbox.height / 2,
+    ),
+    z,
+  };
 }
 
 // Get the geographic centroid of a province (for distance calculation).
 function _ggProvCentroid(provId) {
-  const grp = _g.selectAll(".province-group").filter(d => d.id === provId).node();
+  const grp = _g
+    .selectAll(".province-group")
+    .filter((d) => d.id === provId)
+    .node();
   if (!grp) return null;
-  const m = (grp.getAttribute("transform") || "").match(/translate\(\s*([-\d.]+)[,\s]+([-\d.]+)/);
+  const m = (grp.getAttribute("transform") || "").match(
+    /translate\(\s*([-\d.]+)[,\s]+([-\d.]+)/,
+  );
   const tx = m ? +m[1] : 0;
   const ty = m ? +m[2] : 0;
   const pathEl = grp.querySelector(".province");
   if (!pathEl) return _ggSvgToLatLng(tx, ty);
   const bbox = pathEl.getBBox();
-  return _ggSvgToLatLng(tx + bbox.x + bbox.width / 2, ty + bbox.y + bbox.height / 2);
+  return _ggSvgToLatLng(
+    tx + bbox.x + bbox.width / 2,
+    ty + bbox.y + bbox.height / 2,
+  );
 }
 
 // Haversine distance in km between two lat/lng points.
 function _ggHaversine(lat1, lng1, lat2, lng2) {
-  const R  = 6371;
-  const dL = (lat2 - lat1) * Math.PI / 180;
-  const dG = (lng2 - lng1) * Math.PI / 180;
-  const a  = Math.sin(dL / 2) ** 2 +
-             Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-             Math.sin(dG / 2) ** 2;
+  const R = 6371;
+  const dL = ((lat2 - lat1) * Math.PI) / 180;
+  const dG = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dL / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dG / 2) ** 2;
   return R * 2 * Math.asin(Math.sqrt(a));
 }
 
@@ -140,13 +173,16 @@ function _ggStartTimer() {
 }
 
 function _ggStopTimer() {
-  if (_ggTimerInterval) { clearInterval(_ggTimerInterval); _ggTimerInterval = null; }
+  if (_ggTimerInterval) {
+    clearInterval(_ggTimerInterval);
+    _ggTimerInterval = null;
+  }
 }
 
 function _ggTickTimer() {
   _ggTimerSec--;
   const timerEl = document.getElementById("gg-timer");
-  const fillEl  = document.getElementById("gg-timer-fill");
+  const fillEl = document.getElementById("gg-timer-fill");
   if (timerEl) {
     timerEl.textContent = `${_ggTimerSec}s`;
     timerEl.classList.toggle("is-urgent", _ggTimerSec <= 5);
@@ -155,14 +191,23 @@ function _ggTickTimer() {
     fillEl.style.width = `${Math.max(0, (_ggTimerSec / _ggMaxTimerSec) * 100)}%`;
     fillEl.classList.toggle("is-urgent", _ggTimerSec <= 5);
   }
-  if (_ggTimerSec <= 0) { _ggStopTimer(); _ggGuess(null); }
+  if (_ggTimerSec <= 0) {
+    _ggStopTimer();
+    _ggGuess(null);
+  }
 }
 
 // ── Score pop ─────────────────────────────────────────────────
 // result: 'correct' | 'half' | 'wrong'
 function _ggScorePop(result) {
   const el = document.createElement("div");
-  el.className = "gg-score-pop " + (result === "correct" ? "is-correct" : result === "half" ? "is-half" : "is-wrong");
+  el.className =
+    "gg-score-pop " +
+    (result === "correct"
+      ? "is-correct"
+      : result === "half"
+        ? "is-half"
+        : "is-wrong");
   el.textContent = result === "correct" ? "+1" : result === "half" ? "+½" : "✕";
   document.body.appendChild(el);
   el.addEventListener("animationend", () => el.remove(), { once: true });
@@ -174,18 +219,18 @@ function _ggReset() {
   _ggDestroyModal();
   _ggClearHighlights();
   _ggStopTimer();
-  _ggRound      = null;
-  _ggAnswered   = false;
-  _ggScore      = { correct: 0, half: 0, total: 0 };
-  _ggRoundNum   = 0;
-  _ggStreak     = 0;
+  _ggRound = null;
+  _ggAnswered = false;
+  _ggScore = { correct: 0, half: 0, total: 0 };
+  _ggRoundNum = 0;
+  _ggStreak = 0;
   _ggBestStreak = 0;
-  _ggTimerSec    = _GG_TIMER_SECS;
+  _ggTimerSec = _GG_TIMER_SECS;
   _ggMaxTimerSec = _GG_TIMER_SECS;
-  _ggMode        = null;
-  _ggSatellite   = false;
-  _ggHistory    = [];
-  _ggUsed       = [];
+  _ggMode = null;
+  _ggSatellite = false;
+  _ggHistory = [];
+  _ggUsed = [];
 }
 
 let _ggUsed = [];
@@ -193,7 +238,9 @@ let _ggUsed = [];
 // ── Leaflet helpers ────────────────────────────────────────────
 function _ggDestroyPreview() {
   if (_ggLeafletPrev) {
-    try { _ggLeafletPrev.remove(); } catch {}
+    try {
+      _ggLeafletPrev.remove();
+    } catch {}
     _ggLeafletPrev = null;
   }
 }
@@ -202,13 +249,19 @@ function _ggDestroyModal() {
   const existing = document.getElementById("gg-modal-overlay");
   if (!existing) return;
   existing.classList.add("is-closing");
-  existing.addEventListener("animationend", () => {
-    if (_ggLeafletModal) {
-      try { _ggLeafletModal.remove(); } catch {}
-      _ggLeafletModal = null;
-    }
-    existing.remove();
-  }, { once: true });
+  existing.addEventListener(
+    "animationend",
+    () => {
+      if (_ggLeafletModal) {
+        try {
+          _ggLeafletModal.remove();
+        } catch {}
+        _ggLeafletModal = null;
+      }
+      existing.remove();
+    },
+    { once: true },
+  );
 }
 
 const _GG_PIN_ICON = L.divIcon({
@@ -224,7 +277,47 @@ const _GG_PIN_ICON = L.divIcon({
 
 function _ggAddPin(map, loc) {
   if (!map) return;
-  L.marker([loc.lat, loc.lng], { icon: _GG_PIN_ICON, interactive: false }).addTo(map);
+  L.marker([loc.lat, loc.lng], {
+    icon: _GG_PIN_ICON,
+    interactive: false,
+  }).addTo(map);
+}
+
+function _ggResetMapView(map, loc) {
+  if (!map || !loc) return;
+  const targetZoom = Number.isFinite(loc.z) ? loc.z : map.getZoom();
+  const targetCenter = [loc.lat, loc.lng];
+  if (typeof map.flyTo === "function") {
+    map.flyTo(targetCenter, targetZoom, {
+      animate: true,
+      duration: 1.2,
+      easeLinearity: 0.3,
+    });
+  } else {
+    map.setView(targetCenter, targetZoom);
+  }
+}
+
+function _ggAttachResetButton(map, loc) {
+  if (!map || !loc) return;
+  const container = map.getContainer();
+  if (!container || container.querySelector(".gg-reset-view-btn")) return;
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "gg-reset-view-btn";
+  btn.title = "Reset view";
+  btn.setAttribute("aria-label", "Reset view");
+  btn.innerHTML = `
+    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <path d="M8 2.4a5.6 5.6 0 1 1-4.55 2.35M8 2.4V5M3.45 4.75l1.9-2.35" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    _ggResetMapView(map, loc);
+  });
+  container.appendChild(btn);
 }
 
 function _ggInitPreview(loc) {
@@ -233,11 +326,11 @@ function _ggInitPreview(loc) {
   _ggLeafletPrev = L.map(el, {
     center: [loc.lat, loc.lng],
     zoom: loc.z,
-    zoomControl: false,
-    scrollWheelZoom: false,
-    dragging: false,
-    touchZoom: false,
-    doubleClickZoom: false,
+    zoomControl: true,
+    scrollWheelZoom: true,
+    dragging: true,
+    touchZoom: true,
+    doubleClickZoom: true,
     boxZoom: false,
     keyboard: false,
     attributionControl: false,
@@ -245,7 +338,11 @@ function _ggInitPreview(loc) {
     maxBoundsViscosity: 1.0,
   });
   const useSat = _ggSatellite;
-  L.tileLayer(useSat ? _GG_TILE_SAT : _ggTileUrl(), { maxZoom: 19, attribution: useSat ? _GG_TILE_SAT_ATT : _GG_TILE_ATT }).addTo(_ggLeafletPrev);
+  L.tileLayer(useSat ? _GG_TILE_SAT : _ggTileUrl(), {
+    maxZoom: 19,
+    attribution: useSat ? _GG_TILE_SAT_ATT : _GG_TILE_ATT,
+  }).addTo(_ggLeafletPrev);
+  _ggAttachResetButton(_ggLeafletPrev, loc);
   if (_ggAnswered) _ggAddPin(_ggLeafletPrev, loc);
 }
 
@@ -271,26 +368,43 @@ function _ggOpenModal(loc) {
       minZoom: _ggAnswered ? 5 : Math.max(5, loc.z - 2),
       zoomControl: true,
       scrollWheelZoom: true,
+      dragging: true,
+      touchZoom: true,
+      doubleClickZoom: true,
       attributionControl: true,
       maxBounds: _GG_PH_BOUNDS,
       maxBoundsViscosity: 1.0,
     });
     const useSat = _ggSatellite;
-    L.tileLayer(useSat ? _GG_TILE_SAT : _ggTileUrl(), { maxZoom: 19, attribution: useSat ? _GG_TILE_SAT_ATT : _GG_TILE_ATT }).addTo(_ggLeafletModal);
+    L.tileLayer(useSat ? _GG_TILE_SAT : _ggTileUrl(), {
+      maxZoom: 19,
+      attribution: useSat ? _GG_TILE_SAT_ATT : _GG_TILE_ATT,
+    }).addTo(_ggLeafletModal);
+    _ggAttachResetButton(_ggLeafletModal, loc);
     if (_ggAnswered) _ggAddPin(_ggLeafletModal, loc);
   }, 50);
 
-  document.getElementById("gg-modal-close").addEventListener("click", _ggDestroyModal);
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) _ggDestroyModal(); });
+  document
+    .getElementById("gg-modal-close")
+    .addEventListener("click", _ggDestroyModal);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) _ggDestroyModal();
+  });
   document.addEventListener("keydown", function onEsc(e) {
-    if (e.key === "Escape") { _ggDestroyModal(); document.removeEventListener("keydown", onEsc); }
+    if (e.key === "Escape") {
+      _ggDestroyModal();
+      document.removeEventListener("keydown", onEsc);
+    }
   });
 }
 
 // ── Highlight helpers ──────────────────────────────────────────
 function _ggClearHighlights() {
-  _ggHighlights.forEach(node => {
-    d3.select(node).classed("is-gg-correct", false).classed("is-gg-wrong", false).classed("is-gg-half", false);
+  _ggHighlights.forEach((node) => {
+    d3.select(node)
+      .classed("is-gg-correct", false)
+      .classed("is-gg-wrong", false)
+      .classed("is-gg-half", false);
   });
   _ggHighlights = [];
   _ggLinePair = null;
@@ -299,9 +413,14 @@ function _ggClearHighlights() {
 }
 
 function _ggProvSvgCenter(provId) {
-  const grp = _g.selectAll(".province-group").filter(d => d.id === provId).node();
+  const grp = _g
+    .selectAll(".province-group")
+    .filter((d) => d.id === provId)
+    .node();
   if (!grp) return null;
-  const m = (grp.getAttribute("transform") || "").match(/translate\(\s*([\d.]+)[,\s]+([\d.]+)/);
+  const m = (grp.getAttribute("transform") || "").match(
+    /translate\(\s*([\d.]+)[,\s]+([\d.]+)/,
+  );
   const tx = m ? +m[1] : 0;
   const ty = m ? +m[2] : 0;
   const pathEl = grp.querySelector(".province");
@@ -335,7 +454,10 @@ function _ggEnsureLineOverlay() {
   overlay.setAttribute("id", "gg-line-overlay");
   overlay.setAttribute("width", "100%");
   overlay.setAttribute("height", "100%");
-  overlay.setAttribute("viewBox", `0 0 ${Math.max(1, wrap.clientWidth)} ${Math.max(1, wrap.clientHeight)}`);
+  overlay.setAttribute(
+    "viewBox",
+    `0 0 ${Math.max(1, wrap.clientWidth)} ${Math.max(1, wrap.clientHeight)}`,
+  );
   overlay.setAttribute("aria-hidden", "true");
   overlay.style.position = "absolute";
   overlay.style.inset = "0";
@@ -373,7 +495,10 @@ function _ggRenderLineOverlay() {
   const wrap = document.getElementById("map-wrap");
   const overlay = _ggEnsureLineOverlay();
   if (!wrap || !overlay) return;
-  overlay.setAttribute("viewBox", `0 0 ${Math.max(1, wrap.clientWidth)} ${Math.max(1, wrap.clientHeight)}`);
+  overlay.setAttribute(
+    "viewBox",
+    `0 0 ${Math.max(1, wrap.clientWidth)} ${Math.max(1, wrap.clientHeight)}`,
+  );
 
   overlay.innerHTML = `
     <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#f97316" stroke-width="5" stroke-dasharray="7 5" opacity="0.9"></line>
@@ -389,7 +514,10 @@ function _ggSyncLineOverlay() {
 window._ggSyncLineOverlay = _ggSyncLineOverlay;
 
 function _ggHighlight(provId, cls) {
-  const node = _g.selectAll(".province-group").filter(d => d.id === provId).node();
+  const node = _g
+    .selectAll(".province-group")
+    .filter((d) => d.id === provId)
+    .node();
   if (!node) return;
   d3.select(node).classed(cls, true).raise();
   _ggHighlights.push(node);
@@ -409,28 +537,36 @@ function showGeoGuesserTool(animatePanel = false) {
 }
 
 const _GG_MODE_DESC = {
-  roam:  'No timer — take your time.',
+  roam: "No timer — take your time.",
   timed: `${_GG_TIMER_SECS}s per round.`,
 };
 
 function _ggShowIntro(animatePanel = false) {
-  let _selected = 'roam';
-  _setInfoPanelHtml(`
+  let _selected = "roam";
+  _setInfoPanelHtml(
+    `
     <button class="tool-back-btn" id="gg-intro-back">‹ Back</button>
     <div class="gg-intro">
       <div class="gg-intro-icon">📍</div>
       <h2 class="gg-intro-title">Local Guesser</h2>
       <p class="gg-intro-desc">A map view will appear — click the province on the Philippine map that you think it belongs to.</p>
       <div class="gg-map-switcher" id="gg-intro-mode-switcher">
-        ${['roam','timed'].map(m => `
-          <button class="gg-map-sw-btn${_selected === m ? ' is-active' : ''}" data-mode="${m}">${m.charAt(0).toUpperCase() + m.slice(1)}</button>
-        `).join('')}
+        ${["roam", "timed"]
+          .map(
+            (m) => `
+          <button class="gg-map-sw-btn${_selected === m ? " is-active" : ""}" data-mode="${m}">${m.charAt(0).toUpperCase() + m.slice(1)}</button>
+        `,
+          )
+          .join("")}
       </div>
       <p class="gg-mode-selected-text" id="gg-mode-label">${_GG_MODE_DESC[_selected]}</p>
       <p class="gg-intro-note">⚠️ The pin location is approximate — it's generated from a simplified SVG map, so it may not land exactly at the center of the province.</p>
       <button class="gg-start-btn" id="gg-start-btn">Start Game</button>
     </div>
-  `, "left", animatePanel);
+  `,
+    "left",
+    animatePanel,
+  );
 
   const modeSwitcher = document.getElementById("gg-intro-mode-switcher");
   _syncSwitcherPill(modeSwitcher);
@@ -441,17 +577,21 @@ function _ggShowIntro(animatePanel = false) {
     showToolsHome("right", true);
   });
 
-  document.querySelectorAll("#gg-intro-mode-switcher .gg-map-sw-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      _selected = btn.dataset.mode;
-      document.querySelectorAll("#gg-intro-mode-switcher .gg-map-sw-btn").forEach((b) => {
-        b.classList.toggle("is-active", b === btn);
+  document
+    .querySelectorAll("#gg-intro-mode-switcher .gg-map-sw-btn")
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        _selected = btn.dataset.mode;
+        document
+          .querySelectorAll("#gg-intro-mode-switcher .gg-map-sw-btn")
+          .forEach((b) => {
+            b.classList.toggle("is-active", b === btn);
+          });
+        _syncSwitcherPill(modeSwitcher);
+        const label = document.getElementById("gg-mode-label");
+        if (label) label.textContent = _GG_MODE_DESC[_selected];
       });
-      _syncSwitcherPill(modeSwitcher);
-      const label = document.getElementById("gg-mode-label");
-      if (label) label.textContent = _GG_MODE_DESC[_selected];
     });
-  });
 
   document.getElementById("gg-start-btn").addEventListener("click", () => {
     _ggMode = _selected;
@@ -475,47 +615,57 @@ function _ggNewRound() {
     return;
   }
 
-  const allIds = PROVINCES.map(p => p.id);
+  const allIds = PROVINCES.map((p) => p.id);
   if (_ggUsed.length >= allIds.length) _ggUsed = [];
 
   let provId;
-  do { provId = allIds[Math.floor(Math.random() * allIds.length)]; }
-  while (_ggUsed.includes(provId));
+  do {
+    provId = allIds[Math.floor(Math.random() * allIds.length)];
+  } while (_ggUsed.includes(provId));
   _ggUsed.push(provId);
 
   const loc = _ggRandomPoint(provId);
   _ggRound = { prov: provId, loc };
 
-  if (_ggMode === 'timed') {
-    _ggTimerSec    = _GG_TIMER_SECS;
+  if (_ggMode === "timed") {
+    _ggTimerSec = _GG_TIMER_SECS;
     _ggMaxTimerSec = _GG_TIMER_SECS;
   } else {
-    _ggTimerSec    = 0;
+    _ggTimerSec = 0;
     _ggMaxTimerSec = 1;
   }
 
   _renderGeoGuesser();
-  if (_ggMode === 'timed') _ggStartTimer();
+  if (_ggMode === "timed") _ggStartTimer();
 }
 
 function _renderGeoGuesser(result) {
   _ggDestroyPreview();
 
-  const timerPct = _ggMaxTimerSec > 1 ? (_ggTimerSec / _ggMaxTimerSec) * 100 : 0;
+  const timerPct =
+    _ggMaxTimerSec > 1 ? (_ggTimerSec / _ggMaxTimerSec) * 100 : 0;
 
   const gameBarHtml = `
     <div class="gg-game-bar">
       <span class="gg-round-label">Round <strong>${_ggRoundNum}</strong><span class="gg-round-of"> / ${_GG_MAX_ROUNDS}</span></span>
-      ${_ggStreak >= 2
-        ? `<span class="gg-streak${_ggStreak >= 4 ? ' is-hot' : ''}">🔥 ${_ggStreak}</span>`
-        : '<span></span>'}
-      ${_ggMode === 'timed'
-        ? `<span class="gg-timer${!result && _ggTimerSec <= 5 ? ' is-urgent' : ''}" id="gg-timer">${result ? '\u2014' : `${_ggTimerSec}s`}</span>`
-        : '<span></span>'}
+      ${
+        _ggStreak >= 2
+          ? `<span class="gg-streak${_ggStreak >= 4 ? " is-hot" : ""}">🔥 ${_ggStreak}</span>`
+          : "<span></span>"
+      }
+      ${
+        _ggMode === "timed"
+          ? `<span class="gg-timer${!result && _ggTimerSec <= 5 ? " is-urgent" : ""}" id="gg-timer">${result ? "\u2014" : `${_ggTimerSec}s`}</span>`
+          : "<span></span>"
+      }
     </div>
-    ${_ggMode === 'timed' ? `<div class="gg-timer-bar">
+    ${
+      _ggMode === "timed"
+        ? `<div class="gg-timer-bar">
       <div class="gg-timer-fill" id="gg-timer-fill" style="width:${result ? 0 : timerPct}%"></div>
-    </div>` : ''}`;
+    </div>`
+        : ""
+    }`;
 
   const scoreHtml = `
     <div class="gg-score-bar">
@@ -525,11 +675,12 @@ function _renderGeoGuesser(result) {
 
   let resultHtml;
   if (result) {
-    const distHtml = result.dist != null
-      ? `<span class="gg-distance">\u2248 ${Math.round(result.dist).toLocaleString()} km away</span>`
-      : '';
-    const isLast   = _ggRoundNum >= _GG_MAX_ROUNDS;
-    const nextLabel = isLast ? 'See Results \u2192' : 'Next Round \u2192';
+    const distHtml =
+      result.dist != null
+        ? `<span class="gg-distance">\u2248 ${Math.round(result.dist).toLocaleString()} km away</span>`
+        : "";
+    const isLast = _ggRoundNum >= _GG_MAX_ROUNDS;
+    const nextLabel = isLast ? "See Results \u2192" : "Next Round \u2192";
     if (result.timedOut) {
       resultHtml = `
         <div class="gg-result-card is-wrong">
@@ -541,12 +692,13 @@ function _renderGeoGuesser(result) {
         <button class="gg-next-btn" id="gg-next-btn">${nextLabel}</button>`;
     } else {
       resultHtml = `
-        <div class="gg-result-card ${result.correct ? 'is-correct' : 'is-wrong'}">
-          <span class="gg-result-icon">${result.correct ? '\u2705' : '\u274C'}</span>
+        <div class="gg-result-card ${result.correct ? "is-correct" : "is-wrong"}">
+          <span class="gg-result-icon">${result.correct ? "\u2705" : "\u274C"}</span>
           <div>
-            <span class="gg-result-text">${result.correct
-              ? `Correct! It\u2019s <strong>${escapeHtml(result.prov)}</strong>.`
-              : `It was <strong>${escapeHtml(result.prov)}</strong>.`
+            <span class="gg-result-text">${
+              result.correct
+                ? `Correct! It\u2019s <strong>${escapeHtml(result.prov)}</strong>.`
+                : `It was <strong>${escapeHtml(result.prov)}</strong>.`
             }</span>
             ${distHtml}
           </div>
@@ -557,7 +709,8 @@ function _renderGeoGuesser(result) {
     resultHtml = `<p class="gg-hint">Click a province on the map to guess.</p>`;
   }
 
-  _setInfoPanelHtml(`
+  _setInfoPanelHtml(
+    `
     <button class="tool-back-btn" id="gg-back">\u2039 Back</button>
     ${gameBarHtml}
     ${scoreHtml}
@@ -570,11 +723,14 @@ function _renderGeoGuesser(result) {
       </button>
     </div>
     <div class="gg-map-switcher" id="gg-map-switcher">
-      <button class="gg-map-sw-btn${!_ggSatellite ? ' is-active' : ''}" data-sat="0">Default</button>
-      <button class="gg-map-sw-btn${_ggSatellite ? ' is-active' : ''}" data-sat="1">Satellite</button>
+      <button class="gg-map-sw-btn${!_ggSatellite ? " is-active" : ""}" data-sat="0">Default</button>
+      <button class="gg-map-sw-btn${_ggSatellite ? " is-active" : ""}" data-sat="1">Satellite</button>
     </div>
     ${resultHtml}
-  `, "left", false);
+  `,
+    "left",
+    false,
+  );
 
   setTimeout(() => _ggInitPreview(_ggRound.loc), 0);
 
@@ -583,16 +739,27 @@ function _renderGeoGuesser(result) {
     _activeToolId = null;
     showToolsHome("right", true);
   });
-  document.getElementById("gg-expand-btn").addEventListener("click", () => _ggOpenModal(_ggRound.loc));
-  document.getElementById("gg-map-preview").addEventListener("click", () => _ggOpenModal(_ggRound.loc));
-  document.getElementById("gg-next-btn")?.addEventListener("click", () => { _ggDestroyModal(); _ggNewRound(); });
+  document
+    .getElementById("gg-expand-btn")
+    .addEventListener("click", () => _ggOpenModal(_ggRound.loc));
+  document
+    .getElementById("gg-map-preview")
+    .addEventListener("click", () => _ggOpenModal(_ggRound.loc));
+  document.getElementById("gg-next-btn")?.addEventListener("click", () => {
+    _ggDestroyModal();
+    _ggNewRound();
+  });
   const tileSwitcher = document.getElementById("gg-map-switcher");
   _syncSwitcherPill(tileSwitcher);
-  document.querySelectorAll(".gg-map-sw-btn").forEach(btn => {
+  document.querySelectorAll(".gg-map-sw-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       _ggSatellite = btn.dataset.sat === "1";
       _ggSwapTiles(_ggLeafletPrev);
-      document.querySelectorAll(".gg-map-sw-btn").forEach(b => b.classList.toggle("is-active", b.dataset.sat === (btn.dataset.sat)));
+      document
+        .querySelectorAll(".gg-map-sw-btn")
+        .forEach((b) =>
+          b.classList.toggle("is-active", b.dataset.sat === btn.dataset.sat),
+        );
       _syncSwitcherPill(tileSwitcher);
     });
   });
@@ -604,34 +771,53 @@ function _ggShowSummary() {
   _ggStopTimer();
   _ggClearHighlights();
 
-  const total   = _ggHistory.length;
+  const total = _ggHistory.length;
   const correct = _ggScore.correct;
-  const pct     = total ? Math.round(correct / total * 100) : 0;
-  const grade   = pct >= 90 ? '\uD83C\uDFC6' : pct >= 70 ? '\uD83C\uDF89' : pct >= 50 ? '\uD83D\uDC4D' : '\uD83D\uDCDA';
-  const tag     = pct >= 90 ? 'Expert!'
-                : pct >= 70 ? 'Great job!'
-                : pct >= 50 ? 'Not bad!'
-                : 'Keep practicing!';
+  const pct = total ? Math.round((correct / total) * 100) : 0;
+  const grade =
+    pct >= 90
+      ? "\uD83C\uDFC6"
+      : pct >= 70
+        ? "\uD83C\uDF89"
+        : pct >= 50
+          ? "\uD83D\uDC4D"
+          : "\uD83D\uDCDA";
+  const tag =
+    pct >= 90
+      ? "Expert!"
+      : pct >= 70
+        ? "Great job!"
+        : pct >= 50
+          ? "Not bad!"
+          : "Keep practicing!";
 
-  const rows = _ggHistory.map((h, i) => `
-    <div class="gg-summary-row ${h.correct ? 'is-correct' : h.half ? 'is-half' : 'is-wrong'}">
+  const rows = _ggHistory
+    .map(
+      (h, i) => `
+    <div class="gg-summary-row ${h.correct ? "is-correct" : h.half ? "is-half" : "is-wrong"}">
       <span class="gg-summary-num">${i + 1}</span>
-      <span class="gg-summary-icon">${h.correct ? '\u2705' : h.half ? '\u00bd' : h.timedOut ? '\u23F0' : '\u274C'}</span>
+      <span class="gg-summary-icon">${h.correct ? "\u2705" : h.half ? "\u00bd" : h.timedOut ? "\u23F0" : "\u274C"}</span>
       <span class="gg-summary-prov">${escapeHtml(h.prov)}</span>
-      ${h.dist != null ? `<span class="gg-summary-dist">\u2248 ${Math.round(h.dist).toLocaleString()} km</span>` : ''}
-    </div>`).join('');
+      ${h.dist != null ? `<span class="gg-summary-dist">\u2248 ${Math.round(h.dist).toLocaleString()} km</span>` : ""}
+    </div>`,
+    )
+    .join("");
 
-  _setInfoPanelHtml(`
+  _setInfoPanelHtml(
+    `
     <button class="tool-back-btn" id="gg-back">\u2039 Back</button>
     <div class="gg-summary">
       <div class="gg-summary-grade">${grade}</div>
       <div class="gg-summary-score">${correct % 1 === 0 ? correct : correct.toFixed(1)} <span class="gg-summary-total">/ ${total}</span></div>
       <div class="gg-summary-tag">${tag}</div>
-      ${_ggBestStreak >= 2 ? `<div class="gg-summary-streak">\uD83D\uDD25 Best streak: ${_ggBestStreak}</div>` : ''}
+      ${_ggBestStreak >= 2 ? `<div class="gg-summary-streak">\uD83D\uDD25 Best streak: ${_ggBestStreak}</div>` : ""}
       <div class="gg-summary-list">${rows}</div>
       <button class="gg-play-again-btn" id="gg-play-again">Play Again</button>
     </div>
-  `, "left", false);
+  `,
+    "left",
+    false,
+  );
 
   document.getElementById("gg-back").addEventListener("click", () => {
     _ggReset();
@@ -650,13 +836,13 @@ function _ggGuess(guessProvId) {
   _ggStopTimer();
 
   const timedOut = guessProvId === null;
-  const correct  = !timedOut && guessProvId === _ggRound.prov;
+  const correct = !timedOut && guessProvId === _ggRound.prov;
 
   let dist = null;
   let half = false;
   if (!correct && !timedOut) {
     const correctC = _ggProvCentroid(_ggRound.prov);
-    const guessC   = _ggProvCentroid(guessProvId);
+    const guessC = _ggProvCentroid(guessProvId);
     if (correctC && guessC) {
       dist = _ggHaversine(guessC.lat, guessC.lng, correctC.lat, correctC.lng);
       half = dist <= _GG_HALF_DIST;
@@ -676,7 +862,14 @@ function _ggGuess(guessProvId) {
     _ggStreak = 0;
   }
 
-  _ggHistory.push({ correct, half, timedOut, prov: _ggRound.prov, guess: guessProvId, dist });
+  _ggHistory.push({
+    correct,
+    half,
+    timedOut,
+    prov: _ggRound.prov,
+    guess: guessProvId,
+    dist,
+  });
 
   _ggHighlight(_ggRound.prov, "is-gg-correct");
   if (!timedOut && !correct) {
@@ -689,7 +882,10 @@ function _ggGuess(guessProvId) {
   _renderGeoGuesser({ correct, half, timedOut, prov: _ggRound.prov, dist });
 
   // Auto-open the panel on mobile so the result is immediately visible
-  if (window.innerWidth <= 640 && typeof window._openMobileSheet === "function") {
+  if (
+    window.innerWidth <= 640 &&
+    typeof window._openMobileSheet === "function"
+  ) {
     window._openMobileSheet();
   }
 }
