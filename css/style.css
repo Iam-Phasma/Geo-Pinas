@@ -3889,9 +3889,9 @@ html.no-sea-texture #ocean-pattern {
   flex-direction: column;
   gap: 4px;
   margin-bottom: 14px;
-  max-height: 280px;
-  overflow-y: auto;
-  padding-right: 4px;
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
@@ -3927,6 +3927,14 @@ html.no-sea-texture #ocean-pattern {
   font-size: 0.72rem;
   opacity: 0.72;
   white-space: nowrap;
+}
+
+@media (max-width: 700px), (max-height: 760px) {
+  .gg-summary-list {
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
 }
 
 .gg-play-again-btn {
