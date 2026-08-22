@@ -616,7 +616,7 @@ function showAboutPanel(direction = "left", animatePanel = false) {
           <div class="about-app-tagline">Interactive Philippine Province Map</div>
         </div>
       </div>
-      <p class="about-desc">Terralyft is a playful way to explore the Philippines — one province at a time, with weather, travel tracking, and a few geography challenges along the way.</p>
+      <p class="about-desc">Terralyft is a playful way to explore and learn simple facts about the Philippines.</p>
 
       <div class="about-section-title">Features</div>
       <ul class="about-list">
@@ -626,6 +626,7 @@ function showAboutPanel(direction = "left", animatePanel = false) {
         <li><strong>Travel Level</strong> — track how far you’ve gone and how much of the country you’ve seen</li>
         <li><strong>Travel Postcard</strong> — generate a downloadable postcard snapshot of your map progress</li>
         <li><strong>Province Quiz</strong> — test your knowledge of the Philippines’ geography</li>
+        <li><strong>Name the Map</strong> — race to name every province of the Philippines</li>
         <li><strong>Geo Guesser</strong> — identify provinces from their map shapes</li>
         <li><strong>Roulette</strong> — spin for a random province to visit next</li>
         <li>Custom map styling: sea color, land tone, border color, dark mode, and 3D tilt</li>

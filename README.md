@@ -12,6 +12,7 @@ Open: https://iam-phasma.github.io/Geo-Pinas/
 - **Travel Level** — track how well you've visited each province, with score, progress bar, achievements, and a downloadable travel postcard snapshot
 - **Travel Postcard Snap** — generates a stamp-style postcard image with your map, score, legend, compass overlay, and date — downloadable as PNG
 - **Province Quiz** — test your knowledge of Philippine provinces
+- **Name the Map** — type in province names and light up each correct match as you go
 - **Geo Guesser** — guess the province from the map shape
 - **Roulette** — spin to pick a random province
 - Map customization: sea color, land color, border color, sea texture toggle, province borders toggle
