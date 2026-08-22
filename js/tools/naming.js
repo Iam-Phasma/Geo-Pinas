@@ -11,6 +11,7 @@ let _namingGuessedKeys = new Set();
 let _namingGuessedList = []; // { type, id } newest-first
 let _namingStartTime = null;
 let _namingTimer = null;
+let _namingIslandTotals = null;
 
 // Region → island group, used to organize the found-provinces list
 const _NAMING_REGION_ISLAND = {
@@ -50,9 +51,13 @@ function _namingBuildTargets() {
   if (_namingTargets) return _namingTargets;
   const provinces = Object.keys(PROVINCE_REGION);
   const aliasToTarget = new Map();
+  const islandTotals = new Map(_NAMING_ISLAND_ORDER.map((g) => [g, 0]));
   provinces.forEach((p) => {
     aliasToTarget.set(_namingNormalize(p), { type: "province", id: p });
+    const island = _namingIslandGroup(p);
+    islandTotals.set(island, (islandTotals.get(island) || 0) + 1);
   });
+  _namingIslandTotals = islandTotals;
   _namingTargets = { provinces, aliasToTarget, total: provinces.length };
   return _namingTargets;
 }
@@ -82,10 +87,26 @@ function _namingReset() {
 // so they don't have to click back into the field between guesses.
 function _namingHandleGlobalKeydown(e) {
   if (_activeToolId !== "naming") return;
-  const input = document.getElementById("naming-input");
+  const input = _namingPreferredInput();
   if (!input || document.activeElement === input) return;
   if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return;
   input.focus();
+}
+
+function _namingPreferredInput() {
+  const desktopInput = document.getElementById("naming-input");
+  const mobileInput = document.getElementById("naming-mobile-input");
+  if (window.matchMedia("(max-width: 640px)").matches && mobileInput) {
+    return mobileInput;
+  }
+  return desktopInput || mobileInput;
+}
+
+function _namingGetInputs() {
+  return [
+    document.getElementById("naming-input"),
+    document.getElementById("naming-mobile-input"),
+  ].filter(Boolean);
 }
 
 function _namingBindAutoFocus() {
@@ -96,28 +117,40 @@ function _namingBindAutoFocus() {
 
 function _namingShowInputWrap() {
   const wrap = document.getElementById("naming-input-wrap");
-  const input = document.getElementById("naming-input");
-  if (!wrap || !input) return;
-  wrap.classList.add("is-active");
-  wrap.setAttribute("aria-hidden", "false");
-  input.value = "";
-  input.addEventListener("keydown", _namingHandleKeydown);
-  input.addEventListener("input", _namingHandleInput);
+  if (wrap) {
+    wrap.classList.add("is-active");
+    wrap.setAttribute("aria-hidden", "false");
+  }
+
+  const inputs = _namingGetInputs();
+  if (!inputs.length) return;
+  inputs.forEach((input) => {
+    input.value = "";
+    input.addEventListener("keydown", _namingHandleKeydown);
+    input.addEventListener("input", _namingHandleInput);
+  });
+
   _namingInitDrag();
   _namingBindAutoFocus();
   _namingUpdateProgress();
-  setTimeout(() => input.focus(), 50);
+  setTimeout(() => {
+    const input = _namingPreferredInput();
+    if (input) input.focus();
+  }, 50);
 }
 
 function _namingHideInputWrap() {
   const wrap = document.getElementById("naming-input-wrap");
-  const input = document.getElementById("naming-input");
-  if (!wrap || !input) return;
-  wrap.classList.remove("is-active");
-  wrap.setAttribute("aria-hidden", "true");
-  input.removeEventListener("keydown", _namingHandleKeydown);
-  input.removeEventListener("input", _namingHandleInput);
-  input.value = "";
+  if (wrap) {
+    wrap.classList.remove("is-active");
+    wrap.setAttribute("aria-hidden", "true");
+  }
+
+  _namingGetInputs().forEach((input) => {
+    input.removeEventListener("keydown", _namingHandleKeydown);
+    input.removeEventListener("input", _namingHandleInput);
+    input.value = "";
+  });
 }
 
 function _namingFormatTime(elapsed) {
@@ -196,6 +229,7 @@ function _namingUpdateProgress() {
 }
 
 function _namingRenderFoundList() {
+  _namingBuildTargets();
   const list = document.getElementById("naming-found-list");
   if (!list) return;
 
@@ -213,7 +247,7 @@ function _namingRenderFoundList() {
         .join("");
       return `
         <div class="naming-group">
-          <div class="naming-group-title">${group} <span class="naming-group-count">${grouped.get(group).length}</span></div>
+          <div class="naming-group-title">${group} <span class="naming-group-count">${grouped.get(group).length}/${_namingIslandTotals.get(group) || 0}</span></div>
           <div class="naming-group-chips">${chips}</div>
         </div>
       `;
@@ -269,7 +303,17 @@ function _namingRenderPanel(animatePanel = false) {
       <span class="quiz-score-label">Found</span>
       <span class="quiz-score-val" id="naming-score-val">${_namingGuessedKeys.size} / ${t.total}</span>
     </div>
-    <p class="naming-hint">Type a province name in the box on the top-left of the map, then press Enter — matching provinces light up instantly.</p>
+    <div class="naming-mobile-input-wrap">
+      <input
+        type="text"
+        id="naming-mobile-input"
+        class="naming-input naming-mobile-input"
+        placeholder="Type a province name..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
+    <p class="naming-hint">Type a province name and press Enter — matching provinces light up instantly.</p>
     <div class="naming-found-list" id="naming-found-list"></div>
   `,
     "left",

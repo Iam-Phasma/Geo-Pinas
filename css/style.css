@@ -3189,6 +3189,9 @@ html.no-borders .province-group.is-tl-passed .province {
   .naming-input-wrap {
     display: none !important;
   }
+  .naming-mobile-input-wrap {
+    display: block;
+  }
 }
 
 .naming-hint {
@@ -3196,6 +3199,21 @@ html.no-borders .province-group.is-tl-passed .province {
   color: var(--text-muted);
   line-height: 1.45;
   margin: 0 0 14px;
+}
+.naming-mobile-input-wrap {
+  display: none;
+  margin: 0 0 10px;
+}
+.naming-mobile-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+@media (max-width: 640px) {
+  .naming-mobile-input-wrap {
+    display: block !important;
+  }
 }
 .naming-found-list {
   display: flex;
