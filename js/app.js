@@ -156,7 +156,7 @@ function _getProvinceStroke(groupEl) {
   if (_activeToolId === "naming") return "#000000";
   return document.documentElement.classList.contains("no-borders")
     ? _getProvinceFill(groupEl)
-    : _getCssColor("--province-border", "#95ffc1");
+    : _getCssColor("--province-border", "#000000");
 }
 
 function clearHoveredProvince() {

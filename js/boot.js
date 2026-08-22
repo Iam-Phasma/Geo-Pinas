@@ -190,7 +190,7 @@
   });
 
   // ── Border color swatches ─────────────────────────────────────
-  const BORDER_DEFAULT = "#0a3d1f";
+  const BORDER_DEFAULT = "#000000";
   const _initBorderColor = localStorage.getItem("terralyft-border-color") ?? BORDER_DEFAULT;
   document.documentElement.style.setProperty("--province-border", _initBorderColor);
   document.querySelectorAll(".sp-swatch").forEach(s => {

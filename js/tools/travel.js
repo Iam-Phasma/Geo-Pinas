@@ -354,7 +354,7 @@ function _snapTravel() {
   const getVar      = (v) => rootStyle.getPropertyValue(v).trim();
   const oceanColor  = getVar("--ocean")          || "#1b3a6b";
   const provFill    = getVar("--province-fill")  || "#166e3e";
-  const provBorder  = getVar("--province-border")|| "#95ffc1";
+  const provBorder  = getVar("--province-border")|| "#000000";
 
   const COLOR_MAP = {};
   TRAVEL_LEVELS.forEach(l => { COLOR_MAP[l.id] = l.color; });
