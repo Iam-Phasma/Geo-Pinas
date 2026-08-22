@@ -1322,6 +1322,20 @@ html.no-borders .province-group.is-tl-passed .province {
   color: var(--accent);
 }
 
+.naming-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.naming-timer {
+  padding: 7px 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
 /* ── About button ──────────────────────────────────────── */
 .about-btn {
   display: block;

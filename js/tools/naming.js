@@ -10,6 +10,7 @@ let _namingTargets = null;
 let _namingGuessedKeys = new Set();
 let _namingGuessedList = []; // { type, id } newest-first
 let _namingStartTime = null;
+let _namingTimer = null;
 
 // Region → island group, used to organize the found-provinces list
 const _NAMING_REGION_ISLAND = {
@@ -69,6 +70,9 @@ function _namingClearFound() {
 }
 
 function _namingReset() {
+  if (_namingTimer) clearInterval(_namingTimer);
+  _namingTimer = null;
+  _namingStartTime = null;
   _namingClearFound();
   _namingHideInputWrap();
   document.documentElement.classList.remove("naming-active");
@@ -98,7 +102,7 @@ function _namingShowInputWrap() {
   wrap.setAttribute("aria-hidden", "false");
   input.value = "";
   input.addEventListener("keydown", _namingHandleKeydown);
-  input.addEventListener("input", _namingClearInvalid);
+  input.addEventListener("input", _namingHandleInput);
   _namingInitDrag();
   _namingBindAutoFocus();
   _namingUpdateProgress();
@@ -112,8 +116,32 @@ function _namingHideInputWrap() {
   wrap.classList.remove("is-active");
   wrap.setAttribute("aria-hidden", "true");
   input.removeEventListener("keydown", _namingHandleKeydown);
-  input.removeEventListener("input", _namingClearInvalid);
+  input.removeEventListener("input", _namingHandleInput);
   input.value = "";
+}
+
+function _namingFormatTime(elapsed) {
+  const mins = Math.floor(elapsed / 60);
+  const secs = String(elapsed % 60).padStart(2, "0");
+  return `${String(mins).padStart(2, "0")}:${secs}`;
+}
+
+function _namingUpdateTimer() {
+  const timer = document.getElementById("naming-timer");
+  if (!timer || _namingStartTime === null) return;
+  timer.textContent = _namingFormatTime(Math.floor((Date.now() - _namingStartTime) / 1000));
+}
+
+function _namingStartTimer() {
+  if (_namingStartTime !== null) return;
+  _namingStartTime = Date.now();
+  _namingUpdateTimer();
+  _namingTimer = setInterval(_namingUpdateTimer, 1000);
+}
+
+function _namingHandleInput(e) {
+  _namingClearInvalid(e);
+  if (e.target.value.length > 0) _namingStartTimer();
 }
 
 function _namingInitDrag() {
@@ -233,7 +261,10 @@ function _namingRenderPanel(animatePanel = false) {
   setSidebarTitle("Name the Map");
   _setInfoPanelHtml(
     `
-    <button class="tool-back-btn" id="naming-back">‹ Quit</button>
+    <div class="naming-top-row">
+      <button class="tool-back-btn" id="naming-back">‹ Quit</button>
+      <span class="naming-timer" id="naming-timer" aria-label="Elapsed time">00:00</span>
+    </div>
     <div class="quiz-score-bar">
       <span class="quiz-score-label">Found</span>
       <span class="quiz-score-val" id="naming-score-val">${_namingGuessedKeys.size} / ${t.total}</span>
@@ -252,18 +283,24 @@ function _namingRenderPanel(animatePanel = false) {
 }
 
 function _namingComplete() {
-  const elapsed = Math.max(0, Math.round((Date.now() - _namingStartTime) / 1000));
-  const mins = Math.floor(elapsed / 60);
-  const secs = String(elapsed % 60).padStart(2, "0");
+  const elapsed = _namingStartTime === null
+    ? 0
+    : Math.max(0, Math.round((Date.now() - _namingStartTime) / 1000));
+  const elapsedLabel = _namingFormatTime(elapsed);
+  if (_namingTimer) clearInterval(_namingTimer);
+  _namingTimer = null;
   _namingHideInputWrap();
   setSidebarTitle("Name the Map");
   _setInfoPanelHtml(
     `
-    <button class="tool-back-btn" id="naming-back">‹ Quit</button>
+    <div class="naming-top-row">
+      <button class="tool-back-btn" id="naming-back">‹ Quit</button>
+      <span class="naming-timer" aria-label="Elapsed time">${elapsedLabel}</span>
+    </div>
     <div class="quiz-summary">
       <div class="quiz-summary-grade">🏆</div>
       <div class="quiz-summary-tag">All provinces named!</div>
-      <div class="quiz-summary-score">${mins}:${secs}</div>
+      <div class="quiz-summary-score">${elapsedLabel}</div>
       <button class="quiz-play-again-btn" id="naming-play-again">Play Again</button>
     </div>
   `,
@@ -288,7 +325,7 @@ function showNamingTool(animatePanel = false) {
   if (typeof window._resetZoom === "function") window._resetZoom();
   document.documentElement.classList.add("naming-active");
   _namingClearFound();
-  _namingStartTime = Date.now();
+  _namingStartTime = null;
   requestMapRender();
   _namingRenderPanel(animatePanel);
   _namingShowInputWrap();
