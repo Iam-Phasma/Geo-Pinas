@@ -3101,6 +3101,106 @@ html.no-borders .province-group.is-tl-passed .province {
   border-radius: 4px;
 }
 
+/* ── Name the Map: type-to-guess input (draggable, over map) ── */
+.naming-input-wrap {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 20;
+  display: none;
+  align-items: stretch;
+  gap: 6px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+.naming-input-wrap.is-active {
+  display: flex;
+}
+.naming-drag-handle {
+  flex: 0 0 auto;
+  width: 24px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+}
+.naming-drag-handle:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.naming-drag-handle:active {
+  cursor: grabbing;
+}
+.naming-input {
+  width: 240px;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 8px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.95rem;
+  outline: none;
+}
+.naming-input:focus {
+  background: var(--accent-light);
+}
+.naming-input::placeholder {
+  color: var(--text-muted);
+}
+.naming-input--invalid {
+  animation: naming-shake 0.32s ease;
+  background: #fee2e2 !important;
+}
+@keyframes naming-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+/* Hide the settings panel and tilt control entirely while the naming game is active */
+.naming-active #settings-trigger,
+.naming-active #tilt-controls {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .naming-input-wrap {
+    display: none !important;
+  }
+}
+
+.naming-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0 0 14px;
+}
+.naming-found-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.naming-chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+}
+[data-theme="dark"] .naming-chip {
+  background: #14532d;
+  color: #bbf7d0;
+}
+
 /* ── Settings trigger & panel ──────────────────────────── */
 #settings-trigger {
   position: absolute;

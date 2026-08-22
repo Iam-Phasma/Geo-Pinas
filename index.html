@@ -95,6 +95,12 @@
             </button>
           </div>
 
+          <!-- Name the Map game: type-to-guess input (top-left, desktop only, draggable) -->
+          <div id="naming-input-wrap" class="naming-input-wrap" aria-hidden="true">
+            <button type="button" id="naming-drag-handle" class="naming-drag-handle" aria-label="Move input" title="Drag to move">⠿</button>
+            <input type="text" id="naming-input" class="naming-input" placeholder="Type a province name…" autocomplete="off" spellcheck="false" />
+          </div>
+
           <!-- Settings panel (top-right, appears on cursor proximity) -->
           <div id="settings-trigger" aria-label="Map settings">
             <button id="settings-btn" aria-label="Map Settings" title="Map Settings">
@@ -213,6 +219,7 @@
     <script src="js/tools/travel.js" defer></script>
     <script src="js/tools/roulette.js" defer></script>
     <script src="js/tools/localguesser.js" defer></script>
+    <script src="js/tools/naming.js" defer></script>
     <!-- Boot: runs last, after all tools are defined -->
     <script src="js/boot.js" defer></script>
   </body>

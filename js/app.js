@@ -132,6 +132,11 @@ function _getCssColor(varName, fallback) {
 
 function _getProvinceFill(groupEl) {
   const classList = groupEl.classList;
+  if (_activeToolId === "naming") {
+    return classList.contains("is-naming-found")
+      ? _getCssColor("--province-fill", "#166e3e")
+      : "#ffffff";
+  }
   if (classList.contains("is-selected"))
     return _getCssColor("--province-selected", "#ecd344");
   if (classList.contains("is-hovered"))
@@ -148,6 +153,7 @@ function _getProvinceFill(groupEl) {
 }
 
 function _getProvinceStroke(groupEl) {
+  if (_activeToolId === "naming") return "#000000";
   return document.documentElement.classList.contains("no-borders")
     ? _getProvinceFill(groupEl)
     : _getCssColor("--province-border", "#95ffc1");
@@ -502,6 +508,13 @@ const GAMES = [
     title: "Province Quiz",
     desc: "Test how well you know Philippine geography.",
   },
+  {
+    id: "naming",
+    icon: "📝",
+    color: "#dcfce7",
+    title: "Name the Map",
+    desc: "Name every province on the map.",
+  },
 ];
 
 function showGamesTool(direction = "left", animatePanel = false) {
@@ -512,6 +525,7 @@ function showGamesTool(direction = "left", animatePanel = false) {
   _clearTravelColors();
   _rouletteClearHighlight();
   _ggClearHighlights();
+  if (typeof _namingReset === "function") _namingReset();
   setSidebarTitle("Games");
   _setInfoPanelHtml(`
     <button class="tool-back-btn" id="games-back">‹ Back</button>
@@ -535,6 +549,7 @@ function showGamesTool(direction = "left", animatePanel = false) {
     card.addEventListener("click", () => {
       if (card.dataset.tool === "quiz") showQuizTool(true);
       else if (card.dataset.tool === "geoguesser") showGeoGuesserTool(true);
+      else if (card.dataset.tool === "naming") showNamingTool(true);
     });
   });
 }
@@ -547,6 +562,7 @@ function showToolsHome(direction = "left", animatePanel = false) {
   _clearTravelColors();
   _rouletteClearHighlight();
   _ggClearHighlights();
+  if (typeof _namingReset === "function") _namingReset();
   setSidebarTitle("Tools");
   _setInfoPanelHtml(
     `
@@ -939,6 +955,12 @@ function onMouseMove(event, d) {
     requestMapRender();
   }
 
+  // Hide province name tooltip during the naming game to avoid giving away the answer.
+  if (_activeToolId === "naming") {
+    tooltip.classList.remove("is-visible");
+    return;
+  }
+
   tooltip.textContent = d.id;
   const wrap = document.getElementById("map-wrap");
   const rect = wrap.getBoundingClientRect();
@@ -995,8 +1017,8 @@ function onProvinceClick(event, d) {
   }
   event.stopPropagation();
 
-  // Quiz and Roulette manage province visuals themselves; ignore manual map selection.
-  if (_activeToolId === "quiz" || _activeToolId === "roulette") {
+  // Quiz, Roulette, and Naming manage province visuals themselves; ignore manual map selection.
+  if (_activeToolId === "quiz" || _activeToolId === "roulette" || _activeToolId === "naming") {
     return;
   }
 
