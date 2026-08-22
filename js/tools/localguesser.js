@@ -567,6 +567,10 @@ function _ggHighlight(provId, cls) {
 // ── Public API ─────────────────────────────────────────────────
 function showGeoGuesserTool(animatePanel = false) {
   _activeToolId = "geoguesser";
+  if (typeof window._resetTilt === "function") window._resetTilt();
+  if (typeof window._setTiltControlsVisible === "function") {
+    window._setTiltControlsVisible(false);
+  }
   _clearQuizHighlight();
   clearWeatherEmoji();
   _clearTravelColors();

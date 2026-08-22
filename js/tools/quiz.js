@@ -26,6 +26,10 @@ function showQuizTool(animatePanel = false) {
   _quizScore   = { correct: 0, total: 0 };
   _quizHistory = [];
   _quizUsed    = [];
+  if (typeof window._setTiltControlsVisible === "function") {
+    window._setTiltControlsVisible(true);
+  }
+  if (typeof window._resetTilt === "function") window._resetTilt();
   if (_selectedGroup) {
     d3.select(_selectedGroup).classed("is-selected", false);
     _selectedGroup = null;

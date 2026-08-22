@@ -521,6 +521,9 @@ const GAMES = [
 function showGamesTool(direction = "left", animatePanel = false) {
   _activeToolId = null;
   _exploreTab = "info";
+  if (typeof window._setTiltControlsVisible === "function") {
+    window._setTiltControlsVisible(true);
+  }
   clearWeatherEmoji();
   _clearQuizHighlight();
   _clearTravelColors();
@@ -558,6 +561,9 @@ function showGamesTool(direction = "left", animatePanel = false) {
 function showToolsHome(direction = "left", animatePanel = false) {
   _activeToolId = null;
   _exploreTab = "info";
+  if (typeof window._setTiltControlsVisible === "function") {
+    window._setTiltControlsVisible(true);
+  }
   clearWeatherEmoji();
   _clearQuizHighlight();
   _clearTravelColors();
@@ -901,6 +907,7 @@ function initMap() {
   const tiltFrame = document.getElementById("map-tilt-frame");
   const tiltSlider = document.getElementById("tilt-slider");
   const tiltResetBtn = document.getElementById("tilt-reset");
+  const tiltControls = document.getElementById("tilt-controls");
 
   function applyTilt(deg) {
     tiltFrame.style.transform = `rotateX(${deg}deg)`;
@@ -923,6 +930,13 @@ function initMap() {
   window._resetTilt = () => {
     tiltSlider.value = 0;
     applyTilt(0);
+  };
+
+  // Exposed so tools can hide/show tilt controls contextually.
+  window._setTiltControlsVisible = (isVisible) => {
+    if (!tiltControls) return;
+    tiltControls.style.display = isVisible ? "" : "none";
+    tiltControls.setAttribute("aria-hidden", isVisible ? "false" : "true");
   };
 
   window.addEventListener("resize", () => {
