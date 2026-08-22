@@ -464,13 +464,6 @@ const TOOLS = [
     desc: "Search and browse all 81 provinces by region.",
   },
   {
-    id: "geoguesser",
-    icon: "📍",
-    color: "#fce7f3",
-    title: "Local Guesser",
-    desc: "Guess the province from a map view.",
-  },
-  {
     id: "travel",
     icon: "✈️",
     color: "#f0fdf4",
@@ -485,6 +478,24 @@ const TOOLS = [
     desc: "Spin to randomly pick a province.",
   },
   {
+    id: "games",
+    icon: "🎮",
+    color: "#ede9fe",
+    title: "Games",
+    desc: "Play and test your knowledge.",
+  },
+];
+
+// ── Games sub-menu ─────────────────────────────────────────────
+const GAMES = [
+  {
+    id: "geoguesser",
+    icon: "📍",
+    color: "#fce7f3",
+    title: "Local Guesser",
+    desc: "Guess the province from a map view.",
+  },
+  {
     id: "quiz",
     icon: "🧠",
     color: "#ede9fe",
@@ -492,6 +503,41 @@ const TOOLS = [
     desc: "Test how well you know Philippine geography.",
   },
 ];
+
+function showGamesTool(direction = "left", animatePanel = false) {
+  _activeToolId = null;
+  _exploreTab = "info";
+  clearWeatherEmoji();
+  _clearQuizHighlight();
+  _clearTravelColors();
+  _rouletteClearHighlight();
+  _ggClearHighlights();
+  setSidebarTitle("Games");
+  _setInfoPanelHtml(`
+    <button class="tool-back-btn" id="games-back">‹ Back</button>
+    <div class="tools-list">
+      ${GAMES.map((t) => `
+        <button class="tool-card" data-tool="${t.id}">
+          <span class="tool-icon" style="background:${t.color}">
+            <span class="tool-emoji">${t.icon}</span>
+          </span>
+          <span class="tool-body">
+            <span class="tool-title">${t.title}</span>
+            <span class="tool-desc">${t.desc}</span>
+          </span>
+          <span class="tool-chevron">›</span>
+        </button>
+      `).join("")}
+    </div>
+  `, direction, animatePanel);
+  document.getElementById("games-back").addEventListener("click", () => showToolsHome("right", true));
+  document.querySelectorAll(".tool-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      if (card.dataset.tool === "quiz") showQuizTool(true);
+      else if (card.dataset.tool === "geoguesser") showGeoGuesserTool(true);
+    });
+  });
+}
 
 function showToolsHome(direction = "left", animatePanel = false) {
   _activeToolId = null;
@@ -528,10 +574,9 @@ function showToolsHome(direction = "left", animatePanel = false) {
   document.querySelectorAll(".tool-card").forEach((card) => {
     card.addEventListener("click", () => {
       if (card.dataset.tool === "explore") showIdlePanel("left", true);
-      else if (card.dataset.tool === "quiz") showQuizTool(true);
       else if (card.dataset.tool === "travel") showTravelTool(true);
       else if (card.dataset.tool === "roulette") showRouletteTool(true);
-      else if (card.dataset.tool === "geoguesser") showGeoGuesserTool(true);
+      else if (card.dataset.tool === "games") showGamesTool("left", true);
     });
   });
 

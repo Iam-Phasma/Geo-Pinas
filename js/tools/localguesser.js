@@ -614,7 +614,7 @@ function _ggShowIntro(animatePanel = false) {
   document.getElementById("gg-intro-back").addEventListener("click", () => {
     _ggReset();
     _activeToolId = null;
-    showToolsHome("right", true);
+    showGamesTool("right", true);
   });
 
   document
@@ -777,7 +777,7 @@ function _renderGeoGuesser(result) {
   document.getElementById("gg-back").addEventListener("click", () => {
     _ggReset();
     _activeToolId = null;
-    showToolsHome("right", true);
+    showGamesTool("right", true);
   });
   document
     .getElementById("gg-expand-btn")
@@ -858,7 +858,7 @@ function _ggShowSummary() {
   document.getElementById("gg-back").addEventListener("click", () => {
     _ggReset();
     _activeToolId = null;
-    showToolsHome("right", true);
+    showGamesTool("right", true);
   });
   document.getElementById("gg-play-again").addEventListener("click", () => {
     _ggReset();

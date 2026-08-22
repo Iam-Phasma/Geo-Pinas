@@ -91,7 +91,7 @@ function _renderQuizQuestion(animatePanel = false) {
 
   document.getElementById("quiz-back").addEventListener("click", () => {
     _clearQuizHighlight();
-    showToolsHome("right", true);
+    showGamesTool("right", true);
   });
 
   document.querySelectorAll(".quiz-choice").forEach((btn) => {
@@ -146,7 +146,7 @@ function _renderQuizSummary(animatePanel = false) {
   `, "left", animatePanel);
 
   document.getElementById("quiz-back").addEventListener("click", () => {
-    showToolsHome("right", true);
+    showGamesTool("right", true);
   });
   document.getElementById("quiz-play-again").addEventListener("click", () => {
     showQuizTool();
