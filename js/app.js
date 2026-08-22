@@ -227,9 +227,10 @@ window._refreshMapVisuals = _refreshMapVisuals;
 function renderMap(transform = d3.zoomTransform(_svg.node())) {
   if (!_mapCanvas || !_mapCtx || !_mapHitCanvas || !_mapHitCtx) return;
   const frame = document.getElementById("map-tilt-frame");
-  const rect = frame.getBoundingClientRect();
-  const width = rect.width;
-  const height = rect.height;
+  // offsetWidth/Height (not getBoundingClientRect) — rotateX foreshortens the
+  // bounding rect when tilted, which would shrink the canvas below the frame.
+  const width = frame.offsetWidth;
+  const height = frame.offsetHeight;
   const dpr = window.devicePixelRatio || 1;
 
   if (
@@ -928,7 +929,9 @@ function initMap() {
 
     _resizeFrame = window.requestAnimationFrame(() => {
       _resizeFrame = null;
-      const { width: w, height: h } = tiltFrame.getBoundingClientRect();
+      // offsetWidth/Height (not getBoundingClientRect) to avoid tilt foreshortening.
+      const w = tiltFrame.offsetWidth;
+      const h = tiltFrame.offsetHeight;
       _svg.attr("width", w).attr("height", h);
       _svg.select("#ocean-bg").attr("width", w).attr("height", h);
       _svg.select("#ocean-pattern").attr("width", w).attr("height", h);
