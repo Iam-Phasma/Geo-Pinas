@@ -616,30 +616,30 @@ function showAboutPanel(direction = "left", animatePanel = false) {
           <div class="about-app-tagline">Interactive Philippine Province Map</div>
         </div>
       </div>
-      <p class="about-desc">An interactive Philippine province map built for fun, free and open source.</p>
+      <p class="about-desc">Terralyft is a playful way to explore the Philippines — one province at a time, with weather, travel tracking, and a few geography challenges along the way.</p>
 
       <div class="about-section-title">Features</div>
       <ul class="about-list">
-        <li>All 81 provinces + NCR across Luzon, Visayas, Mindanao</li>
-        <li><strong>Explore</strong> — browse provinces by region, Wikipedia summaries &amp; flags</li>
-        <li><strong>Weather</strong> — live conditions per province via Open-Meteo with Meteocons icons</li>
-        <li><strong>Travel Level</strong> — track &amp; score your provincial visits</li>
-        <li><strong>Travel Snapshot</strong> — downloadable postcard PNG of your travel map</li>
-        <li><strong>Province Quiz</strong> — test your Philippine geography knowledge</li>
-        <li><strong>Local Guesser</strong> — guess the province from its map shape</li>
-        <li><strong>Roulette</strong> — spin to pick a random province</li>
-        <li>Map customization: colors, borders, sea texture, dark mode</li>
-        <li>3D tilt &amp; perspective view</li>
+        <li>All 83 provinces and NCR across Luzon, Visayas, and Mindanao</li>
+        <li><strong>Explore</strong> — browse each province with regional context, flags, and quick summaries</li>
+        <li><strong>Weather</strong> — check live conditions per province with animated Meteocons</li>
+        <li><strong>Travel Level</strong> — track how far you’ve gone and how much of the country you’ve seen</li>
+        <li><strong>Travel Postcard</strong> — generate a downloadable postcard snapshot of your map progress</li>
+        <li><strong>Province Quiz</strong> — test your knowledge of the Philippines’ geography</li>
+        <li><strong>Geo Guesser</strong> — identify provinces from their map shapes</li>
+        <li><strong>Roulette</strong> — spin for a random province to visit next</li>
+        <li>Custom map styling: sea color, land tone, border color, dark mode, and 3D tilt</li>
       </ul>
 
       <div class="about-section-title">Credits</div>
+      <p class="about-credit">Built for fun, learning, and a little healthy travel obsession.</p>
       <p class="about-credit">Weather icons from <a href="https://meteocons.com/icons" target="_blank" rel="noopener">Meteocons</a> by <a href="https://bas.dev/" target="_blank" rel="noopener">Bas Milius</a>.</p>
       <p class="about-credit">Travel Level concept inspired by <a href="https://my-philippines-travel-level.com/" target="_blank" rel="noopener">My Philippines Travel Level</a>.</p>
       <p class="about-credit">Province map shapes adapted from <a href="https://github.com/OSSPhilippines/philippines-travel-level-map" target="_blank" rel="noopener">OSSPhilippines / philippines-travel-level-map</a> (GPL-3.0).</p>
-      <p class="about-credit">Built with <a href="https://github.com/features/copilot" target="_blank" rel="noopener">GitHub Copilot</a> (Claude). Any random features are strictly the author's own doing.</p>
+      <p class="about-credit">Built with <a href="https://github.com/features/copilot" target="_blank" rel="noopener">GitHub Copilot</a> and a healthy dose of curiosity.</p>
 
       <div class="about-section-title">License</div>
-      <p class="about-credit">Distributed under <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL-3.0</a>. Source code is publicly available.</p>
+      <p class="about-credit">Distributed under <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL-3.0</a>. Source code is publicly available and open for remixing.</p>
 
       <a class="about-github-btn" href="https://github.com/Iam-Phasma/Geo-Pinas" target="_blank" rel="noopener">
         View on GitHub ↗
