@@ -3173,6 +3173,10 @@ html.no-borders .province-group.is-tl-passed .province {
   animation: naming-shake 0.32s ease;
   background: #fee2e2 !important;
 }
+.naming-input--duplicate {
+  animation: naming-shake 0.32s ease;
+  background: #fef3c7 !important;
+}
 @keyframes naming-shake {
   0%, 100% { transform: translateX(0); }
   20%, 60% { transform: translateX(-6px); }

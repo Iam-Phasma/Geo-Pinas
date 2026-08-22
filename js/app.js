@@ -133,6 +133,12 @@ function _getCssColor(varName, fallback) {
 function _getProvinceFill(groupEl) {
   const classList = groupEl.classList;
   if (_activeToolId === "naming") {
+    const provinceId = d3.select(groupEl).datum()?.id;
+    const namingFillOverride =
+      provinceId && typeof window._getNamingProvinceFillOverride === "function"
+        ? window._getNamingProvinceFillOverride(provinceId)
+        : null;
+    if (namingFillOverride) return namingFillOverride;
     return classList.contains("is-naming-found")
       ? _getCssColor("--province-fill", "#166e3e")
       : "#ffffff";

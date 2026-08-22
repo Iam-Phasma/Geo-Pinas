@@ -12,6 +12,15 @@ let _namingGuessedList = []; // { type, id } newest-first
 let _namingStartTime = null;
 let _namingTimer = null;
 let _namingIslandTotals = null;
+let _namingBlinking = new Map(); // province id -> animation start timestamp
+let _namingFadingIn = new Map(); // province id -> fade start timestamp
+let _namingBlinkRaf = 0;
+let _namingCompleteTimer = null;
+
+const _NAMING_BLINK_HALF_MS = 280;
+const _NAMING_BLINK_CYCLES = 3;
+const _NAMING_BLINK_TOTAL_MS = _NAMING_BLINK_HALF_MS * 2 * _NAMING_BLINK_CYCLES;
+const _NAMING_GREEN_FADE_MS = 360;
 
 // Region → island group, used to organize the found-provinces list
 const _NAMING_REGION_ISLAND = {
@@ -67,8 +76,74 @@ function _namingMarkProvinceFound(id) {
   if (grp) d3.select(grp).classed("is-naming-found", true);
 }
 
+function _namingBlinkColorFor(id) {
+  const now = performance.now();
+  const blinkStart = _namingBlinking.get(id);
+  if (blinkStart != null) {
+    const blinkElapsed = now - blinkStart;
+    if (blinkElapsed < _NAMING_BLINK_TOTAL_MS) {
+      const phase = Math.floor(blinkElapsed / _NAMING_BLINK_HALF_MS);
+      return phase % 2 === 0 ? "#ffffff" : "#facc15";
+    }
+  }
+
+  const fadeStart = _namingFadingIn.get(id);
+  if (fadeStart == null) return null;
+  const fadeElapsed = now - fadeStart;
+  if (fadeElapsed >= _NAMING_GREEN_FADE_MS) return null;
+  const alpha = Math.min(Math.max(fadeElapsed / _NAMING_GREEN_FADE_MS, 0), 1);
+  return `rgba(22, 110, 62, ${alpha})`;
+}
+
+function _namingBlinkTick() {
+  if (!_namingBlinking.size && !_namingFadingIn.size) {
+    _namingBlinkRaf = 0;
+    return;
+  }
+
+  const now = performance.now();
+  for (const [id, start] of _namingBlinking.entries()) {
+    if (now - start >= _NAMING_BLINK_TOTAL_MS) {
+      _namingBlinking.delete(id);
+      _namingMarkProvinceFound(id);
+      _namingFadingIn.set(id, now);
+    }
+  }
+
+  for (const [id, start] of _namingFadingIn.entries()) {
+    if (now - start >= _NAMING_GREEN_FADE_MS) {
+      _namingFadingIn.delete(id);
+    }
+  }
+
+  requestMapRender();
+  _namingBlinkRaf = window.requestAnimationFrame(_namingBlinkTick);
+}
+
+function _namingStartBlink(id) {
+  _namingBlinking.set(id, performance.now());
+  if (_namingBlinkRaf) return;
+  _namingBlinkRaf = window.requestAnimationFrame(_namingBlinkTick);
+}
+
+function _namingResetBlink() {
+  _namingBlinking.clear();
+  _namingFadingIn.clear();
+  if (_namingBlinkRaf) {
+    window.cancelAnimationFrame(_namingBlinkRaf);
+    _namingBlinkRaf = 0;
+  }
+}
+
+window._getNamingProvinceFillOverride = _namingBlinkColorFor;
+
 function _namingClearFound() {
   if (_g) _g.selectAll(".province-group.is-naming-found").classed("is-naming-found", false);
+  _namingResetBlink();
+  if (_namingCompleteTimer) {
+    clearTimeout(_namingCompleteTimer);
+    _namingCompleteTimer = null;
+  }
   _namingGuessedKeys = new Set();
   _namingGuessedList = [];
   requestMapRender();
@@ -262,32 +337,53 @@ function _namingHandleKeydown(e) {
   const t = _namingBuildTargets();
   const match = t.aliasToTarget.get(norm);
   const key = match ? `${match.type}:${match.id}` : null;
-  if (!match || _namingGuessedKeys.has(key)) {
+  if (!match) {
     _namingFlashInvalid(e.target);
+    return;
+  }
+
+  if (_namingGuessedKeys.has(key)) {
+    _namingFlashDuplicate(e.target);
     return;
   }
 
   _namingGuessedKeys.add(key);
   _namingGuessedList.unshift(match);
-  e.target.classList.remove("naming-input--invalid");
+  e.target.classList.remove("naming-input--invalid", "naming-input--duplicate");
   e.target.value = "";
 
-  _namingMarkProvinceFound(match.id);
+  _namingStartBlink(match.id);
   requestMapRender();
   _namingUpdateProgress();
   _namingRenderFoundList();
 
-  if (_namingGuessedKeys.size >= t.total) _namingComplete();
+  if (_namingGuessedKeys.size >= t.total) {
+    if (_namingCompleteTimer) clearTimeout(_namingCompleteTimer);
+    _namingCompleteTimer = setTimeout(() => {
+      _namingCompleteTimer = null;
+      if (_activeToolId === "naming" && _namingGuessedKeys.size >= t.total) {
+        _namingComplete();
+      }
+    }, _NAMING_BLINK_TOTAL_MS + _NAMING_GREEN_FADE_MS);
+  }
 }
 
 function _namingFlashInvalid(input) {
+  input.classList.remove("naming-input--duplicate");
   input.classList.remove("naming-input--invalid");
   void input.offsetWidth;
   input.classList.add("naming-input--invalid");
 }
 
+function _namingFlashDuplicate(input) {
+  input.classList.remove("naming-input--invalid");
+  input.classList.remove("naming-input--duplicate");
+  void input.offsetWidth;
+  input.classList.add("naming-input--duplicate");
+}
+
 function _namingClearInvalid(e) {
-  e.target.classList.remove("naming-input--invalid");
+  e.target.classList.remove("naming-input--invalid", "naming-input--duplicate");
 }
 
 function _namingRenderPanel(animatePanel = false) {
