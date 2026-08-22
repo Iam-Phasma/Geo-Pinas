@@ -11,6 +11,32 @@ let _namingGuessedKeys = new Set();
 let _namingGuessedList = []; // { type, id } newest-first
 let _namingStartTime = null;
 
+// Region → island group, used to organize the found-provinces list
+const _NAMING_REGION_ISLAND = {
+  "Region I — Ilocos": "Luzon",
+  "Region II — Cagayan Valley": "Luzon",
+  "Region III — Central Luzon": "Luzon",
+  "Region IVA — Calabarzon": "Luzon",
+  MIMAROPA: "Luzon",
+  "Region V — Bicol": "Luzon",
+  "NCR — National Capital Region": "Luzon",
+  CAR: "Luzon",
+  "Region VI — Western Visayas": "Visayas",
+  "Region VII — Central Visayas": "Visayas",
+  "Region VIII — Eastern Visayas": "Visayas",
+  "Region IX — Zamboanga Peninsula": "Mindanao",
+  "Region X — Northern Mindanao": "Mindanao",
+  "Region XI — Davao Region": "Mindanao",
+  "Region XII — SOCCSKSARGEN": "Mindanao",
+  "Region XIII — Caraga": "Mindanao",
+  BARMM: "Mindanao",
+};
+const _NAMING_ISLAND_ORDER = ["Luzon", "Visayas", "Mindanao"];
+
+function _namingIslandGroup(provinceId) {
+  return _NAMING_REGION_ISLAND[PROVINCE_REGION[provinceId]] || "Luzon";
+}
+
 function _namingNormalize(s) {
   return String(s)
     .toLowerCase()
@@ -144,10 +170,26 @@ function _namingUpdateProgress() {
 function _namingRenderFoundList() {
   const list = document.getElementById("naming-found-list");
   if (!list) return;
-  list.innerHTML = _namingGuessedList
-    .map(
-      (g) => `<span class="naming-chip naming-chip--${g.type}">${escapeHtml(g.id)}</span>`,
-    )
+
+  const grouped = new Map(_NAMING_ISLAND_ORDER.map((g) => [g, []]));
+  _namingGuessedList.forEach((g) => {
+    grouped.get(_namingIslandGroup(g.id)).push(g);
+  });
+
+  list.innerHTML = _NAMING_ISLAND_ORDER.filter((group) => grouped.get(group).length)
+    .map((group) => {
+      const chips = grouped
+        .get(group)
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .map((g) => `<span class="naming-chip naming-chip--${g.type}">${escapeHtml(g.id)}</span>`)
+        .join("");
+      return `
+        <div class="naming-group">
+          <div class="naming-group-title">${group} <span class="naming-group-count">${grouped.get(group).length}</span></div>
+          <div class="naming-group-chips">${chips}</div>
+        </div>
+      `;
+    })
     .join("");
 }
 
@@ -191,7 +233,7 @@ function _namingRenderPanel(animatePanel = false) {
   setSidebarTitle("Name the Map");
   _setInfoPanelHtml(
     `
-    <button class="tool-back-btn" id="naming-back">‹ Back</button>
+    <button class="tool-back-btn" id="naming-back">‹ Quit</button>
     <div class="quiz-score-bar">
       <span class="quiz-score-label">Found</span>
       <span class="quiz-score-val" id="naming-score-val">${_namingGuessedKeys.size} / ${t.total}</span>
@@ -217,7 +259,7 @@ function _namingComplete() {
   setSidebarTitle("Name the Map");
   _setInfoPanelHtml(
     `
-    <button class="tool-back-btn" id="naming-back">‹ Back</button>
+    <button class="tool-back-btn" id="naming-back">‹ Quit</button>
     <div class="quiz-summary">
       <div class="quiz-summary-grade">🏆</div>
       <div class="quiz-summary-tag">All provinces named!</div>

@@ -3185,6 +3185,23 @@ html.no-borders .province-group.is-tl-passed .province {
 }
 .naming-found-list {
   display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.naming-group-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.naming-group-count {
+  font-weight: 400;
+  opacity: 0.7;
+}
+.naming-group-chips {
+  display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }

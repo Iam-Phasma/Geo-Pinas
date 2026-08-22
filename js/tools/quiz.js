@@ -70,7 +70,7 @@ function _renderQuizQuestion(animatePanel = false) {
   const qNum = _quizScore.total + 1;
 
   _setInfoPanelHtml(`
-    <button class="tool-back-btn" id="quiz-back">‹ Back</button>
+    <button class="tool-back-btn" id="quiz-back">‹ Quit</button>
     <div class="quiz-score-bar">
       <span class="quiz-score-label">Question <strong>${qNum}</strong><span style="opacity:.5"> / ${_QUIZ_MAX}</span></span>
       <span class="quiz-score-val">${_quizScore.correct} / ${_quizScore.total}</span>
@@ -135,7 +135,7 @@ function _renderQuizSummary(animatePanel = false) {
     </div>`).join('');
 
   _setInfoPanelHtml(`
-    <button class="tool-back-btn" id="quiz-back">‹ Back</button>
+    <button class="tool-back-btn" id="quiz-back">‹ Quit</button>
     <div class="quiz-summary">
       <div class="quiz-summary-grade">${grade}</div>
       <div class="quiz-summary-score">${correct} <span class="quiz-summary-total">/ ${total}</span></div>

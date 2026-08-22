@@ -585,7 +585,7 @@ function _ggShowIntro(animatePanel = false) {
   let _selected = "roam";
   _setInfoPanelHtml(
     `
-    <button class="tool-back-btn" id="gg-intro-back">‹ Back</button>
+    <button class="tool-back-btn" id="gg-intro-back">‹ Quit</button>
     <div class="gg-intro">
       <div class="gg-intro-icon">📍</div>
       <h2 class="gg-intro-title">Local Guesser</h2>
@@ -751,7 +751,7 @@ function _renderGeoGuesser(result) {
 
   _setInfoPanelHtml(
     `
-    <button class="tool-back-btn" id="gg-back">\u2039 Back</button>
+    <button class="tool-back-btn" id="gg-back">\u2039 Quit</button>
     ${gameBarHtml}
     ${scoreHtml}
     <div class="gg-preview-wrap">
@@ -841,7 +841,7 @@ function _ggShowSummary() {
 
   _setInfoPanelHtml(
     `
-    <button class="tool-back-btn" id="gg-back">\u2039 Back</button>
+    <button class="tool-back-btn" id="gg-back">\u2039 Quit</button>
     <div class="gg-summary">
       <div class="gg-summary-grade">${grade}</div>
       <div class="gg-summary-score">${correct % 1 === 0 ? correct : correct.toFixed(1)} <span class="gg-summary-total">/ ${total}</span></div>
