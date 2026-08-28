@@ -486,6 +486,12 @@ html.no-borders .province-group.is-tl-passed .province {
   border-color: var(--accent);
 }
 
+#zoom-controls button svg {
+  width: 18px;
+  height: 18px;
+  color: inherit;
+}
+
 /* ── Tooltip ───────────────────────────────────────────── */
 .tooltip {
   position: absolute;
