@@ -1523,92 +1523,98 @@ html.no-borders .province-group.is-tl-passed .province {
 }
 
 .snap-preview-modal {
-  background: var(--bg-sidebar, #181c24);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 20px;
+  background: transparent;
+  border: none;
+  padding: 0;
   max-width: min(90vw, 900px);
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+  gap: 42px;
+  box-shadow: none;
+  animation: snap-preview-drop-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.snap-preview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.snap-preview-title {
-  font-family: var(--font);
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.snap-preview-close {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 4px 7px;
-  border-radius: 6px;
-  transition: background 0.15s;
-}
-
-.snap-preview-close:hover {
-  background: rgba(255, 255, 255, 0.08);
+@keyframes snap-preview-drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-100vh);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .snap-preview-img-wrap {
-  border-radius: 12px;
+  position: relative;
+  isolation: isolate;
+  align-self: center;
+  width: min(100%, 820px);
+  background: #ffffff;
+  border: 18px solid #ffffff;
+  border-radius: 4px;
   overflow: hidden;
-  background: #1e293b;
-  padding: 12px;
+  padding: 0;
+  transform: perspective(1200px) rotateX(var(--postcard-rotate-x, 0deg)) rotateY(var(--postcard-rotate-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 0.06s ease-out;
+}
+
+.snap-preview-img-wrap::after {
+  position: absolute;
+  top: var(--postcard-shimmer-y, 50%);
+  left: var(--postcard-shimmer-x, 50%);
+  width: 200%;
+  height: 12%;
+  z-index: 1;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.24) 50%, transparent 100%);
+  opacity: var(--postcard-shimmer-opacity, 0);
+  transform: translate3d(-50%, -50%, 0) rotate(135deg);
+  transition: opacity 0.12s ease-out;
 }
 
 .snap-preview-img {
   display: block;
-  width: 100%;
-  max-width: 820px;
+  width: 112%;
+  max-width: none;
   height: auto;
-  border-radius: 8px;
+  border-radius: 0;
+  margin: -6%;
 }
 
 .snap-preview-actions {
   display: flex;
   gap: 10px;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .snap-preview-cancel {
-  background: none;
-  border: 1.5px solid var(--border);
+  width: 140px;
+  background: #e88780;
+  border: none;
   border-radius: 8px;
-  padding: 7px 16px;
+  padding: 9px 16px;
   font-family: var(--font);
   font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-weight: 700;
+  color: #ffffff;
   cursor: pointer;
-  transition:
-    border-color 0.15s,
-    color 0.15s;
+  transition: opacity 0.15s;
 }
 
 .snap-preview-cancel:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  opacity: 0.88;
 }
 
 .snap-preview-download {
+  width: 140px;
   background: var(--accent, #3b82f6);
   border: none;
   border-radius: 8px;
-  padding: 7px 18px;
+  padding: 9px 16px;
   font-family: var(--font);
   font-size: 0.82rem;
   font-weight: 700;
@@ -1620,6 +1626,13 @@ html.no-borders .province-group.is-tl-passed .province {
 
 .snap-preview-download:hover {
   opacity: 0.88;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snap-preview-modal {
+    animation: none;
+  }
+
 }
 
 @media (max-width: 640px) {

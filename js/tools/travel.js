@@ -629,10 +629,6 @@ function _showPostcardPreview(canvas) {
   overlay.id = "snap-preview-overlay";
   overlay.innerHTML = `
     <div class="snap-preview-modal">
-      <div class="snap-preview-header">
-        <span class="snap-preview-title">Postcard Preview</span>
-        <button class="snap-preview-close" id="snap-preview-close" aria-label="Close">✕</button>
-      </div>
       <div class="snap-preview-img-wrap">
         <img src="${dataUrl}" class="snap-preview-img" alt="Travel postcard preview" draggable="false">
       </div>
@@ -644,9 +640,30 @@ function _showPostcardPreview(canvas) {
   `;
   document.body.appendChild(overlay);
 
+  const postcard = overlay.querySelector(".snap-preview-img-wrap");
+  const canTiltPostcard = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  if (canTiltPostcard) {
+    overlay.addEventListener("pointermove", event => {
+      const bounds = postcard.getBoundingClientRect();
+      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+      postcard.style.setProperty("--postcard-rotate-x", `${-y * 8}deg`);
+      postcard.style.setProperty("--postcard-rotate-y", `${x * 8}deg`);
+      postcard.style.setProperty("--postcard-shimmer-x", `${(x + 0.5) * 100}%`);
+      postcard.style.setProperty("--postcard-shimmer-y", `${(y + 0.5) * 100}%`);
+      postcard.style.setProperty("--postcard-shimmer-opacity", "1");
+    });
+    overlay.addEventListener("pointerleave", () => {
+      postcard.style.removeProperty("--postcard-rotate-x");
+      postcard.style.removeProperty("--postcard-rotate-y");
+      postcard.style.removeProperty("--postcard-shimmer-x");
+      postcard.style.removeProperty("--postcard-shimmer-y");
+      postcard.style.setProperty("--postcard-shimmer-opacity", "0");
+    });
+  }
+
   const close = () => overlay.remove();
   overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
-  document.getElementById("snap-preview-close").addEventListener("click", close);
   document.getElementById("snap-preview-cancel").addEventListener("click", close);
   document.getElementById("snap-preview-dl").addEventListener("click", () => {
     canvas.toBlob(async (blob) => {
