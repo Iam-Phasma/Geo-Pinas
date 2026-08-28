@@ -1455,10 +1455,6 @@ function _showProvMapModal(provName) {
   let provMap = null;
   let isSat = false;
 
-  const OV_LABELS_URL =
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png";
-  const OV_ATT = "&copy; OpenStreetMap &copy; CARTO";
-
   setTimeout(() => {
     const mapEl = document.getElementById("prov-map-leaflet");
     if (!mapEl || !window.L) return;
@@ -1466,8 +1462,8 @@ function _showProvMapModal(provName) {
     const tileUrl =
       typeof _ggTileUrl === "function"
         ? _ggTileUrl()
-        : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
-    const tileAtt = "&copy; OpenStreetMap &copy; CARTO";
+        : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+    const tileAtt = "&copy; OpenStreetMap contributors";
     const satUrl =
       typeof _GG_TILE_SAT !== "undefined"
         ? _GG_TILE_SAT
@@ -1494,13 +1490,6 @@ function _showProvMapModal(provName) {
     baseLayer.options._isBase = true;
     baseLayer.addTo(provMap);
 
-    const labelsLayer = L.tileLayer(OV_LABELS_URL, {
-      maxZoom: 19,
-      attribution: OV_ATT,
-      pane: "overlayPane",
-    });
-    labelsLayer.addTo(provMap);
-
     const swapBase = () => {
       provMap.eachLayer((l) => {
         if (l.options && l.options._isBase) provMap.removeLayer(l);
@@ -1511,7 +1500,6 @@ function _showProvMapModal(provName) {
       });
       bl.options._isBase = true;
       bl.addTo(provMap);
-      labelsLayer.addTo(provMap); // keep labels on top
     };
 
     const tileToggle = document.getElementById("prov-map-toggle");

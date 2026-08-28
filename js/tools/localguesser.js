@@ -10,11 +10,9 @@
 // ── Constants ──────────────────────────────────────────────────
 const _GG_MAX_ROUNDS = 10;
 const _GG_TIMER_SECS = 45;
-const _GG_TILE_LIGHT =
-  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
-const _GG_TILE_DARK =
-  "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png";
-const _GG_TILE_ATT = "&copy; OpenStreetMap &copy; CARTO";
+const _GG_TILE_LIGHT = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const _GG_TILE_DARK = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const _GG_TILE_ATT = "&copy; OpenStreetMap contributors";
 const _GG_TILE_SAT =
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 const _GG_TILE_SAT_ATT = "Tiles &copy; Esri";
