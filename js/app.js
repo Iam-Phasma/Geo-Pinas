@@ -1026,6 +1026,8 @@ function handleOceanClick() {
       // keep roulette panel
     } else if (_activeToolId === "geoguesser") {
       // keep geoguesser panel
+    } else if (_activeToolId === "travel") {
+      // Keep the travel overview open after dismissing the level picker.
     } else {
       showToolsHome();
     }
