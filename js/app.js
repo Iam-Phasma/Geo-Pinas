@@ -557,8 +557,30 @@ function _showResetConfirmation(title, message) {
   });
 }
 
+function _showFlagPreview(src, alt) {
+  document.getElementById("flag-preview-overlay")?.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "flag-preview-overlay";
+  overlay.className = "flag-preview-overlay";
+  overlay.innerHTML = `<div class="flag-preview-card"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}"></div>`;
+  document.body.appendChild(overlay);
+
+  const close = () => {
+    if (overlay.classList.contains("is-closing")) return;
+    overlay.classList.add("is-closing");
+    overlay.addEventListener("animationend", (event) => {
+      if (event.target === overlay) overlay.remove();
+    });
+    setTimeout(() => overlay.remove(), 250);
+  };
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) close();
+  });
+}
+
 function _getGameLogs() {
   try {
+
     return JSON.parse(localStorage.getItem(_GAME_LOGS_KEY)) || {};
   } catch {
     return {};
@@ -1716,11 +1738,11 @@ function showProvinceInfo(
 
   const infoSection = `
     <div class="info-header">
-      <div class="info-flag-card${initialSrc ? " flag-loading" : ""}" id="info-flag-card"${!initialSrc ? ' style="display:none"' : ""}>
+      <button class="info-flag-card${initialSrc ? " flag-loading" : ""}" id="info-flag-card" type="button" aria-label="Expand flag"${!initialSrc ? ' style="display:none"' : ""}>
         <img class="info-flag-img" id="info-flag-img"
           src="${escapeHtml(initialSrc ?? "")}"
           alt="Flag of ${escapeHtml(prov.id)}" />
-      </div>
+      </button>
       <div class="info-name">${escapeHtml(prov.id)}</div>
     </div>
     <hr class="info-divider" />
@@ -1784,6 +1806,7 @@ function showProvinceInfo(
         },
         { once: true },
       );
+      flagCard.addEventListener("click", () => _showFlagPreview(flagImg.src, flagImg.alt));
       return;
     }
 

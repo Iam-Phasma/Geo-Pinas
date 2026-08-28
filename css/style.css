@@ -1013,6 +1013,7 @@ html.no-borders .province-group.is-tl-passed .province {
   flex-shrink: 0;
   width: 52px;
   height: 34px;
+  padding: 0;
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -1024,6 +1025,7 @@ html.no-borders .province-group.is-tl-passed .province {
     width 0.35s ease,
     height 0.35s ease,
     opacity 0.35s ease;
+  cursor: zoom-in;
 }
 
 .info-flag-card.flag-loading {
@@ -1637,6 +1639,65 @@ html.no-borders .province-group.is-tl-passed .province {
   height: 12%;
   z-index: 1;
   content: "";
+
+.flag-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: transparent;
+  animation: flag-preview-fade-in 0.2s ease both;
+}
+
+.flag-preview-card {
+  width: min(80vw, 620px);
+  max-height: 72vh;
+  padding: 12px;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 28px 72px rgba(15, 23, 42, 0.32), 0 3px 10px rgba(15, 23, 42, 0.16);
+  animation: flag-preview-pop-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.flag-preview-card img {
+  display: block;
+  width: 100%;
+  max-height: calc(72vh - 24px);
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.flag-preview-overlay.is-closing {
+  animation: flag-preview-fade-out 0.2s ease both;
+}
+
+.flag-preview-overlay.is-closing .flag-preview-card {
+  animation: flag-preview-pop-out 0.2s ease both;
+}
+
+@keyframes flag-preview-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes flag-preview-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes flag-preview-pop-in {
+  from { opacity: 0; transform: scale(0.78); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes flag-preview-pop-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.78); }
+}
   pointer-events: none;
   background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.24) 50%, transparent 100%);
   opacity: var(--postcard-shimmer-opacity, 0);
