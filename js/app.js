@@ -526,6 +526,37 @@ const GAMES = [
 
 const _GAME_LOGS_KEY = "iskawt-game-logs";
 
+function _showResetConfirmation(title, message) {
+  document.getElementById("app-confirm-overlay")?.remove();
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.id = "app-confirm-overlay";
+    overlay.className = "app-confirm-overlay";
+    overlay.innerHTML = `
+      <div class="app-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="app-confirm-title">
+        <div class="app-confirm-icon">!</div>
+        <h2 id="app-confirm-title" class="app-confirm-title">${escapeHtml(title)}</h2>
+        <p class="app-confirm-message">${escapeHtml(message)}</p>
+        <div class="app-confirm-actions">
+          <button class="app-confirm-cancel" type="button">Cancel</button>
+          <button class="app-confirm-danger" type="button">Reset</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const close = (confirmed) => {
+      overlay.remove();
+      resolve(confirmed);
+    };
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) close(false);
+    });
+    overlay.querySelector(".app-confirm-cancel").addEventListener("click", () => close(false));
+    overlay.querySelector(".app-confirm-danger").addEventListener("click", () => close(true));
+    overlay.querySelector(".app-confirm-cancel").focus();
+  });
+}
+
 function _getGameLogs() {
   try {
     return JSON.parse(localStorage.getItem(_GAME_LOGS_KEY)) || {};
@@ -599,8 +630,14 @@ function showGameLogs(animatePanel = false) {
       holdFrame = requestAnimationFrame(tickHold);
       return;
     }
-    try { localStorage.removeItem(_GAME_LOGS_KEY); } catch {}
-    showGameLogs();
+    _showResetConfirmation("Reset game logs?", "This will erase all saved high scores and cannot be undone.").then((confirmed) => {
+      if (!confirmed) {
+        cancelHold();
+        return;
+      }
+      try { localStorage.removeItem(_GAME_LOGS_KEY); } catch {}
+      showGameLogs();
+    });
   }
 
   function startHold() {

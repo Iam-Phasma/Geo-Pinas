@@ -242,10 +242,16 @@ function _renderTravelOverview(animatePanel = false) {
     if (pct < 100) {
       _holdRaf = requestAnimationFrame(_holdTick);
     } else {
-      _travelMap = {};
-      _travelSave();
-      _applyTravelColors();
-      _renderTravelOverview();
+      _showResetConfirmation("Reset travel data?", "This will erase every saved travel level and cannot be undone.").then((confirmed) => {
+        if (!confirmed) {
+          _cancelHold();
+          return;
+        }
+        _travelMap = {};
+        _travelSave();
+        _applyTravelColors();
+        _renderTravelOverview();
+      });
     }
   }
 
