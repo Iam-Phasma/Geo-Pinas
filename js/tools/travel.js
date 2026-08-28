@@ -378,19 +378,7 @@ async function _snapTravel() {
   const svgStr = [
     `<svg xmlns="http://www.w3.org/2000/svg"`,
     ` viewBox="0 0 ${MAP_W} ${MAP_H}" width="${MAP_W}" height="${MAP_H}">`,
-    ...(localStorage.getItem("iskawt-sea-texture") !== "false" ? [
-      `<defs>`,
-      `<pattern id="ocean-wave" x="0" y="0" width="32" height="16" patternUnits="userSpaceOnUse">`,
-      `<rect width="32" height="16" fill="none"/>`,
-      `<path d="M0 12 L8 4 L16 12 L24 4 L32 12" fill="none" stroke="#5087df"`,
-      ` stroke-opacity="0.35" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>`,
-      `</pattern>`,
-      `</defs>`,
-    ] : []),
     `<rect width="${MAP_W}" height="${MAP_H}" fill="${oceanColor}"/>`,
-    ...(localStorage.getItem("iskawt-sea-texture") !== "false" ? [
-      `<rect width="${MAP_W}" height="${MAP_H}" fill="url(#ocean-wave)"/>`,
-    ] : []),
     provPaths,
     `</svg>`,
   ].join("");
@@ -644,6 +632,7 @@ function _showPostcardPreview(canvas) {
   const canTiltPostcard = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   if (canTiltPostcard) {
     overlay.addEventListener("pointermove", event => {
+      postcard.classList.remove("is-settling");
       const bounds = postcard.getBoundingClientRect();
       const x = (event.clientX - bounds.left) / bounds.width - 0.5;
       const y = (event.clientY - bounds.top) / bounds.height - 0.5;
@@ -654,10 +643,9 @@ function _showPostcardPreview(canvas) {
       postcard.style.setProperty("--postcard-shimmer-opacity", "1");
     });
     overlay.addEventListener("pointerleave", () => {
-      postcard.style.removeProperty("--postcard-rotate-x");
-      postcard.style.removeProperty("--postcard-rotate-y");
-      postcard.style.removeProperty("--postcard-shimmer-x");
-      postcard.style.removeProperty("--postcard-shimmer-y");
+      postcard.classList.add("is-settling");
+      postcard.style.setProperty("--postcard-rotate-x", "0deg");
+      postcard.style.setProperty("--postcard-rotate-y", "0deg");
       postcard.style.setProperty("--postcard-shimmer-opacity", "0");
     });
   }

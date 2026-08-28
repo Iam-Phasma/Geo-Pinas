@@ -1561,6 +1561,10 @@ html.no-borders .province-group.is-tl-passed .province {
   transition: transform 0.06s ease-out;
 }
 
+.snap-preview-img-wrap.is-settling {
+  transition: transform 0.38s ease-out;
+}
+
 .snap-preview-img-wrap::after {
   position: absolute;
   top: var(--postcard-shimmer-y, 50%);
@@ -1573,7 +1577,7 @@ html.no-borders .province-group.is-tl-passed .province {
   background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.24) 50%, transparent 100%);
   opacity: var(--postcard-shimmer-opacity, 0);
   transform: translate3d(-50%, -50%, 0) rotate(135deg);
-  transition: opacity 0.12s ease-out;
+  transition: opacity 0.28s ease-out;
 }
 
 .snap-preview-img {
