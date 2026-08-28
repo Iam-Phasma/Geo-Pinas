@@ -1,5 +1,5 @@
 /* ============================================================
-   TERRALYFT — app.js
+   ISKAWT — app.js
    Core: map rendering, interaction, navigation, and helpers.
    Tool logic lives in js/tools/. Boot logic in js/boot.js.
    Load order: data.js → app.js → tools/*.js → boot.js
@@ -595,7 +595,7 @@ function showToolsHome(direction = "left", animatePanel = false) {
       `,
       ).join("")}
     </div>
-    <button class="about-btn" id="about-btn">About Terralyft</button>
+    <button class="about-btn" id="about-btn">About Iskawt</button>
   `,
     direction,
     animatePanel,
@@ -622,13 +622,13 @@ function showAboutPanel(direction = "left", animatePanel = false) {
     <button class="tool-back-btn" id="about-back">‹ Back</button>
     <div class="about-panel">
       <div class="about-logo-row">
-        <img src="favicon.svg" alt="Terralyft" class="about-logo" aria-hidden="true"/>
+        <img src="favicon.svg" alt="Iskawt" class="about-logo" aria-hidden="true"/>
         <div>
-          <div class="about-app-name">Terralyft</div>
+          <div class="about-app-name">Iskawt</div>
           <div class="about-app-tagline">Interactive Philippine Province Map</div>
         </div>
       </div>
-      <p class="about-desc">Terralyft is a playful way to explore and learn simple facts about the Philippines.</p>
+      <p class="about-desc">Iskawt is a playful way to explore and learn simple facts about the Philippines.</p>
 
       <div class="about-section-title">Features</div>
       <ul class="about-list">
@@ -654,7 +654,7 @@ function showAboutPanel(direction = "left", animatePanel = false) {
       <div class="about-section-title">License</div>
       <p class="about-credit">Distributed under <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL-3.0</a>. Source code is publicly available and open for remixing.</p>
 
-      <a class="about-github-btn" href="https://github.com/Iam-Phasma/Geo-Pinas" target="_blank" rel="noopener">
+      <a class="about-github-btn" href="https://github.com/Iam-Phasma/Iskawt" target="_blank" rel="noopener">
         View on GitHub ↗
       </a>
     </div>

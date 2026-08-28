@@ -1,8 +1,8 @@
-# Terralyft
+# Iskawt
 
 An interactive Philippine province map built for fun, free and open source.
 
-Open: https://iam-phasma.github.io/Geo-Pinas/
+Open: https://iam-phasma.github.io/Iskawt/
 
 ## Features
 

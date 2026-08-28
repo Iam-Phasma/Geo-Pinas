@@ -54,7 +54,7 @@
 
   // ── Sea texture toggle ────────────────────────────────────────
   const seaToggle = document.getElementById("sea-texture-toggle");
-  const _initSeaTex = localStorage.getItem("terralyft-sea-texture");
+  const _initSeaTex = localStorage.getItem("iskawt-sea-texture");
   function applySeaTextureState(isEnabled) {
     seaToggle.setAttribute("aria-checked", String(isEnabled));
     if (isEnabled) {
@@ -68,7 +68,7 @@
       pattern.style.opacity = nextOpacity;
       pattern.setAttribute("opacity", nextOpacity);
     }
-    localStorage.setItem("terralyft-sea-texture", String(isEnabled));
+    localStorage.setItem("iskawt-sea-texture", String(isEnabled));
   }
 
   applySeaTextureState(_initSeaTex === "true");
@@ -79,7 +79,7 @@
 
   // ── Borders toggle ────────────────────────────────────────────
   const bordersToggle = document.getElementById("borders-toggle");
-  const _initBorders = localStorage.getItem("terralyft-borders");
+  const _initBorders = localStorage.getItem("iskawt-borders");
   if (_initBorders === "false") {
     bordersToggle.setAttribute("aria-checked", "false");
     document.documentElement.classList.add("no-borders");
@@ -88,7 +88,7 @@
     const on = bordersToggle.getAttribute("aria-checked") === "true";
     bordersToggle.setAttribute("aria-checked", String(!on));
     document.documentElement.classList.toggle("no-borders", on);
-    localStorage.setItem("terralyft-borders", String(!on));
+    localStorage.setItem("iskawt-borders", String(!on));
     if (typeof window.requestMapRender === "function") window.requestMapRender();
   });
 
@@ -125,18 +125,18 @@
 
   const seaColorSlider = document.getElementById("sea-color-slider");
   const seaColorReset = document.getElementById("sea-color-reset");
-  const _initSeaVal = Number(localStorage.getItem("terralyft-sea-color") ?? SEA_COLOR_DEFAULT);
+  const _initSeaVal = Number(localStorage.getItem("iskawt-sea-color") ?? SEA_COLOR_DEFAULT);
   seaColorSlider.value = _initSeaVal;
   _applySeaColor(_initSeaVal);
   seaColorSlider.addEventListener("input", () => {
     const v = Number(seaColorSlider.value);
     _applySeaColor(v);
-    localStorage.setItem("terralyft-sea-color", v);
+    localStorage.setItem("iskawt-sea-color", v);
   });
   seaColorReset.addEventListener("click", () => {
     seaColorSlider.value = SEA_COLOR_DEFAULT;
     _applySeaColor(SEA_COLOR_DEFAULT);
-    localStorage.setItem("terralyft-sea-color", SEA_COLOR_DEFAULT);
+    localStorage.setItem("iskawt-sea-color", SEA_COLOR_DEFAULT);
   });
 
   // ── Land color slider ─────────────────────────────────────────
@@ -175,23 +175,23 @@
 
   const landColorSlider = document.getElementById("land-color-slider");
   const landColorReset = document.getElementById("land-color-reset");
-  const _initLandVal = Number(localStorage.getItem("terralyft-land-color") ?? LAND_COLOR_DEFAULT);
+  const _initLandVal = Number(localStorage.getItem("iskawt-land-color") ?? LAND_COLOR_DEFAULT);
   landColorSlider.value = _initLandVal;
   _applyLandColor(_initLandVal);
   landColorSlider.addEventListener("input", () => {
     const v = Number(landColorSlider.value);
     _applyLandColor(v);
-    localStorage.setItem("terralyft-land-color", v);
+    localStorage.setItem("iskawt-land-color", v);
   });
   landColorReset.addEventListener("click", () => {
     landColorSlider.value = LAND_COLOR_DEFAULT;
     _applyLandColor(LAND_COLOR_DEFAULT);
-    localStorage.setItem("terralyft-land-color", LAND_COLOR_DEFAULT);
+    localStorage.setItem("iskawt-land-color", LAND_COLOR_DEFAULT);
   });
 
   // ── Border color swatches ─────────────────────────────────────
   const BORDER_DEFAULT = "#000000";
-  const _initBorderColor = localStorage.getItem("terralyft-border-color") ?? BORDER_DEFAULT;
+  const _initBorderColor = localStorage.getItem("iskawt-border-color") ?? BORDER_DEFAULT;
   document.documentElement.style.setProperty("--province-border", _initBorderColor);
   document.querySelectorAll(".sp-swatch").forEach(s => {
     s.setAttribute("aria-pressed", s.dataset.color === _initBorderColor ? "true" : "false");
@@ -203,7 +203,7 @@
     document.documentElement.style.setProperty("--province-border", color);
     document.querySelectorAll(".sp-swatch").forEach(s => s.setAttribute("aria-pressed", "false"));
     btn.setAttribute("aria-pressed", "true");
-    localStorage.setItem("terralyft-border-color", color);
+    localStorage.setItem("iskawt-border-color", color);
     if (typeof window.requestMapRender === "function") window.requestMapRender();
   });
 

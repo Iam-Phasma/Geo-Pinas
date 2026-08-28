@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://iam-phasma.github.io/Terralyft/sitemap.xml
+Sitemap: https://iam-phasma.github.io/Iskawt/sitemap.xml

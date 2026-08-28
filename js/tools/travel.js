@@ -91,13 +91,13 @@ const TRAVEL_ACHIEVEMENTS = [
 
 function _travelLoad() {
   try {
-    const raw = localStorage.getItem("terralyft-travel");
+    const raw = localStorage.getItem("iskawt-travel");
     if (raw) _travelMap = JSON.parse(raw);
   } catch { /* ignore */ }
 }
 
 function _travelSave() {
-  try { localStorage.setItem("terralyft-travel", JSON.stringify(_travelMap)); } catch { /* ignore */ }
+  try { localStorage.setItem("iskawt-travel", JSON.stringify(_travelMap)); } catch { /* ignore */ }
 }
 
 function _travelSetLevel(provId, levelId) {
@@ -370,7 +370,7 @@ function _snapTravel() {
   const svgStr = [
     `<svg xmlns="http://www.w3.org/2000/svg"`,
     ` viewBox="0 0 ${MAP_W} ${MAP_H}" width="${MAP_W}" height="${MAP_H}">`,
-    ...(localStorage.getItem("terralyft-sea-texture") !== "false" ? [
+    ...(localStorage.getItem("iskawt-sea-texture") !== "false" ? [
       `<defs>`,
       `<pattern id="ocean-wave" x="0" y="0" width="32" height="16" patternUnits="userSpaceOnUse">`,
       `<rect width="32" height="16" fill="none"/>`,
@@ -380,7 +380,7 @@ function _snapTravel() {
       `</defs>`,
     ] : []),
     `<rect width="${MAP_W}" height="${MAP_H}" fill="${oceanColor}"/>`,
-    ...(localStorage.getItem("terralyft-sea-texture") !== "false" ? [
+    ...(localStorage.getItem("iskawt-sea-texture") !== "false" ? [
       `<rect width="${MAP_W}" height="${MAP_H}" fill="url(#ocean-wave)"/>`,
     ] : []),
     provPaths,
@@ -550,10 +550,10 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
   const iRight = CARD_W - OUTER;
   let cy = FRAME_Y + gap;
 
-  // Terralyft
+  // Iskawt
   ctx.fillStyle = "#c13724";
   ctx.font = `900 ${fs(0.110)}px 'Impact', sans-serif`;
-  ctx.fillText("Terralyft", ix, cy + titleH);
+  ctx.fillText("Iskawt", ix, cy + titleH);
   cy += titleH;
 
   // My Travel Level Postcard
@@ -644,11 +644,11 @@ function _showPostcardPreview(canvas) {
   document.getElementById("snap-preview-cancel").addEventListener("click", close);
   document.getElementById("snap-preview-dl").addEventListener("click", () => {
     canvas.toBlob(async (blob) => {
-      const file = new File([blob], "terralyft-travel.png", { type: "image/png" });
+      const file = new File([blob], "iskawt-travel.png", { type: "image/png" });
       // On mobile, use Web Share API so the image goes to the photo gallery
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: "Terralyft Travel Postcard" });
+          await navigator.share({ files: [file], title: "Iskawt Travel Postcard" });
           close();
           return;
         } catch (e) {
@@ -659,7 +659,7 @@ function _showPostcardPreview(canvas) {
       // Desktop / fallback: trigger a normal file download
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.download = "terralyft-travel.png";
+      link.download = "iskawt-travel.png";
       link.href = url;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
