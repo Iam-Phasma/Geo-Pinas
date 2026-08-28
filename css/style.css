@@ -2619,6 +2619,7 @@ html.no-borders .province-group.is-tl-passed .province {
 }
 
 .tl-progress-bar {
+  display: flex;
   width: 100%;
   height: 8px;
   background: var(--border);
@@ -2626,19 +2627,11 @@ html.no-borders .province-group.is-tl-passed .province {
   overflow: hidden;
 }
 
-.tl-progress-fill {
+.tl-progress-segment {
+  display: block;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    #7c3aed,
-    #2563eb,
-    #0891b2,
-    #16a34a,
-    #d97706
-  );
-  border-radius: 99px;
+  flex: 0 0 auto;
   transition: width 0.5s ease;
-  min-width: 4px;
 }
 
 .tl-legend {

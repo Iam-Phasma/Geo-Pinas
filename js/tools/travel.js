@@ -149,6 +149,11 @@ function _renderTravelOverview(animatePanel = false) {
 
   const { score, logged, total } = _travelScore();
 
+  const progressSegments = TRAVEL_LEVELS.map(level => {
+    const count = Object.values(_travelMap).filter(value => value === level.id).length;
+    return count ? `<span class="tl-progress-segment" style="width:${count / total * 100}%;background:${level.color}"></span>` : "";
+  }).join("");
+
   const legendHtml = TRAVEL_LEVELS.map(l => `
     <span class="tl-legend-item">
       <span class="tl-legend-dot" style="background:${l.color}"></span>
@@ -183,7 +188,7 @@ function _renderTravelOverview(animatePanel = false) {
       </div>
       <div class="tl-progress-bar-wrap">
         <div class="tl-progress-bar">
-          <div class="tl-progress-fill" style="width:${score}%"></div>
+          ${progressSegments}
         </div>
       </div>
       <div class="tl-legend">${legendHtml}</div>
@@ -345,9 +350,12 @@ function _renderTravelPicker(d, event) {
 }
 
 // ── Snap / Postcard ────────────────────────────────────────────
-function _snapTravel() {
+async function _snapTravel() {
   const btn = document.getElementById("tl-snap-btn");
   if (btn) { btn.disabled = true; btn.textContent = "⏳ Rendering…"; }
+
+  if (document.fonts) await document.fonts.load("900 110px 'Luckiest Guy'");
+  if (document.fonts) await document.fonts.load("700 26px 'Unkempt'");
 
   // Read live CSS variables so the snapshot matches the current canvas theme exactly
   const rootStyle   = getComputedStyle(document.documentElement);
@@ -453,6 +461,7 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
   const FRAME_W = mapRW + BORDER * 2;
   const FRAME_X = INSET;
   const FRAME_Y = INSET;
+  const FRAME_RADIUS = 36;
 
   // ── Rotate map frame + compass slightly counter-clockwise ────
   const TILT_DEG = -3.5;
@@ -466,12 +475,14 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
   ctx.translate(-pivotX, -pivotY);
 
   // Shadow on the white frame
-  ctx.shadowColor   = "rgba(0, 0, 0, 0.45)";
+  ctx.shadowColor   = "rgba(0, 0, 0, 0.27)";
   ctx.shadowBlur    = 50;
-  ctx.shadowOffsetX = 10;
-  ctx.shadowOffsetY = 8;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
   ctx.fillStyle = "#ffffff";
-  ctx.fillRect(FRAME_X, FRAME_Y, FRAME_W, FRAME_H);
+  ctx.beginPath();
+  ctx.roundRect(FRAME_X, FRAME_Y, FRAME_W, FRAME_H, FRAME_RADIUS);
+  ctx.fill();
   // Clear shadow so it doesn't affect subsequent draws
   ctx.shadowColor   = "transparent";
   ctx.shadowBlur    = 0;
@@ -480,7 +491,7 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
 
   ctx.save();
   ctx.beginPath();
-  ctx.rect(FRAME_X + BORDER, FRAME_Y + BORDER, mapRW, mapRH);
+  ctx.roundRect(FRAME_X + BORDER, FRAME_Y + BORDER, mapRW, mapRH, FRAME_RADIUS - BORDER);
   ctx.clip();
   ctx.drawImage(mapImg, FRAME_X + BORDER, FRAME_Y + BORDER, mapRW, mapRH);
   ctx.restore();
@@ -532,14 +543,13 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
   const subtitleH = fs(0.040);
   const scoreH    = fs(0.120);
   const countH    = fs(0.040);
-  const levHdrH   = fs(0.050);
   const levRowH   = fs(0.042);
   const dateH     = fs(0.070);
 
   // 4 content sections, 5 equal gaps (top, between each, bottom)
   const secA = titleH + subtitleH;
   const secB = scoreH + countH;
-  const secC = nLevels > 0 ? levHdrH + nLevels * levRowH : 0;
+  const secC = nLevels > 0 ? nLevels * levRowH : 0;
   const secD = dateH;
   const activeSections = [secA, secB, secC, secD].filter(s => s > 0);
   const totalSec = activeSections.reduce((a, b) => a + b, 0);
@@ -552,34 +562,30 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
 
   // Iskawt
   ctx.fillStyle = "#c13724";
-  ctx.font = `900 ${fs(0.110)}px 'Impact', sans-serif`;
+  ctx.font = `${fs(0.110)}px 'Luckiest Guy', sans-serif`;
   ctx.fillText("Iskawt", ix, cy + titleH);
   cy += titleH;
 
   // My Travel Level Postcard
   ctx.fillStyle = "#e1503d";
-  ctx.font = `600  ${fs(0.026)}px Georgia, serif`;
+  ctx.font = `700 ${fs(0.034)}px 'Unkempt', cursive`;
   ctx.fillText("#My-Travel-Level-Postcard", ix, cy + subtitleH * 0.82);
   cy += subtitleH + gap;
 
   // Score %
   ctx.fillStyle = "#0e6b25";
-  ctx.font = `900  ${fs(0.110)}px 'Impact', sans-serif`;
+  ctx.font = `${fs(0.110)}px 'Luckiest Guy', sans-serif`;
   ctx.fillText(`${score}%`, ix, cy + scoreH);
   cy += scoreH;
 
   // Province count 
   ctx.fillStyle = "#198c36";
-  ctx.font = `bold  ${fs(0.026)}px Georgia, serif`;
+  ctx.font = `700 ${fs(0.034)}px 'Unkempt', cursive`;
   ctx.fillText(`Got ${logged} of ${total} provinces explored`, ix, cy + countH * 0.78);
   cy += countH + gap + 20;
 
   // Levels
   if (nLevels > 0) {
-    ctx.fillStyle = "#313131da";
-    ctx.font = `bold  ${fs(0.030)}px Georgia, serif`;
-    ctx.fillText("Legend", ix, cy + levHdrH * 0.82);
-    cy += levHdrH;
     const R = fs(0.014);
     usedLevels.forEach(l => {
       ctx.fillStyle = l.color;
@@ -587,7 +593,7 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
       ctx.arc(ix + R, cy + levRowH * 0.50, R, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = "#424242";
-      ctx.font = ` ${fs(0.026)}px Georgia, serif`;
+      ctx.font = `700 ${fs(0.026)}px 'Unkempt', cursive`;
       ctx.fillText(l.label, ix + R * 2 + 10, cy + levRowH * 0.72);
       cy += levRowH;
     });
@@ -598,7 +604,7 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   ctx.fillStyle = "#313131aa";
-  ctx.font = `bold italic ${fs(0.026)}px Georgia, serif`;
+  ctx.font = `700 italic ${fs(0.026)}px 'Unkempt', cursive`;
   ctx.textAlign = "right";
   ctx.fillText(`as of ${dateStr}`, iRight - 80, cy + dateH * 0.82);
   ctx.textAlign = "left";
