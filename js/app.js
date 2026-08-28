@@ -1400,7 +1400,14 @@ async function _fetchProvinceWiki(provName) {
       mapBtn.addEventListener("click", () => _showProvMapModal(provName));
 
     const newChips = section.querySelector(".exp-wiki-chips");
-    if (newChips && chipsScroll) newChips.scrollLeft = chipsScroll;
+    if (newChips) {
+      if (chipsScroll) newChips.scrollLeft = chipsScroll;
+      newChips.addEventListener("wheel", (event) => {
+        if (newChips.scrollWidth <= newChips.clientWidth) return;
+        event.preventDefault();
+        newChips.scrollLeft += event.deltaY || event.deltaX;
+      }, { passive: false });
+    }
 
     section.querySelectorAll(".exp-wiki-chip").forEach((btn) => {
       btn.addEventListener("click", async () => {
