@@ -566,6 +566,7 @@ function _ggHighlight(provId, cls) {
 function showGeoGuesserTool(animatePanel = false) {
   _activeToolId = "geoguesser";
   if (typeof window._resetTilt === "function") window._resetTilt();
+  if (typeof window._resetZoom === "function") window._resetZoom();
   if (typeof window._setTiltControlsVisible === "function") {
     window._setTiltControlsVisible(false);
   }
