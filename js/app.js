@@ -633,7 +633,7 @@ function showGamesTool(direction = "left", animatePanel = false) {
   _setInfoPanelHtml(`
     <div class="games-top-row">
       <button class="tool-back-btn" id="games-back">‹ Back</button>
-      <button class="tool-back-btn" id="games-logs">Logs</button>
+      <button class="tool-back-btn" id="games-logs">🏆 Logs</button>
     </div>
     <div class="tools-list">
       ${GAMES.map((t) => `

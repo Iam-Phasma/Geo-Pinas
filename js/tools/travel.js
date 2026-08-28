@@ -73,8 +73,14 @@ const TRAVEL_ACHIEVEMENTS = [
     progress: m => ({ n: Math.min(Object.keys(m).length, 25), total: 25 }) },
   { id: "fifty",   icon: "🏅", title: "Half the Map",       desc: "Log 50 provinces",
     progress: m => ({ n: Math.min(Object.keys(m).length, 50), total: 50 }) },
+  { id: "seventy5", icon: "🧭", title: "Pathfinder",        desc: "Log 75 provinces",
+    progress: m => ({ n: Math.min(Object.keys(m).length, 75), total: 75 }) },
   { id: "home",    icon: "🏠", title: "Called It Home",     desc: "Mark at least one province as Lived",
     progress: m => ({ n: Object.values(m).some(v => v === "lived") ? 1 : 0, total: 1 }) },
+  { id: "islands", icon: "🌊", title: "Island Hopper",      desc: "Log a province in Luzon, Visayas, and Mindanao",
+    progress: m => ({ n: [_LUZON_REGIONS, _VISAYAS_REGIONS, _MINDANAO_REGIONS].filter(regions => _travelProvsByRegions(regions).some(province => m[province])).length, total: 3 }) },
+  { id: "spectrum", icon: "🎨", title: "Full Spectrum",     desc: "Use every travel level",
+    progress: m => ({ n: TRAVEL_LEVELS.filter(level => Object.values(m).includes(level.id)).length, total: TRAVEL_LEVELS.length }) },
   { id: "luzon",   icon: "🚗", title: "Luzon Explorer",     desc: "Log all Luzon provinces",
     progress: m => { const p = _travelProvsByRegions(_LUZON_REGIONS);    return { n: p.filter(x => m[x]).length, total: p.length }; } },
   { id: "visayas", icon: "⛵", title: "Visayas Voyager",    desc: "Log all Visayas provinces",
@@ -161,9 +167,15 @@ function _renderTravelOverview(animatePanel = false) {
     </span>
   `).join("");
 
-  const achieveHtml = TRAVEL_ACHIEVEMENTS.map(a => {
-    const { n, total: t } = a.progress(_travelMap);
-    const unlocked = n >= t;
+  const achieveHtml = TRAVEL_ACHIEVEMENTS.map((achievement, index) => {
+    const { n, total } = achievement.progress(_travelMap);
+    return { achievement, index, n, total, unlocked: n >= total };
+  }).sort((first, second) => {
+    if (first.unlocked !== second.unlocked) return first.unlocked ? -1 : 1;
+    const firstProgress = first.n / first.total;
+    const secondProgress = second.n / second.total;
+    return secondProgress - firstProgress || first.index - second.index;
+  }).map(({ achievement: a, n, total: t, unlocked }) => {
     return `
       <div class="tl-achieve${unlocked ? " is-unlocked" : ""}">
         <span class="tl-achieve-icon">${a.icon}</span>
@@ -177,29 +189,31 @@ function _renderTravelOverview(animatePanel = false) {
   }).join("");
 
   _setInfoPanelHtml(`
-    <div class="tl-top-row">
-      <button class="tool-back-btn" id="tl-back">‹ Back</button>
-      <button class="tl-snap-btn" id="tl-snap-btn" title="Snap"${score === 0 ? " disabled" : ""}>📸 Snap</button>
-    </div>
-    <div class="tl-body">
-      <div class="tl-score-wrap">
-        <span class="tl-score-num">${score}<span class="tl-score-pct">%</span></span>
-        <span class="tl-score-label">${logged} of ${total} provinces logged</span>
+    <div class="tl-panel">
+      <div class="tl-top-row">
+        <button class="tool-back-btn" id="tl-back">‹ Back</button>
+        <button class="tl-snap-btn" id="tl-snap-btn" title="Snap"${score === 0 ? " disabled" : ""}>📸 Snap</button>
       </div>
-      <div class="tl-progress-bar-wrap">
-        <div class="tl-progress-bar">
-          ${progressSegments}
+      <div class="tl-body">
+        <div class="tl-score-wrap">
+          <span class="tl-score-num">${score}<span class="tl-score-pct">%</span></span>
+          <span class="tl-score-label">${logged} of ${total} provinces logged</span>
         </div>
-      </div>
-      <div class="tl-legend">${legendHtml}</div>
-      <p class="tl-hint">Tap a province on the map to set your travel level.</p>
-      <div class="tl-achieve-header">Achievements</div>
-      <div class="tl-achieve-list">${achieveHtml}</div>
-      <div class="tl-reset-wrap">
-        <button class="tl-reset-btn" id="tl-reset-btn" title="Hold to reset all travel data">
-          <span class="tl-reset-label">Hold to Reset</span>
-          <span class="tl-reset-bar"><span class="tl-reset-fill" id="tl-reset-fill"></span></span>
-        </button>
+        <div class="tl-progress-bar-wrap">
+          <div class="tl-progress-bar">
+            ${progressSegments}
+          </div>
+        </div>
+        <div class="tl-legend">${legendHtml}</div>
+        <p class="tl-hint">Tap a province on the map to set your travel level.</p>
+        <div class="tl-achieve-header">Achievements</div>
+        <div class="tl-achieve-list">${achieveHtml}</div>
+        <div class="tl-reset-wrap">
+          <button class="tl-reset-btn" id="tl-reset-btn" title="Hold to reset all travel data">
+            <span class="tl-reset-label">Hold to Reset</span>
+            <span class="tl-reset-bar"><span class="tl-reset-fill" id="tl-reset-fill"></span></span>
+          </button>
+        </div>
       </div>
     </div>
   `, "left", animatePanel);
