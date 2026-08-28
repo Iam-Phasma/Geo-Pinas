@@ -11,6 +11,7 @@ let _namingGuessedKeys = new Set();
 let _namingGuessedList = []; // { type, id } newest-first
 let _namingStartTime = null;
 let _namingTimer = null;
+let _namingMode = null;
 let _namingIslandTotals = null;
 let _namingBlinking = new Map(); // province id -> animation start timestamp
 let _namingFadingIn = new Map(); // province id -> fade start timestamp
@@ -21,6 +22,7 @@ const _NAMING_BLINK_HALF_MS = 280;
 const _NAMING_BLINK_CYCLES = 3;
 const _NAMING_BLINK_TOTAL_MS = _NAMING_BLINK_HALF_MS * 2 * _NAMING_BLINK_CYCLES;
 const _NAMING_GREEN_FADE_MS = 360;
+const _NAMING_TIMED_SECS = 10 * 60;
 
 // Region → island group, used to organize the found-provinces list
 const _NAMING_REGION_ISLAND = {
@@ -153,6 +155,7 @@ function _namingReset() {
   if (_namingTimer) clearInterval(_namingTimer);
   _namingTimer = null;
   _namingStartTime = null;
+  _namingMode = null;
   _namingClearFound();
   _namingHideInputWrap();
   document.documentElement.classList.remove("naming-active");
@@ -237,12 +240,20 @@ function _namingFormatTime(elapsed) {
 function _namingUpdateTimer() {
   const timer = document.getElementById("naming-timer");
   if (!timer || _namingStartTime === null) return;
-  timer.textContent = _namingFormatTime(Math.floor((Date.now() - _namingStartTime) / 1000));
+  const elapsed = Math.floor((Date.now() - _namingStartTime) / 1000);
+  if (_namingMode === "timed") {
+    const remaining = Math.max(0, _NAMING_TIMED_SECS - elapsed);
+    timer.textContent = _namingFormatTime(remaining);
+    timer.classList.toggle("is-urgent", remaining <= 30);
+    if (remaining === 0) _namingComplete(true);
+    return;
+  }
+  timer.textContent = _namingFormatTime(elapsed);
 }
 
 function _namingStartTimer() {
-  if (_namingStartTime !== null) return;
-  _namingStartTime = Date.now();
+  if (_namingTimer) return;
+  if (_namingStartTime === null) _namingStartTime = Date.now();
   _namingUpdateTimer();
   _namingTimer = setInterval(_namingUpdateTimer, 1000);
 }
@@ -393,7 +404,7 @@ function _namingRenderPanel(animatePanel = false) {
     `
     <div class="naming-top-row">
       <button class="tool-back-btn" id="naming-back">‹ Quit</button>
-      <span class="naming-timer" id="naming-timer" aria-label="Elapsed time">00:00</span>
+      <span class="naming-timer" id="naming-timer" aria-label="${_namingMode === "timed" ? "Time remaining" : "Elapsed time"}">${_namingMode === "timed" ? _namingFormatTime(_NAMING_TIMED_SECS) : "00:00"}</span>
     </div>
     <div class="quiz-score-bar">
       <span class="quiz-score-label">Found</span>
@@ -422,11 +433,14 @@ function _namingRenderPanel(animatePanel = false) {
   _namingRenderFoundList();
 }
 
-function _namingComplete() {
+function _namingComplete(timedOut = false) {
+  if (_namingTimer === null && timedOut) return;
   const elapsed = _namingStartTime === null
     ? 0
     : Math.max(0, Math.round((Date.now() - _namingStartTime) / 1000));
-  const elapsedLabel = _namingFormatTime(elapsed);
+  const elapsedLabel = _namingFormatTime(Math.min(elapsed, _NAMING_TIMED_SECS));
+  const t = _namingBuildTargets();
+  if (_namingMode === "timed") _saveGameHighScore("naming", _namingGuessedKeys.size, t.total);
   if (_namingTimer) clearInterval(_namingTimer);
   _namingTimer = null;
   _namingHideInputWrap();
@@ -438,9 +452,9 @@ function _namingComplete() {
       <span class="naming-timer" aria-label="Elapsed time">${elapsedLabel}</span>
     </div>
     <div class="quiz-summary">
-      <div class="quiz-summary-grade">🏆</div>
-      <div class="quiz-summary-tag">All provinces named!</div>
-      <div class="quiz-summary-score">${elapsedLabel}</div>
+      <div class="quiz-summary-grade">${timedOut ? "⏰" : "🏆"}</div>
+      <div class="quiz-summary-tag">${timedOut ? "Time's up!" : "All provinces named!"}</div>
+      <div class="quiz-summary-score">${timedOut ? `${_namingGuessedKeys.size} / ${t.total}` : elapsedLabel}</div>
       <button class="quiz-play-again-btn" id="naming-play-again">Play Again</button>
     </div>
   `,
@@ -453,6 +467,53 @@ function _namingComplete() {
   });
   document.getElementById("naming-play-again").addEventListener("click", () => {
     showNamingTool(false);
+  });
+}
+
+function _namingStartGame(mode, animatePanel = false) {
+  _namingMode = mode;
+  _namingStartTime = null;
+  _namingRenderPanel(animatePanel);
+  _namingShowInputWrap();
+}
+
+function _namingShowIntro(animatePanel = false) {
+  let selectedMode = "free";
+  setSidebarTitle("Name the Map");
+  _setInfoPanelHtml(`
+    <button class="tool-back-btn" id="naming-intro-back">‹ Quit</button>
+    <div class="gg-intro">
+      <div class="gg-intro-icon">📝</div>
+      <h2 class="gg-intro-title">Name the Map</h2>
+      <p class="gg-intro-desc">Type Philippine province names to light them up on the map.</p>
+      <div class="gg-map-switcher" id="naming-mode-switcher">
+        <button class="gg-map-sw-btn is-active" data-mode="free">Free</button>
+        <button class="gg-map-sw-btn" data-mode="timed">Timed</button>
+      </div>
+      <p class="gg-mode-selected-text" id="naming-mode-label">No timer — take your time.</p>
+      <button class="gg-start-btn" id="naming-start-btn">Start Game</button>
+    </div>
+  `, "left", animatePanel);
+
+  const switcher = document.getElementById("naming-mode-switcher");
+  _syncSwitcherPill(switcher);
+  document.getElementById("naming-intro-back").addEventListener("click", () => {
+    _namingReset();
+    showGamesTool("right", true);
+  });
+  switcher.querySelectorAll(".gg-map-sw-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedMode = btn.dataset.mode;
+      switcher.querySelectorAll(".gg-map-sw-btn").forEach((item) => {
+        item.classList.toggle("is-active", item === btn);
+      });
+      _syncSwitcherPill(switcher);
+      document.getElementById("naming-mode-label").textContent =
+        selectedMode === "timed" ? "Name as many provinces as you can in 10 minutes. Measured at a minimum of 30 WPM." : "No timer — take your time.";
+    });
+  });
+  document.getElementById("naming-start-btn").addEventListener("click", () => {
+    _namingStartGame(selectedMode);
   });
 }
 
@@ -471,6 +532,5 @@ function showNamingTool(animatePanel = false) {
   _namingClearFound();
   _namingStartTime = null;
   requestMapRender();
-  _namingRenderPanel(animatePanel);
-  _namingShowInputWrap();
+  _namingShowIntro(animatePanel);
 }

@@ -124,6 +124,7 @@ function _renderQuizSummary(animatePanel = false) {
 
   const correct = _quizScore.correct;
   const total   = _quizScore.total;
+  _saveGameHighScore("quiz", correct, total);
   const pct     = Math.round(correct / total * 100);
   const grade   = pct >= 90 ? '🏆' : pct >= 70 ? '🎉' : pct >= 50 ? '👍' : '📚';
   const tag     = pct >= 90 ? 'Geography Expert!'

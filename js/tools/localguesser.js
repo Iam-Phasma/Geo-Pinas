@@ -811,6 +811,7 @@ function _ggShowSummary() {
 
   const total = _ggHistory.length;
   const correct = _ggScore.correct;
+  if (_ggMode === "timed") _saveGameHighScore("geoguesser", correct, total);
   const pct = total ? Math.round((correct / total) * 100) : 0;
   const grade =
     pct >= 90

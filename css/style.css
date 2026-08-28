@@ -1328,6 +1328,65 @@ html.no-borders .province-group.is-tl-passed .province {
   color: var(--accent);
 }
 
+.games-top-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.game-logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.game-logs-content {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100% - 46px);
+}
+
+.game-logs-reset-wrap {
+  margin-top: auto;
+}
+
+.game-log-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.game-log-icon {
+  font-size: 1.25rem;
+}
+
+.game-log-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.game-log-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.game-log-detail {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+}
+
+.game-log-score {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
 .naming-top-row {
   display: flex;
   align-items: flex-start;
@@ -1340,6 +1399,11 @@ html.no-borders .province-group.is-tl-passed .province {
   font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
+}
+
+.naming-timer.is-urgent {
+  color: #ef4444;
+  animation: gg-timer-blink 0.5s ease infinite;
 }
 
 /* ── About button ──────────────────────────────────────── */

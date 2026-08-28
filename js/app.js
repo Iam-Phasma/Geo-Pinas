@@ -524,6 +524,99 @@ const GAMES = [
   },
 ];
 
+const _GAME_LOGS_KEY = "iskawt-game-logs";
+
+function _getGameLogs() {
+  try {
+    return JSON.parse(localStorage.getItem(_GAME_LOGS_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function _saveGameHighScore(game, score, total) {
+  const logs = _getGameLogs();
+  const current = logs[game];
+  if (!current || score > current.score || (score === current.score && total > current.total)) {
+    logs[game] = { score, total, recordedAt: Date.now() };
+    try { localStorage.setItem(_GAME_LOGS_KEY, JSON.stringify(logs)); } catch {}
+  }
+}
+
+function showGameLogs(animatePanel = false) {
+  const logs = _getGameLogs();
+  const entries = [
+    { id: "geoguesser", icon: "📍", title: "Local Guesser", detail: "Timed mode" },
+    { id: "quiz", icon: "🧠", title: "Province Quiz", detail: "Best score" },
+    { id: "naming", icon: "📝", title: "Name the Map", detail: "Timed mode" },
+  ];
+  setSidebarTitle("Game Logs");
+  _setInfoPanelHtml(`
+    <button class="tool-back-btn" id="game-logs-back">‹ Back</button>
+    <div class="game-logs-content">
+      <div class="game-logs-list">
+        ${entries.map((entry) => {
+          const log = logs[entry.id];
+          const score = log ? `${log.score} / ${log.total}` : "No score yet";
+          const date = log?.recordedAt
+            ? new Date(log.recordedAt).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })
+            : "";
+          return `<div class="game-log-row">
+            <span class="game-log-icon">${entry.icon}</span>
+            <div class="game-log-body"><span class="game-log-title">${entry.title}</span><span class="game-log-detail">${entry.detail}${date ? ` · ${date}` : ""}</span></div>
+            <span class="game-log-score">${score}</span>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="tl-reset-wrap game-logs-reset-wrap">
+        <button class="tl-reset-btn" id="game-logs-reset" title="Hold to reset all game logs">
+          <span class="tl-reset-label">Hold to Reset</span>
+          <span class="tl-reset-bar"><span class="tl-reset-fill" id="game-logs-reset-fill"></span></span>
+        </button>
+      </div>
+    </div>
+  `, "left", animatePanel);
+  document.getElementById("game-logs-back").addEventListener("click", () => showGamesTool("right", true));
+
+  const resetBtn = document.getElementById("game-logs-reset");
+  const resetFill = document.getElementById("game-logs-reset-fill");
+  const holdMs = 3000;
+  let holdStart = null;
+  let holdFrame = null;
+
+  function cancelHold() {
+    if (holdFrame) cancelAnimationFrame(holdFrame);
+    holdFrame = null;
+    holdStart = null;
+    resetFill.style.width = "0%";
+    resetBtn.classList.remove("is-holding");
+  }
+
+  function tickHold() {
+    const percent = Math.min((Date.now() - holdStart) / holdMs * 100, 100);
+    resetFill.style.width = `${percent}%`;
+    if (percent < 100) {
+      holdFrame = requestAnimationFrame(tickHold);
+      return;
+    }
+    try { localStorage.removeItem(_GAME_LOGS_KEY); } catch {}
+    showGameLogs();
+  }
+
+  function startHold() {
+    holdStart = Date.now();
+    resetBtn.classList.add("is-holding");
+    holdFrame = requestAnimationFrame(tickHold);
+  }
+
+  resetBtn.addEventListener("mousedown", startHold);
+  resetBtn.addEventListener("touchstart", (event) => { event.preventDefault(); startHold(); }, { passive: false });
+  resetBtn.addEventListener("mouseup", cancelHold);
+  resetBtn.addEventListener("mouseleave", cancelHold);
+  resetBtn.addEventListener("touchend", cancelHold);
+  resetBtn.addEventListener("touchcancel", cancelHold);
+}
+
 function showGamesTool(direction = "left", animatePanel = false) {
   _activeToolId = null;
   _exploreTab = "info";
@@ -538,7 +631,10 @@ function showGamesTool(direction = "left", animatePanel = false) {
   if (typeof _namingReset === "function") _namingReset();
   setSidebarTitle("Games");
   _setInfoPanelHtml(`
-    <button class="tool-back-btn" id="games-back">‹ Back</button>
+    <div class="games-top-row">
+      <button class="tool-back-btn" id="games-back">‹ Back</button>
+      <button class="tool-back-btn" id="games-logs">Logs</button>
+    </div>
     <div class="tools-list">
       ${GAMES.map((t) => `
         <button class="tool-card" data-tool="${t.id}">
@@ -555,6 +651,7 @@ function showGamesTool(direction = "left", animatePanel = false) {
     </div>
   `, direction, animatePanel);
   document.getElementById("games-back").addEventListener("click", () => showToolsHome("right", true));
+  document.getElementById("games-logs").addEventListener("click", () => showGameLogs(true));
   document.querySelectorAll(".tool-card").forEach((card) => {
     card.addEventListener("click", () => {
       if (card.dataset.tool === "quiz") showQuizTool(true);
