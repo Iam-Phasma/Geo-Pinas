@@ -418,15 +418,21 @@ async function _snapTravel() {
     const bgImg = new Image();
     bgImg.onerror = () => done(new Error("bg load failed"));
     bgImg.onload = () => {
+      const drawPostcard = (compassImg) => {
+        const logoImg = new Image();
+        logoImg.onerror = () => {
+          try   { _showPostcardPreview(_buildPostcardCanvas(mapImg, bgImg, compassImg, null, oceanColor)); done(null); }
+          catch (e) { done(e); }
+        };
+        logoImg.onload = () => {
+          try   { _showPostcardPreview(_buildPostcardCanvas(mapImg, bgImg, compassImg, logoImg, oceanColor)); done(null); }
+          catch (e) { done(e); }
+        };
+        logoImg.src = "favicon.svg";
+      };
       const compassImg = new Image();
-      compassImg.onerror = () => {
-        try   { _showPostcardPreview(_buildPostcardCanvas(mapImg, bgImg, null, oceanColor)); done(null); }
-        catch (e) { done(e); }
-      };
-      compassImg.onload = () => {
-        try   { _showPostcardPreview(_buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor)); done(null); }
-        catch (e) { done(e); }
-      };
+      compassImg.onerror = () => drawPostcard(null);
+      compassImg.onload = () => drawPostcard(compassImg);
       compassImg.src = "assets/postcard/compass.webp";
     };
     bgImg.src = "assets/postcard/postcar-bg.webp";
@@ -434,7 +440,7 @@ async function _snapTravel() {
   mapImg.src = svgUrl;
 }
 
-function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
+function _buildPostcardCanvas(mapImg, bgImg, compassImg, logoImg, oceanColor) {
   oceanColor = oceanColor || '#1b3a6b';
   // Stamp sits at (148,744)→(2327,2405) inside the 2475×3500 bg PNG.
   const SRC_X = 148, SRC_Y = 744, SRC_W = 2179, SRC_H = 1661;
@@ -572,6 +578,12 @@ function _buildPostcardCanvas(mapImg, bgImg, compassImg, oceanColor) {
   ctx.fillStyle = "#c13724";
   ctx.font = `${fs(0.110)}px 'Luckiest Guy', sans-serif`;
   ctx.fillText("Iskawt", ix, cy + titleH);
+  if (logoImg) {
+    const logoSize = Math.round(titleH * 0.32);
+    const logoX = ix + ctx.measureText("Iskawt").width + Math.round(titleH * 0.06);
+    const logoY = cy + titleH - logoSize;
+    ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+  }
   cy += titleH;
 
   // My Travel Level Postcard
