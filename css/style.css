@@ -1622,7 +1622,8 @@ html.no-borders .province-group.is-tl-passed .province {
   border-radius: 4px;
   overflow: hidden;
   padding: 0;
-  transform: perspective(1200px) rotateX(var(--postcard-rotate-x, 0deg)) rotateY(var(--postcard-rotate-y, 0deg));
+  transform: perspective(1200px) rotateX(var(--postcard-rotate-x, 0deg))
+    rotateY(var(--postcard-rotate-y, 0deg));
   transform-style: preserve-3d;
   transition: transform 0.06s ease-out;
 }
@@ -1640,7 +1641,12 @@ html.no-borders .province-group.is-tl-passed .province {
   z-index: 1;
   content: "";
   pointer-events: none;
-  background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.24) 50%, transparent 100%);
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.24) 50%,
+    transparent 100%
+  );
   opacity: var(--postcard-shimmer-opacity, 0);
   transform: translate3d(-50%, -50%, 0) rotate(135deg);
   transition: opacity 0.28s ease-out;
@@ -1665,7 +1671,9 @@ html.no-borders .province-group.is-tl-passed .province {
   border: 1px solid #d1d5db;
   border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 28px 72px rgba(15, 23, 42, 0.32), 0 3px 10px rgba(15, 23, 42, 0.16);
+  box-shadow:
+    0 28px 72px rgba(15, 23, 42, 0.32),
+    0 3px 10px rgba(15, 23, 42, 0.16);
   animation: flag-preview-pop-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -1686,23 +1694,43 @@ html.no-borders .province-group.is-tl-passed .province {
 }
 
 @keyframes flag-preview-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes flag-preview-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes flag-preview-pop-in {
-  from { opacity: 0; transform: scale(0.78); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes flag-preview-pop-out {
-  from { opacity: 1; transform: scale(1); }
-  to { opacity: 0; transform: scale(0.78); }
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.78);
+  }
 }
 
 .snap-preview-img {
@@ -1722,7 +1750,7 @@ html.no-borders .province-group.is-tl-passed .province {
 
 .snap-preview-cancel {
   width: 140px;
-  background: #e88780;
+  background: linear-gradient(180deg, #eb7a73 0%, #d95d5c 100%);
   border: none;
   border-radius: 8px;
   padding: 9px 16px;
@@ -1731,11 +1759,14 @@ html.no-borders .province-group.is-tl-passed .province {
   font-weight: 700;
   color: #ffffff;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .snap-preview-cancel:hover {
-  opacity: 0.88;
+  opacity: 0.94;
+  transform: translateY(-1px);
 }
 
 .snap-preview-download {
@@ -1761,7 +1792,6 @@ html.no-borders .province-group.is-tl-passed .province {
   .snap-preview-modal {
     animation: none;
   }
-
 }
 
 @media (max-width: 640px) {
@@ -3345,9 +3375,18 @@ html.no-borders .province-group.is-tl-passed .province {
   background: #fef3c7 !important;
 }
 @keyframes naming-shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-6px); }
-  40%, 80% { transform: translateX(6px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
 }
 
 /* Hide the settings panel and tilt control entirely while the naming game is active */
