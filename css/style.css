@@ -1273,6 +1273,10 @@ html.no-borders .province-group.is-tl-passed .province {
    transform: translateY(-4px);
 }
 
+.tool-card[data-tool="explore"] .tool-emoji {
+   transform: translateY(-1px);
+}
+
 .tool-body {
   flex: 1;
   min-width: 0;
