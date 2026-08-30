@@ -54,5 +54,3 @@ Southern Leyte flag image sourced from the
 In compliance with GPL-3.0:
 
 - The source code of this project is publicly available.
-
-This project is made for fun and educational purposes only. No commercial use intended.
