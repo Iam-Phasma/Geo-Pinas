@@ -1269,6 +1269,10 @@ html.no-borders .province-group.is-tl-passed .province {
   line-height: 1;
 }
 
+.tool-card[data-tool="games"] .tool-emoji {
+   transform: translateY(-5px);
+}
+
 .tool-body {
   flex: 1;
   min-width: 0;
