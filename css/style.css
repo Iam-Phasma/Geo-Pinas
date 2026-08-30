@@ -1270,7 +1270,7 @@ html.no-borders .province-group.is-tl-passed .province {
 }
 
 .tool-card[data-tool="games"] .tool-emoji {
-   transform: translateY(-5px);
+   transform: translateY(-4px);
 }
 
 .tool-body {
